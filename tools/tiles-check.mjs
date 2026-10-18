@@ -24,13 +24,13 @@ for (const [pid, tpl] of Object.entries(PROVIDERS)) {
     for (const z of [14, 16, 17, 18, 19, 20, 21]) {
       const { x, y } = tile(lat, lon, z);
       const url = tpl.replace('{z}', z).replace('{x}', x).replace('{y}', y);
-      let status = 0, size = 0, md5 = '', type = '';
+      let status = 0, size = 0, md5 = '', type = '', cors = '';
       try {
-        const r = await fetch(url, { headers: { 'User-Agent': 'TopoMaroc-GIS tile availability check', Referer: 'https://milyasse.github.io/topomaroc-gis/' } });
-        status = r.status; type = r.headers.get('content-type') || '';
+        const r = await fetch(url, { headers: { 'User-Agent': 'TopoMaroc-GIS tile availability check', Referer: 'https://milyasse.github.io/topomaroc-gis/', Origin: 'https://milyasse.github.io' } });
+        status = r.status; type = r.headers.get('content-type') || ''; cors = r.headers.get('access-control-allow-origin') || '';
         const b = Buffer.from(await r.arrayBuffer()); size = b.length; md5 = crypto.createHash('md5').update(b).digest('hex');
       } catch (e) { status = -1; type = String(e.message); }
-      out.results.push({ provider: pid, place: name, z, status, size, md5, type });
+      out.results.push({ provider: pid, place: name, z, status, size, md5, type, cors });
     }
   }
 }
