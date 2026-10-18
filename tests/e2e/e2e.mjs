@@ -44,6 +44,7 @@ async function test(name, fn, { skip = null } = {}) {
     console.log(`✔ ${name}${detail ? ` — ${detail}` : ''}`);
   } catch (e) {
     results.push({ name, status: 'échoué', ms: Date.now() - t0, detail: String(e?.message ?? e).slice(0, 600) });
+    if (process.env.GITHUB_ACTIONS) console.log(`::error title=E2E ${name.replace(/[:,]/g, ' ')}::${String(e?.message ?? e).replace(/\x1b\[[0-9;]*m/g, '').replace(/\r?\n/g, ' | ').slice(0, 900)}`);
     console.log(`✘ ${name} — ${e?.message ?? e}`);
   }
 }
