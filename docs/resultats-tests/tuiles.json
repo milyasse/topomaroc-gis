@@ -1,5 +1,5 @@
 {
- "date": "2026-10-18T21:09:31.663Z",
+ "date": "2026-10-18T22:18:56.652Z",
  "results": [
   {
    "provider": "esri",
@@ -2772,8 +2772,346 @@
    "type": "image/png",
    "cors": "*",
    "placeholder": true
+  },
+  {
+   "provider": "terrarium",
+   "place": "Rabat (ville)",
+   "z": 12,
+   "status": 200,
+   "size": 30047,
+   "md5": "56ab155febae267593e5109016296a4e",
+   "type": "image/png",
+   "cors": "*",
+   "placeholder": false
+  },
+  {
+   "provider": "terrarium",
+   "place": "Rabat (ville)",
+   "z": 13,
+   "status": 200,
+   "size": 29634,
+   "md5": "a4c0edb9fda1b7e787701b28ee564428",
+   "type": "image/png",
+   "cors": "*",
+   "placeholder": false
+  },
+  {
+   "provider": "terrarium",
+   "place": "Rabat (ville)",
+   "z": 14,
+   "status": 200,
+   "size": 65976,
+   "md5": "a79d8ab84beb1c15949ae2b077bad312",
+   "type": "image/png",
+   "cors": "*",
+   "placeholder": false
+  },
+  {
+   "provider": "terrarium",
+   "place": "Rabat (ville)",
+   "z": 15,
+   "status": 200,
+   "size": 50672,
+   "md5": "8e15142126ab1e0878b0cf73d933feac",
+   "type": "image/png",
+   "cors": "*",
+   "placeholder": false
+  },
+  {
+   "provider": "terrarium",
+   "place": "Rabat (ville)",
+   "z": 16,
+   "status": 404,
+   "size": 319,
+   "md5": "682352e0e6823d8bf1597b05d0054cd7",
+   "type": "application/xml",
+   "cors": "*",
+   "placeholder": false
+  },
+  {
+   "provider": "terrarium",
+   "place": "Saïs rural (Meknès)",
+   "z": 12,
+   "status": 200,
+   "size": 35328,
+   "md5": "d051621ebd4c51b3087af990776caf14",
+   "type": "image/png",
+   "cors": "*",
+   "placeholder": false
+  },
+  {
+   "provider": "terrarium",
+   "place": "Saïs rural (Meknès)",
+   "z": 13,
+   "status": 200,
+   "size": 22802,
+   "md5": "9fe1b419cbd397bbace3606840b92c5c",
+   "type": "image/png",
+   "cors": "*",
+   "placeholder": false
+  },
+  {
+   "provider": "terrarium",
+   "place": "Saïs rural (Meknès)",
+   "z": 14,
+   "status": 200,
+   "size": 98166,
+   "md5": "37d672560344298e8d96db18aa55a8c8",
+   "type": "image/png",
+   "cors": "*",
+   "placeholder": false
+  },
+  {
+   "provider": "terrarium",
+   "place": "Saïs rural (Meknès)",
+   "z": 15,
+   "status": 200,
+   "size": 80837,
+   "md5": "3aa0d267c5630ca03e598e3a8655c789",
+   "type": "image/png",
+   "cors": "*",
+   "placeholder": false
+  },
+  {
+   "provider": "terrarium",
+   "place": "Saïs rural (Meknès)",
+   "z": 16,
+   "status": 404,
+   "size": 319,
+   "md5": "d61d6c56a5828b84c6cf95c5567ac2cd",
+   "type": "application/xml",
+   "cors": "*",
+   "placeholder": false
+  },
+  {
+   "provider": "terrarium",
+   "place": "Souss rural (Agadir)",
+   "z": 12,
+   "status": 200,
+   "size": 22332,
+   "md5": "3c997fa441a1f3b68b9465b55f4fe3cb",
+   "type": "image/png",
+   "cors": "*",
+   "placeholder": false
+  },
+  {
+   "provider": "terrarium",
+   "place": "Souss rural (Agadir)",
+   "z": 13,
+   "status": 200,
+   "size": 17931,
+   "md5": "73b620385afb46a2c0d35c5b0db37bb5",
+   "type": "image/png",
+   "cors": "*",
+   "placeholder": false
+  },
+  {
+   "provider": "terrarium",
+   "place": "Souss rural (Agadir)",
+   "z": 14,
+   "status": 200,
+   "size": 91511,
+   "md5": "4453e83786ae199049d10f922cf32b29",
+   "type": "image/png",
+   "cors": "*",
+   "placeholder": false
+  },
+  {
+   "provider": "terrarium",
+   "place": "Souss rural (Agadir)",
+   "z": 15,
+   "status": 200,
+   "size": 79160,
+   "md5": "03f4b381d4ecdbf91f8af5352e18b0a1",
+   "type": "image/png",
+   "cors": "*",
+   "placeholder": false
+  },
+  {
+   "provider": "terrarium",
+   "place": "Souss rural (Agadir)",
+   "z": 16,
+   "status": 404,
+   "size": 319,
+   "md5": "7a5b8a1fe62d3fb910f219f7bc570c7e",
+   "type": "application/xml",
+   "cors": "*",
+   "placeholder": false
+  },
+  {
+   "provider": "terrarium",
+   "place": "Haouz rural (Marrakech)",
+   "z": 12,
+   "status": 200,
+   "size": 30671,
+   "md5": "f94602090378ee771a8fc25145ed53ed",
+   "type": "image/png",
+   "cors": "*",
+   "placeholder": false
+  },
+  {
+   "provider": "terrarium",
+   "place": "Haouz rural (Marrakech)",
+   "z": 13,
+   "status": 200,
+   "size": 21574,
+   "md5": "6968792b8a0fc98c57784b9c664e2bf8",
+   "type": "image/png",
+   "cors": "*",
+   "placeholder": false
+  },
+  {
+   "provider": "terrarium",
+   "place": "Haouz rural (Marrakech)",
+   "z": 14,
+   "status": 200,
+   "size": 91346,
+   "md5": "140288fd76be5739b0e818cd25d88ef3",
+   "type": "image/png",
+   "cors": "*",
+   "placeholder": false
+  },
+  {
+   "provider": "terrarium",
+   "place": "Haouz rural (Marrakech)",
+   "z": 15,
+   "status": 200,
+   "size": 76722,
+   "md5": "5ef0327e17e4b0cb5a0e2b5650595470",
+   "type": "image/png",
+   "cors": "*",
+   "placeholder": false
+  },
+  {
+   "provider": "terrarium",
+   "place": "Haouz rural (Marrakech)",
+   "z": 16,
+   "status": 404,
+   "size": 319,
+   "md5": "12ccfd420f931dba0b3530d378575b69",
+   "type": "application/xml",
+   "cors": "*",
+   "placeholder": false
+  },
+  {
+   "provider": "terrarium",
+   "place": "Oriental rural (Oujda)",
+   "z": 12,
+   "status": 200,
+   "size": 32764,
+   "md5": "0ecc7511e088615881b03be3386d33e1",
+   "type": "image/png",
+   "cors": "*",
+   "placeholder": false
+  },
+  {
+   "provider": "terrarium",
+   "place": "Oriental rural (Oujda)",
+   "z": 13,
+   "status": 200,
+   "size": 23652,
+   "md5": "9bd488958016c0f4c48ed565901b106b",
+   "type": "image/png",
+   "cors": "*",
+   "placeholder": false
+  },
+  {
+   "provider": "terrarium",
+   "place": "Oriental rural (Oujda)",
+   "z": 14,
+   "status": 200,
+   "size": 94974,
+   "md5": "e0e8298a0bccc925f11759cfb57d4dd3",
+   "type": "image/png",
+   "cors": "*",
+   "placeholder": false
+  },
+  {
+   "provider": "terrarium",
+   "place": "Oriental rural (Oujda)",
+   "z": 15,
+   "status": 200,
+   "size": 84754,
+   "md5": "b0a8d33529cdcedb68dc9c28283e6e16",
+   "type": "image/png",
+   "cors": "*",
+   "placeholder": false
+  },
+  {
+   "provider": "terrarium",
+   "place": "Oriental rural (Oujda)",
+   "z": 16,
+   "status": 404,
+   "size": 319,
+   "md5": "7ef464f2c63d271557d233595e865215",
+   "type": "application/xml",
+   "cors": "*",
+   "placeholder": false
+  },
+  {
+   "provider": "terrarium",
+   "place": "Dakhla",
+   "z": 12,
+   "status": 200,
+   "size": 26980,
+   "md5": "9ffee22aca7257e2ae621e3ff85212e2",
+   "type": "image/png",
+   "cors": "*",
+   "placeholder": false
+  },
+  {
+   "provider": "terrarium",
+   "place": "Dakhla",
+   "z": 13,
+   "status": 200,
+   "size": 24865,
+   "md5": "b60973cb55f9efcece1126ac0c0f4031",
+   "type": "image/png",
+   "cors": "*",
+   "placeholder": false
+  },
+  {
+   "provider": "terrarium",
+   "place": "Dakhla",
+   "z": 14,
+   "status": 200,
+   "size": 60973,
+   "md5": "58272e1d84d39092226a5a5fc6f5518e",
+   "type": "image/png",
+   "cors": "*",
+   "placeholder": false
+  },
+  {
+   "provider": "terrarium",
+   "place": "Dakhla",
+   "z": 15,
+   "status": 200,
+   "size": 39640,
+   "md5": "4eafdb4dca24b8b494212b06bad0faed",
+   "type": "image/png",
+   "cors": "*",
+   "placeholder": false
+  },
+  {
+   "provider": "terrarium",
+   "place": "Dakhla",
+   "z": 16,
+   "status": 404,
+   "size": 319,
+   "md5": "048b31bd90d99258c7f1285d1306520a",
+   "type": "application/xml",
+   "cors": "*",
+   "placeholder": false
   }
  ],
+ "terrariumSample": {
+  "Rabat (ville)": 65976,
+  "Saïs rural (Meknès)": 98166,
+  "Souss rural (Agadir)": 91511,
+  "Haouz rural (Marrakech)": 91346,
+  "Oriental rural (Oujda)": 94974,
+  "Dakhla": 60973
+ },
  "summary": {
   "esri | Rabat (ville)": {
    "14": "ok 23k",
@@ -3098,6 +3436,48 @@
    "19": "vide",
    "20": "vide",
    "21": "vide"
+  },
+  "terrarium | Rabat (ville)": {
+   "12": "ok 29k",
+   "13": "ok 29k",
+   "14": "ok 64k",
+   "15": "ok 49k",
+   "16": "HTTP 404"
+  },
+  "terrarium | Saïs rural (Meknès)": {
+   "12": "ok 35k",
+   "13": "ok 22k",
+   "14": "ok 96k",
+   "15": "ok 79k",
+   "16": "HTTP 404"
+  },
+  "terrarium | Souss rural (Agadir)": {
+   "12": "ok 22k",
+   "13": "ok 18k",
+   "14": "ok 89k",
+   "15": "ok 77k",
+   "16": "HTTP 404"
+  },
+  "terrarium | Haouz rural (Marrakech)": {
+   "12": "ok 30k",
+   "13": "ok 21k",
+   "14": "ok 89k",
+   "15": "ok 75k",
+   "16": "HTTP 404"
+  },
+  "terrarium | Oriental rural (Oujda)": {
+   "12": "ok 32k",
+   "13": "ok 23k",
+   "14": "ok 93k",
+   "15": "ok 83k",
+   "16": "HTTP 404"
+  },
+  "terrarium | Dakhla": {
+   "12": "ok 26k",
+   "13": "ok 24k",
+   "14": "ok 60k",
+   "15": "ok 39k",
+   "16": "HTTP 404"
   }
  }
 }
