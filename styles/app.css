@@ -484,13 +484,13 @@ body.has-sheet .res-badge { display: none; }
 @media (min-width: 900px) { body.has-sheet .res-badge { display: block; left: 500px; } }
 .action-bar {
   position: absolute; left: 50%; transform: translateX(-50%); bottom: 12px; z-index: 860; width: min(560px, calc(100% - 20px));
-  display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border-radius: 16px; background: var(--surface); color: var(--ink); box-shadow: var(--shadow);
+  display: flex; flex-direction: column; gap: 6px; padding: 8px 10px; border-radius: 14px; background: var(--surface); color: var(--ink); box-shadow: var(--shadow);
 }
-.ab-text { display: flex; gap: 8px; align-items: center; font-weight: 600; font-size: .9rem; }
+.ab-text { display: flex; gap: 8px; align-items: center; font-weight: 600; font-size: .85rem; line-height: 1.25; }
 .ab-text .ic { color: var(--accent); }
 .ab-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
 .ab-row select { flex: 1; min-width: 120px; min-height: 42px; }
-.ab-row .btn { min-height: 42px; padding: 6px 12px; }
+.ab-row .btn { min-height: 40px; padding: 6px 10px; font-size: .88rem; }
 body.has-sheet .action-bar { bottom: auto; top: 10px; }
 body.placing .center-cross { display: block; opacity: 1; width: 44px; height: 44px; margin: -22px 0 0 -22px; }
 body.placing .center-cross::before { left: 21px; height: 44px; width: 2px; background: var(--accent); box-shadow: 0 0 0 1px #fff; }

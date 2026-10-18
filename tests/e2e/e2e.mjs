@@ -282,7 +282,7 @@ await test('Parcelle : mode dessin sur la carte puis rapport PDF', async () => {
   await page.evaluate(async () => { const M = await import('./src/map/map.js'); M.getMap().setView([34.0209, -6.8498], 18, { animate: false }); });
   await page.waitForTimeout(400);
   const box = await page.locator('#map').boundingBox();
-  for (const [dx, dy] of [[-60, -200], [60, -200], [60, -100], [-60, -100]]) { await page.mouse.click(box.x + box.width / 2 + dx, box.y + box.height / 2 + dy); await page.waitForTimeout(300); }
+  for (const [dx, dy] of [[-60, -40], [60, -40], [60, 60], [-60, 60]]) { await page.mouse.click(box.x + box.width / 2 + dx, box.y + box.height / 2 + dy); await page.waitForTimeout(300); }
   await page.waitForFunction(() => document.querySelectorAll('.vx-icon').length === 4);
   await page.click('#action-bar button:has-text("Fermer la parcelle")');
   await page.waitForFunction(() => /\/manual$/.test(location.hash));
