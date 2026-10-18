@@ -1,129 +1,165 @@
 {
   "base": "http://127.0.0.1:8080/",
-  "date": "2026-10-18T21:08:35.338Z",
-  "passed": 20,
+  "date": "2026-10-18T21:35:09.657Z",
+  "passed": 26,
   "failed": 0,
   "skipped": 2,
   "results": [
     {
       "name": "Chargement de l’application sans erreur JavaScript",
       "status": "réussi",
-      "ms": 641,
+      "ms": 675,
       "detail": "8 actions sur l’écran d’accueil"
     },
     {
       "name": "Lien direct et rechargement d’une route profonde (#/parcels)",
       "status": "réussi",
-      "ms": 411,
+      "ms": 431,
       "detail": ""
     },
     {
       "name": "PWA : manifeste valide et service worker actif",
       "status": "réussi",
-      "ms": 368,
+      "ms": 393,
       "detail": "manifeste + service worker « activated »"
     },
     {
       "name": "Hors connexion : l’application redémarre depuis le cache (service worker)",
       "status": "réussi",
-      "ms": 2368,
+      "ms": 2415,
       "detail": "interface et modules servis hors ligne"
     },
     {
       "name": "Navigation : saisie Lambert Nord, distance et azimut cohérents",
       "status": "réussi",
-      "ms": 1511,
+      "ms": 1431,
       "detail": "distance 120 m, 45.0° NE · azimut vrai"
     },
     {
       "name": "Navigation : arrivée dans le rayon (10 m) → alerte visuelle",
       "status": "réussi",
-      "ms": 1532,
+      "ms": 1521,
       "detail": "arrivée détectée à 4 m, point atteint enregistré"
     },
     {
       "name": "Navigation : précision GPS insuffisante signalée",
       "status": "réussi",
-      "ms": 659,
+      "ms": 678,
       "detail": ""
     },
     {
       "name": "GPS : autorisation refusée",
       "status": "réussi",
-      "ms": 249,
+      "ms": 268,
       "detail": "—"
     },
     {
       "name": "GPS : position indisponible (erreur du capteur)",
       "status": "réussi",
-      "ms": 487,
+      "ms": 497,
       "detail": ""
     },
     {
       "name": "GPS : perte du signal (aucune mesure depuis 15 s) → état « signal perdu »",
       "status": "réussi",
-      "ms": 16652,
+      "ms": 16640,
       "detail": "état stale détecté après ~15 s sans nouvelle position"
     },
     {
       "name": "Levé : enregistrement GPS, persistance après rechargement",
       "status": "réussi",
-      "ms": 1537,
+      "ms": 1550,
       "detail": "2 points, annuler/rétablir, persistance IndexedDB"
     },
     {
       "name": "Levé : moyenne « attendre une meilleure précision »",
       "status": "réussi",
-      "ms": 3875,
+      "ms": 3922,
       "detail": ""
     },
     {
       "name": "Parcelle : carré 10 m × 10 m saisi en Lambert Nord → 100,00 m²",
       "status": "réussi",
-      "ms": 2532,
+      "ms": 2564,
       "detail": "superficie 100,00 m², périmètre 40,00 m"
     },
     {
       "name": "Parcelle : polygone auto-intersecté et sommets en double détectés",
       "status": "réussi",
-      "ms": 2427,
+      "ms": 2460,
       "detail": ""
     },
     {
       "name": "Parcelle : mode dessin sur la carte puis rapport PDF",
       "status": "réussi",
-      "ms": 2630,
-      "detail": "4 sommets dessinés, 2 930,57 m², PDF 24306 octets"
+      "ms": 3092,
+      "detail": "4 sommets dessinés, 2 930,61 m², PDF 24302 octets"
     },
     {
       "name": "Import CSV (séparateur ;) avec choix du système puis export GeoJSON/DXF/CSV/XLSX",
       "status": "réussi",
-      "ms": 7330,
-      "detail": "Leve_du_18_10_2026-20261018-2108.geojson, Leve_du_18_10_2026-20261018-2108-26191.dxf, Leve_du_18_10_2026-20261018-2108-26191.csv, Leve_du_18_10_2026-20261018-2108.xlsx"
+      "ms": 7372,
+      "detail": "Leve_du_18_10_2026-20261018-2134.geojson, Leve_du_18_10_2026-20261018-2134-26191.dxf, Leve_du_18_10_2026-20261018-2134-26191.csv, Leve_du_18_10_2026-20261018-2134.xlsx"
     },
     {
       "name": "Sauvegarde complète puis restauration",
       "status": "réussi",
-      "ms": 2577,
+      "ms": 2579,
       "detail": "1 projet(s), 1 entité(s) restaurés"
     },
     {
       "name": "Outils : convertisseur (Lambert Nord → tous systèmes) et mesure de distance",
       "status": "réussi",
-      "ms": 357,
+      "ms": 388,
       "detail": "origine (500 000 ; 300 000) → φ 33,3° λ −5,4° ; distance mesurée 148,64 m"
     },
     {
       "name": "Interface tablette et ordinateur (captures)",
       "status": "réussi",
-      "ms": 2274,
+      "ms": 2430,
       "detail": ""
     },
     {
       "name": "Mode sombre et thème clair",
       "status": "réussi",
-      "ms": 302,
+      "ms": 280,
       "detail": ""
+    },
+    {
+      "name": "« + Point » : placement au réticule sans GPS (2 points)",
+      "status": "réussi",
+      "ms": 936,
+      "detail": "2 points placés, position exacte du réticule"
+    },
+    {
+      "name": "Sélection de 4 points sur la carte → parcelle (contour automatique)",
+      "status": "réussi",
+      "ms": 1853,
+      "detail": "S =\n100,00 m²\n· P = 40,00 m · 4 sommets"
+    },
+    {
+      "name": "Dessin : accrochage aux points et fermeture en touchant le 1er sommet",
+      "status": "réussi",
+      "ms": 2324,
+      "detail": "1er sommet accroché exactement au point 77, parcelle fermée au toucher du 1er sommet"
+    },
+    {
+      "name": "Partage : 3 personnes (1/8, 7/16, 7/16), propositions, lots colorés, rapport PDF",
+      "status": "réussi",
+      "ms": 2504,
+      "detail": "4 propositions ; lots Fatima 4210.53 m², Ahmed 14736.85 m², Khadija 14736.85 m² ; PDF 32024 octets"
+    },
+    {
+      "name": "Fiche projet : statistiques et superficie par personne",
+      "status": "réussi",
+      "ms": 607,
+      "detail": ""
+    },
+    {
+      "name": "Satellite : au-delà de l’imagerie disponible, image agrandie au lieu d’une zone vide",
+      "status": "réussi",
+      "ms": 601,
+      "detail": "8 tuiles affichées au zoom 21, Imagerie max. ici : zoom 18 — image agrandie"
     },
     {
       "name": "Smartphone iOS / Android réels",

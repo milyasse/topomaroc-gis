@@ -1,12 +1,12 @@
 # Résultats des tests — TopoMaroc GIS
 
-Généré le 2026-10-18 21:10 UTC par `tools/tests-report.mjs` à partir d'exécutions réelles. Aucun test n'est déclaré réussi sans avoir été exécuté.
+Généré le 2026-10-18 21:37 UTC par `tools/tests-report.mjs` à partir d'exécutions réelles. Aucun test n'est déclaré réussi sans avoir été exécuté.
 
 ## 1. Tests unitaires (Node v22.23.3, `node --test`)
 
 Références indépendantes : PROJ 9.8.1 (pyproj 3.8.0), GeographicLib-C (pyproj.Geod), Shapely, NOAA WMM 2025 (pygeomag), générées dans GitHub Actions par `tools/reference/make_reference.py`.
 
-**47 réussi(s), 0 échoué(s).**
+**57 réussi(s), 0 échoué(s).**
 
 | Résultat | Test |
 |---|---|
@@ -29,6 +29,16 @@ Références indépendantes : PROJ 9.8.1 (pyproj 3.8.0), GeographicLib-C (pyproj
 | ✅ réussi | Zone Lambert recommandée selon la latitude |
 | ✅ réussi | Convergence des méridiens : nulle sur le méridien central, de signe correct |
 | ✅ réussi | Paramètres Merchich personnalisés (convention Coordinate Frame inversée) |
+| ✅ réussi | Lecture des parts : %, décimales, fractions |
+| ✅ réussi | Demi-plan : découpe exacte d’un rectangle |
+| ✅ réussi | Rectangle 5000 m² partagé 50/30/20 : superficies exactes, somme conservée |
+| ✅ réussi | Parcelle irrégulière : parts héritage (1/8, 7/16, 7/16) à moins de 1 mm² près, pour plusieurs orientations |
+| ✅ réussi | Polygone non convexe (en L) : superficies exactes, non-contiguïté signalée |
+| ✅ réussi | Façade sur le côté de référence |
+| ✅ réussi | Propositions : perpendiculaire au côté donnant accès à chacun, classement |
+| ✅ réussi | Une seule personne : la parcelle entière |
+| ✅ réussi | Assemblage : points dans le désordre → contour simple et superficie correcte |
+| ✅ réussi | Insertion d’un sommet au meilleur endroit du contour |
 | ✅ réussi | CSV : séparateur « ; », virgule décimale, correspondance automatique des colonnes |
 | ✅ réussi | CSV sans en-tête et lat/lon en DMS |
 | ✅ réussi | CSV : lignes invalides signalées |
@@ -78,9 +88,9 @@ Constat documenté : PROJ n'applique pas EPSG:1166 dans les zones Sahara Nord/Su
 
 ## 2. Tests navigateur — http://127.0.0.1:8080/
 
-Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ordinateur 1440×900 ; GPS simulé. Exécution du 2026-10-18 21:08 UTC.
+Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ordinateur 1440×900 ; GPS simulé. Exécution du 2026-10-18 21:35 UTC.
 
-**20 réussi(s), 0 échoué(s), 2 non exécuté(s).**
+**26 réussi(s), 0 échoué(s), 2 non exécuté(s).**
 
 | Résultat | Scénario | Détail |
 |---|---|---|
@@ -98,20 +108,26 @@ Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ord
 | ✅ réussi | Levé : moyenne « attendre une meilleure précision » |  |
 | ✅ réussi | Parcelle : carré 10 m × 10 m saisi en Lambert Nord → 100,00 m² | superficie 100,00 m², périmètre 40,00 m |
 | ✅ réussi | Parcelle : polygone auto-intersecté et sommets en double détectés |  |
-| ✅ réussi | Parcelle : mode dessin sur la carte puis rapport PDF | 4 sommets dessinés, 2 930,57 m², PDF 24306 octets |
-| ✅ réussi | Import CSV (séparateur ;) avec choix du système puis export GeoJSON/DXF/CSV/XLSX | Leve_du_18_10_2026-20261018-2108.geojson, Leve_du_18_10_2026-20261018-2108-26191.dxf, Leve_du_18_10_2026-20261018-2108-26191.csv, Leve_du_18_10_2026-20261018-2108.xlsx |
+| ✅ réussi | Parcelle : mode dessin sur la carte puis rapport PDF | 4 sommets dessinés, 2 930,61 m², PDF 24302 octets |
+| ✅ réussi | Import CSV (séparateur ;) avec choix du système puis export GeoJSON/DXF/CSV/XLSX | Leve_du_18_10_2026-20261018-2134.geojson, Leve_du_18_10_2026-20261018-2134-26191.dxf, Leve_du_18_10_2026-20261018-2134-26191.csv, Leve_du_18_10_2026-20261018-2134.xlsx |
 | ✅ réussi | Sauvegarde complète puis restauration | 1 projet(s), 1 entité(s) restaurés |
 | ✅ réussi | Outils : convertisseur (Lambert Nord → tous systèmes) et mesure de distance | origine (500 000 ; 300 000) → φ 33,3° λ −5,4° ; distance mesurée 148,64 m |
 | ✅ réussi | Interface tablette et ordinateur (captures) |  |
 | ✅ réussi | Mode sombre et thème clair |  |
+| ✅ réussi | « + Point » : placement au réticule sans GPS (2 points) | 2 points placés, position exacte du réticule |
+| ✅ réussi | Sélection de 4 points sur la carte → parcelle (contour automatique) | S = 100,00 m² · P = 40,00 m · 4 sommets |
+| ✅ réussi | Dessin : accrochage aux points et fermeture en touchant le 1er sommet | 1er sommet accroché exactement au point 77, parcelle fermée au toucher du 1er sommet |
+| ✅ réussi | Partage : 3 personnes (1/8, 7/16, 7/16), propositions, lots colorés, rapport PDF | 4 propositions ; lots Fatima 4210.53 m², Ahmed 14736.85 m², Khadija 14736.85 m² ; PDF 32024 octets |
+| ✅ réussi | Fiche projet : statistiques et superficie par personne |  |
+| ✅ réussi | Satellite : au-delà de l’imagerie disponible, image agrandie au lieu d’une zone vide | 8 tuiles affichées au zoom 21, Imagerie max. ici : zoom 18 — image agrandie |
 | ⏸ non exécuté | Smartphone iOS / Android réels | aucun appareil physique disponible dans l’environnement de test : à valider sur le terrain (Safari iOS, Chrome Android) |
 | ⏸ non exécuté | Installation PWA sur l’écran d’accueil | nécessite une interaction utilisateur sur un appareil réel ; critères vérifiés automatiquement (manifeste, icônes, service worker, HTTPS) |
 
 ## 3. Tests navigateur — https://milyasse.github.io/topomaroc-gis/
 
-Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ordinateur 1440×900 ; GPS simulé. Exécution du 2026-10-18 21:10 UTC.
+Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ordinateur 1440×900 ; GPS simulé. Exécution du 2026-10-18 21:37 UTC.
 
-**20 réussi(s), 0 échoué(s), 2 non exécuté(s).**
+**26 réussi(s), 0 échoué(s), 2 non exécuté(s).**
 
 | Résultat | Scénario | Détail |
 |---|---|---|
@@ -129,12 +145,18 @@ Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ord
 | ✅ réussi | Levé : moyenne « attendre une meilleure précision » |  |
 | ✅ réussi | Parcelle : carré 10 m × 10 m saisi en Lambert Nord → 100,00 m² | superficie 100,00 m², périmètre 40,00 m |
 | ✅ réussi | Parcelle : polygone auto-intersecté et sommets en double détectés |  |
-| ✅ réussi | Parcelle : mode dessin sur la carte puis rapport PDF | 4 sommets dessinés, 2 930,57 m², PDF 24306 octets |
-| ✅ réussi | Import CSV (séparateur ;) avec choix du système puis export GeoJSON/DXF/CSV/XLSX | Leve_du_18_10_2026-20261018-2110.geojson, Leve_du_18_10_2026-20261018-2110-26191.dxf, Leve_du_18_10_2026-20261018-2110-26191.csv, Leve_du_18_10_2026-20261018-2110.xlsx |
+| ✅ réussi | Parcelle : mode dessin sur la carte puis rapport PDF | 4 sommets dessinés, 2 930,61 m², PDF 24302 octets |
+| ✅ réussi | Import CSV (séparateur ;) avec choix du système puis export GeoJSON/DXF/CSV/XLSX | Leve_du_18_10_2026-20261018-2136.geojson, Leve_du_18_10_2026-20261018-2137-26191.dxf, Leve_du_18_10_2026-20261018-2137-26191.csv, Leve_du_18_10_2026-20261018-2137.xlsx |
 | ✅ réussi | Sauvegarde complète puis restauration | 1 projet(s), 1 entité(s) restaurés |
 | ✅ réussi | Outils : convertisseur (Lambert Nord → tous systèmes) et mesure de distance | origine (500 000 ; 300 000) → φ 33,3° λ −5,4° ; distance mesurée 148,64 m |
 | ✅ réussi | Interface tablette et ordinateur (captures) |  |
 | ✅ réussi | Mode sombre et thème clair |  |
+| ✅ réussi | « + Point » : placement au réticule sans GPS (2 points) | 2 points placés, position exacte du réticule |
+| ✅ réussi | Sélection de 4 points sur la carte → parcelle (contour automatique) | S = 100,00 m² · P = 40,00 m · 4 sommets |
+| ✅ réussi | Dessin : accrochage aux points et fermeture en touchant le 1er sommet | 1er sommet accroché exactement au point 77, parcelle fermée au toucher du 1er sommet |
+| ✅ réussi | Partage : 3 personnes (1/8, 7/16, 7/16), propositions, lots colorés, rapport PDF | 4 propositions ; lots Fatima 4210.53 m², Ahmed 14736.85 m², Khadija 14736.85 m² ; PDF 32024 octets |
+| ✅ réussi | Fiche projet : statistiques et superficie par personne |  |
+| ✅ réussi | Satellite : au-delà de l’imagerie disponible, image agrandie au lieu d’une zone vide | 8 tuiles affichées au zoom 21, Imagerie max. ici : zoom 18 — image agrandie |
 | ⏸ non exécuté | Smartphone iOS / Android réels | aucun appareil physique disponible dans l’environnement de test : à valider sur le terrain (Safari iOS, Chrome Android) |
 | ⏸ non exécuté | Installation PWA sur l’écran d’accueil | nécessite une interaction utilisateur sur un appareil réel ; critères vérifiés automatiquement (manifeste, icônes, service worker, HTTPS) |
 
