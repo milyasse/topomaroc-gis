@@ -1,165 +1,195 @@
 {
   "base": "https://milyasse.github.io/topomaroc-gis/",
-  "date": "2026-10-18T22:22:39.025Z",
-  "passed": 26,
+  "date": "2026-10-18T22:29:39.709Z",
+  "passed": 31,
   "failed": 0,
   "skipped": 2,
   "results": [
     {
       "name": "Chargement de l’application sans erreur JavaScript",
       "status": "réussi",
-      "ms": 990,
+      "ms": 844,
       "detail": "8 actions sur l’écran d’accueil"
     },
     {
       "name": "Lien direct et rechargement d’une route profonde (#/parcels)",
       "status": "réussi",
-      "ms": 584,
+      "ms": 1145,
       "detail": ""
     },
     {
       "name": "PWA : manifeste valide et service worker actif",
       "status": "réussi",
-      "ms": 1052,
+      "ms": 942,
       "detail": "manifeste + service worker « activated »"
     },
     {
       "name": "Hors connexion : l’application redémarre depuis le cache (service worker)",
       "status": "réussi",
-      "ms": 2604,
+      "ms": 3320,
       "detail": "interface et modules servis hors ligne"
     },
     {
       "name": "Navigation : saisie Lambert Nord, distance et azimut cohérents",
       "status": "réussi",
-      "ms": 2091,
+      "ms": 1544,
       "detail": "distance 120 m, 45.0° NE · azimut vrai"
     },
     {
       "name": "Navigation : arrivée dans le rayon (10 m) → alerte visuelle",
       "status": "réussi",
-      "ms": 2391,
+      "ms": 1572,
       "detail": "arrivée détectée à 4 m, point atteint enregistré"
     },
     {
       "name": "Navigation : précision GPS insuffisante signalée",
       "status": "réussi",
-      "ms": 587,
+      "ms": 754,
       "detail": ""
     },
     {
       "name": "GPS : autorisation refusée",
       "status": "réussi",
-      "ms": 285,
+      "ms": 299,
       "detail": "—"
     },
     {
       "name": "GPS : position indisponible (erreur du capteur)",
       "status": "réussi",
-      "ms": 528,
+      "ms": 614,
       "detail": ""
     },
     {
       "name": "GPS : perte du signal (aucune mesure depuis 15 s) → état « signal perdu »",
       "status": "réussi",
-      "ms": 16734,
+      "ms": 16708,
       "detail": "état stale détecté après ~15 s sans nouvelle position"
     },
     {
       "name": "Levé : enregistrement GPS, persistance après rechargement",
       "status": "réussi",
-      "ms": 1551,
+      "ms": 1593,
       "detail": "2 points, annuler/rétablir, persistance IndexedDB"
     },
     {
       "name": "Levé : moyenne « attendre une meilleure précision »",
       "status": "réussi",
-      "ms": 3873,
+      "ms": 3889,
       "detail": ""
     },
     {
       "name": "Parcelle : carré 10 m × 10 m saisi en Lambert Nord → 100,00 m²",
       "status": "réussi",
-      "ms": 2547,
+      "ms": 2817,
       "detail": "superficie 100,00 m², périmètre 40,00 m"
     },
     {
       "name": "Parcelle : polygone auto-intersecté et sommets en double détectés",
       "status": "réussi",
-      "ms": 3312,
+      "ms": 2960,
       "detail": ""
     },
     {
       "name": "Parcelle : mode dessin sur la carte puis rapport PDF",
       "status": "réussi",
-      "ms": 3135,
-      "detail": "4 sommets dessinés, 2 930,61 m², PDF 24302 octets"
+      "ms": 3136,
+      "detail": "4 sommets dessinés, 2 930,61 m², PDF 24309 octets"
     },
     {
       "name": "Import CSV (séparateur ;) avec choix du système puis export GeoJSON/DXF/CSV/XLSX",
       "status": "réussi",
-      "ms": 9368,
-      "detail": "Leve_du_18_10_2026-20261018-2222.geojson, Leve_du_18_10_2026-20261018-2222-26191.dxf, Leve_du_18_10_2026-20261018-2222-26191.csv, Leve_du_18_10_2026-20261018-2222.xlsx"
+      "ms": 7402,
+      "detail": "Leve_du_18_10_2026-20261018-2229.geojson, Leve_du_18_10_2026-20261018-2229-26191.dxf, Leve_du_18_10_2026-20261018-2229-26191.csv, Leve_du_18_10_2026-20261018-2229.xlsx"
     },
     {
       "name": "Sauvegarde complète puis restauration",
       "status": "réussi",
-      "ms": 2656,
+      "ms": 2736,
       "detail": "1 projet(s), 1 entité(s) restaurés"
     },
     {
       "name": "Outils : convertisseur (Lambert Nord → tous systèmes) et mesure de distance",
       "status": "réussi",
-      "ms": 1044,
+      "ms": 402,
       "detail": "origine (500 000 ; 300 000) → φ 33,3° λ −5,4° ; distance mesurée 148,64 m"
     },
     {
       "name": "Interface tablette et ordinateur (captures)",
       "status": "réussi",
-      "ms": 3022,
+      "ms": 2348,
       "detail": ""
     },
     {
       "name": "Mode sombre et thème clair",
       "status": "réussi",
-      "ms": 213,
+      "ms": 233,
       "detail": ""
     },
     {
       "name": "« + Point » : placement au réticule sans GPS (2 points)",
       "status": "réussi",
-      "ms": 776,
+      "ms": 857,
       "detail": "2 points placés, position exacte du réticule"
     },
     {
       "name": "Sélection de 4 points sur la carte → parcelle (contour automatique)",
       "status": "réussi",
-      "ms": 1764,
+      "ms": 1846,
       "detail": "S =\n100,00 m²\n· P = 40,00 m · 4 sommets"
     },
     {
       "name": "Dessin : accrochage aux points et fermeture en touchant le 1er sommet",
       "status": "réussi",
-      "ms": 2461,
+      "ms": 2308,
       "detail": "1er sommet accroché exactement au point 77, parcelle fermée au toucher du 1er sommet"
     },
     {
       "name": "Partage : 3 personnes (1/8, 7/16, 7/16), propositions, lots colorés, rapport PDF",
       "status": "réussi",
-      "ms": 2315,
-      "detail": "4 propositions ; lots Fatima 4210.53 m², Ahmed 14736.85 m², Khadija 14736.85 m² ; PDF 32024 octets"
+      "ms": 2287,
+      "detail": "4 propositions ; lots Fatima 4210.53 m², Ahmed 14736.85 m², Khadija 14736.85 m² ; PDF 32031 octets"
     },
     {
       "name": "Fiche projet : statistiques et superficie par personne",
       "status": "réussi",
-      "ms": 462,
+      "ms": 573,
       "detail": ""
     },
     {
       "name": "Satellite : au-delà de l’imagerie disponible, image agrandie au lieu d’une zone vide",
       "status": "réussi",
-      "ms": 501,
+      "ms": 566,
       "detail": "8 tuiles affichées au zoom 21, Imagerie max. ici : zoom 18 — image agrandie"
+    },
+    {
+      "name": "Déplacer un point en édition (glisser sur la carte) + sommet de parcelle lié",
+      "status": "réussi",
+      "ms": 1533,
+      "detail": "point déplacé à X=400003.00 ; sommet lié suivi ; nouvelle superficie 85.00 m²"
+    },
+    {
+      "name": "Couches par projet : superposition d’un 2e projet, activation/désactivation",
+      "status": "réussi",
+      "ms": 1483,
+      "detail": "projet Nord superposé au projet Sud ouvert, puis masqué"
+    },
+    {
+      "name": "Pente d’une parcelle (MNT) : plan incliné de 10 % → 10 %, exposition ouest",
+      "status": "réussi",
+      "ms": 1539,
+      "detail": "RELIEF ET PENTE Recalculer la pente 10,0 % pente moyenne (5,7°) · forte 10,0 % pente maximale 11,4 m dénivelé (494 à 506 m) ouest exposition (270°) · pente géné"
+    },
+    {
+      "name": "Outil « Pente entre deux points » : profil et pente",
+      "status": "réussi",
+      "ms": 857,
+      "detail": "PENTE A → B 10,0 % 5,71° · forte DÉNIVELÉ +15,2 m sur 151,95 m A : 492,4 m (MNT) · B : 507,6 m (MNT) · pente max. du profil 10,0 % 508 m 492"
+    },
+    {
+      "name": "Version de l’application affichée (accueil et aide)",
+      "status": "réussi",
+      "ms": 516,
+      "detail": "TopoMaroc GIS v1.2.0 (b15d3b7) · nouveautés"
     },
     {
       "name": "Smartphone iOS / Android réels",
