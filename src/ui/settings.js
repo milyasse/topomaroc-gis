@@ -7,6 +7,7 @@ import { LANGS, setLang } from '../i18n/index.js';
 import { requestPersistence } from '../services/storage.js';
 import { h, icon, btn, mount, toast, field, select } from './dom.js';
 import { crsSelect, crsInfo } from './coordinput.js';
+import { versionLabel } from '../version.js';
 
 /** @param {HTMLElement} root */
 export function render(root) {
@@ -56,6 +57,7 @@ export function render(root) {
       h('label.switch', null, useCustom, h('span', null, 'Utiliser des paramètres personnalisés')), box,
       h('details.help', null, h('summary', null, icon('info'), 'Paramètres actifs'), crsInfo('EPSG:26191'))),
     h('fieldset.group', null, h('legend', null, 'Stockage'),
+      (() => { const v = h('p.small.muted', null, ''); versionLabel().then((l) => { v.textContent = `Application : TopoMaroc GIS ${l}`; }); return v; })(),
       btn('Demander un stockage persistant', { variant: 'ghost', onclick: async () => toast(await requestPersistence() ? 'Stockage persistant accordé.' : 'Le navigateur n’a pas accordé le stockage persistant : exportez régulièrement des sauvegardes.', 'info', 5000) }, 'folder')),
   );
 }

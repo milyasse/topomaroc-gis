@@ -25,7 +25,7 @@ export const MOROCCO_BOUNDS = L.latLngBounds([20.7, -17.2], [35.95, -1.0]);
 let tileErrors = 0;
 let tileWarned = false;
 
-const PANES = { parcels: 410, lines: 420, points: 430, nav: 440, measures: 450, draft: 460, gps: 470 };
+const PANES = { overlays: 405, parcels: 410, lines: 420, points: 430, nav: 440, measures: 450, draft: 460, gps: 470 };
 
 /** @param {HTMLElement} el */
 export function initMap(el) {
@@ -46,6 +46,9 @@ export function initMap(el) {
   map.on('zoomend', () => requestAnimationFrame(fitLabels));
   on('settings', (p) => { if (p.basemap || p.customBasemap) setBasemap(state.settings.basemap); if (p.layers || p.layerOrder) applyLayerSettings(); if (p.areaUnit) renderFeatures(); });
   on('datum', () => renderFeatures());
+  on('settings', (p) => { if (p.projectLayers) refreshOverlays(); });
+  on('project', () => refreshOverlays());
+  refreshOverlays();
   state.gps.addEventListener('fix', (e) => updateGps(/** @type {any} */ (e).detail));
   state.gps.addEventListener('state', () => { if (state.gps.state === 'idle') groups.gps.clearLayers(); });
   return map;
@@ -233,6 +236,65 @@ function fitLabels() {
     if (kept.some((k) => !(r.right < k.left || r.left > k.right || r.bottom < k.top || r.top > k.bottom))) { it.el.classList.add('hidden-label'); continue; }
     kept.push(r);
   }
+}
+
+// ------------------------------------------------------------- Autres projets en superposition
+export const PROJECT_COLORS = ['#7a3db8', '#00897b', '#c2185b', '#ef6c00', '#3949ab', '#6d4c41', '#2e7d32', '#ad1457'];
+/** Réglages d'affichage d'un projet. @param {string} pid */
+export function projectLayer(pid) {
+  const all = /** @type {any} */ (state.settings).projectLayers ?? {};
+  return { on: false, points: true, parcels: true, lines: true, color: null, ...(all[pid] ?? {}) };
+}
+let overlaySeq = 0;
+/** Charge et dessine les projets activés (hors projet ouvert), en lecture seule. */
+export async function refreshOverlays() {
+  if (!map) return;
+  const seq = ++overlaySeq;
+  const db = await import('../services/storage.js');
+  const projects = await db.listProjects();
+  const g = groups.overlays;
+  const layers = [];
+  let k = 0;
+  for (const p of projects) {
+    const cfg = projectLayer(p.id);
+    const color = cfg.color ?? PROJECT_COLORS[k++ % PROJECT_COLORS.length];
+    if (!cfg.on || p.id === state.project?.id) continue;
+    const feats = await db.listFeatures(p.id);
+    for (const f of feats) {
+      try {
+        const popup = () => emit('overlay-click', { project: p, feature: f });
+        if (f.type === 'point' && cfg.points) {
+          layers.push(L.circleMarker([f.wgs84.lat, f.wgs84.lon], { pane: 'overlays', renderer: canvasRenderer, radius: 5, color: '#fff', weight: 1.5, fillColor: color, fillOpacity: 1 })
+            .bindTooltip(`${esc(p.name)} · ${esc(f.num || f.name || '')}`, { direction: 'top' }).on('click', (e) => { L.DomEvent.stopPropagation(e); if (clickHandler) forwardClick(e); else popup(); }));
+        } else if ((f.type === 'parcel' && cfg.parcels) || (f.type === 'line' && cfg.lines)) {
+          if (f.vertices.length < 2) continue;
+          const ll = verticesLL(f).map(([lon, lat]) => L.latLng(lat, lon));
+          const shape = f.type === 'parcel'
+            ? L.polygon(ll, { pane: 'overlays', color: f.owner?.color ?? color, weight: 2, fillColor: f.owner?.color ?? color, fillOpacity: f.owner ? 0.25 : 0.08, dashArray: f.parentId ? null : '6 4' })
+            : L.polyline(ll, { pane: 'overlays', color, weight: 2.5 });
+          shape.bindTooltip(`${esc(p.name)} · ${esc(f.owner?.name || f.name || '')}`, { sticky: true });
+          shape.on('click', (e) => { L.DomEvent.stopPropagation(e); if (clickHandler) forwardClick(e); else popup(); });
+          layers.push(shape);
+        }
+      } catch { /* entité illisible */ }
+    }
+  }
+  if (seq !== overlaySeq) return;
+  g.clearLayers();
+  layers.forEach((l) => l.addTo(g));
+}
+
+/** Emprise d'un projet quelconque. @param {string} pid */
+export async function zoomToProject(pid) {
+  const db = await import('../services/storage.js');
+  const feats = pid === state.project?.id ? state.features : await db.listFeatures(pid);
+  const pts = [];
+  for (const f of feats) {
+    if (f.type === 'point') pts.push(L.latLng(f.wgs84.lat, f.wgs84.lon));
+    else verticesLL(f).forEach(([lon, lat]) => pts.push(L.latLng(lat, lon)));
+  }
+  if (pts.length) map.fitBounds(L.latLngBounds(pts), { ...fitPadding(), maxZoom: 19 });
+  return pts.length;
 }
 
 /** Projette un point WGS 84 en pixels écran. @param {number} lat @param {number} lon */

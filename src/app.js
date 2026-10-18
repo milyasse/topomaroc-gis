@@ -13,6 +13,7 @@ import { setLang, t } from './i18n/index.js';
 import { crsSelect } from './ui/coordinput.js';
 import { analyze } from './io/common.js';
 import { startPlacing, startSelecting, stopModes } from './ui/maptools.js';
+import { APP_VERSION, versionLabel } from './version.js';
 
 const ROUTES = /** @type {Record<string, { title: string, load: () => Promise<any>, ic: string }>} */ ({
   nav: { title: 'Aller à un point', ic: 'target', load: () => import('./ui/nav.js') },
@@ -137,6 +138,7 @@ function renderHome(el) {
       h('div.home-links', { 'data-stagger': '' }, h('a', { href: '#/settings' }, icon('settings'), 'Réglages'), h('a', { href: '#/help' }, icon('help'), 'Aide et limites')),
       !window.isSecureContext ? h('p.warn', null, icon('alert'), 'Connexion non sécurisée : la géolocalisation est désactivée par le navigateur. Utilisez l’adresse HTTPS.') : null,
       h('p.small.muted.center', null, 'Positions GPS de smartphone : précision métrique, non cadastrale.'),
+      (() => { const v = h('a.version-tag', { href: '#/help' }, `TopoMaroc GIS v${APP_VERSION}`); versionLabel().then((l) => { v.textContent = `TopoMaroc GIS ${l} · nouveautés`; }); return h('p.small.center', null, v); })(),
     ));
 }
 
@@ -264,6 +266,20 @@ function wireChrome() {
           btn('Ouvrir', { variant: 'primary', onclick: () => { location.hash = `#/parcels/${f.id}`; } }, 'edit'),
           f.parentId ? null : btn('Partager', { variant: 'ghost', onclick: () => { location.hash = `#/parcels/${f.id}/share`; } }, 'users')) : null));
     }
+  });
+
+  // Entité d'un autre projet (couche superposée, lecture seule)
+  on('overlay-click', ({ project, feature: f }) => {
+    const w = f.type === 'point' ? f.wgs84 : crs.toWGS84(f.crsId, [f.vertices[0].x, f.vertices[0].y]);
+    let a = null; try { a = f.type === 'parcel' && f.vertices.length >= 3 ? analyze(f) : null; } catch { /* */ }
+    M.popup(w.lat, w.lon, h('div.pi', null,
+      h('div.eyebrow', null, `Projet « ${project.name} » (lecture seule)`),
+      h('div.pi-title', null, icon(f.type === 'point' ? 'pin' : f.type === 'parcel' ? 'polygon' : 'line'), h('b', null, f.owner?.name || f.name || f.num || (f.type === 'point' ? 'Point' : 'Parcelle'))),
+      a?.valid ? h('div', null, `${formatArea(a.area, /** @type {any} */ (state.settings.areaUnit))} · ${formatLength(a.perimeter)}`) : null,
+      h('div.pi-actions', null, btn('Ouvrir ce projet', { variant: 'primary', onclick: async () => {
+        await openProject(project.id); M.closePopup(); toast(`Projet « ${project.name} » ouvert.`, 'ok');
+        if (f.type === 'parcel') location.hash = `#/parcels/${f.id}`;
+      } }, 'folder'))));
   });
 
   // Erreurs de tuiles

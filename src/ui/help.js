@@ -3,13 +3,19 @@
 import * as crs from '../core/crs.js';
 import { h, icon, mount } from './dom.js';
 import { crsInfo } from './coordinput.js';
+import { APP_VERSION, APP_DATE, CHANGELOG, versionLabel } from '../version.js';
 
 /** @param {HTMLElement} root */
 export async function render(root) {
   let versions = {};
   try { versions = await (await fetch(new URL('../../vendor/VERSIONS.json', import.meta.url))).json(); } catch { /* */ }
   const sec = (/** @type {string} */ title, /** @type {any[]} */ ...c) => h('details.help', null, h('summary', null, title), ...c);
+  const label = await versionLabel();
+  const about = h('details.help', { open: true }, h('summary', null, icon('info'), `Version ${label}`),
+    h('p.small', null, `TopoMaroc GIS ${APP_VERSION} du ${new Date(APP_DATE).toLocaleDateString('fr-FR')}${label.includes('(') ? ` — publication ${label.match(/\((\w+)\)/)?.[1]}` : ''}. Le numéro de publication correspond au code source sur GitHub (milyasse/topomaroc-gis).`),
+    CHANGELOG.map((c) => h('div.changelog', null, h('b', null, `v${c.version}`), h('ul', null, c.items.map((i) => h('li', null, i))))));
   mount(root,
+    about,
     sec('Démarrage rapide',
       h('ol', null,
         h('li', null, 'Créez un projet (Accueil → Créer un projet). Sans projet, un projet daté est créé au premier enregistrement.'),

@@ -1,6 +1,6 @@
 // Fichier généré par tools/gen-precache.mjs — ne pas modifier à la main.
 self.PRECACHE = {
- "version": "40051ac86d50",
+ "version": "d52f27d510a2",
  "files": [
   "./",
   "./index.html",
@@ -14,6 +14,7 @@ self.PRECACHE = {
   "./src/core/geometry.js",
   "./src/core/magnetic.js",
   "./src/core/parcel.js",
+  "./src/core/terrain.js",
   "./src/core/units.js",
   "./src/i18n/fr.js",
   "./src/i18n/index.js",
@@ -25,6 +26,7 @@ self.PRECACHE = {
   "./src/map/map.js",
   "./src/map/smarttiles.js",
   "./src/services/compass.js",
+  "./src/services/dem.js",
   "./src/services/gps.js",
   "./src/services/history.js",
   "./src/services/nmea.js",
@@ -43,6 +45,7 @@ self.PRECACHE = {
   "./src/ui/survey.js",
   "./src/ui/tools.js",
   "./src/ui/transfer.js",
+  "./src/version.js",
   "./styles/app.css",
   "./icons/apple-touch-icon.png",
   "./icons/favicon-32.png",

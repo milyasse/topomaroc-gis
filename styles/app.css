@@ -549,3 +549,28 @@ input[type=url] { width: 100%; min-height: var(--tap); padding: 10px 12px; borde
 .parcel-label.compact { font-size: 10.5px; padding: 1px 4px; }
 .parcel-label.compact .pl-area, .parcel-label.compact .pl-pct { display: none; }
 .parcel-label.hidden-label { display: none !important; }
+.move-icon { background: none; border: 0; }
+.move-icon span { position: absolute; inset: 3px; border-radius: 50%; background: rgba(214,96,42,.25); border: 3px solid #d6602a; box-shadow: 0 0 0 2px #fff; }
+.move-icon span::after { content: ""; position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px; border-radius: 50%; background: #d6602a; }
+.alt-row { display: flex; gap: 8px; align-items: flex-end; }
+.alt-row .field { flex: 1; }
+.alt-row .btn { margin-bottom: 8px; }
+.proj-layer { border-bottom: 1px solid var(--line); padding: 6px 0; }
+.proj-layer.current .pl-name b::after { content: " ●"; color: var(--ok); }
+.pl-head { display: flex; align-items: center; gap: 8px; }
+.pl-head > input[type=checkbox] { width: 22px; height: 22px; accent-color: var(--accent); flex: none; }
+.pl-name { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.pl-name b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pl-name small { color: var(--ink-2); font-size: .76rem; }
+.pl-subs { display: flex; gap: 4px 14px; flex-wrap: wrap; padding: 2px 0 0 30px; }
+label.switch.sm { min-height: 34px; font-size: .88rem; }
+label.switch.sm input { width: 18px; height: 18px; }
+.color-in.sm { width: 28px; height: 28px; }
+.terrain-box { margin: 8px 0; padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line); }
+.terrain-box .stats { margin: 6px 0 2px; }
+.terrain-box .stat-v { font-size: 1rem; }
+.profile-svg { width: 100%; height: auto; color: var(--accent); background: var(--surface-2); border-radius: 10px; margin: 6px 0; }
+.profile-svg text { fill: var(--ink-2); }
+.version-tag { color: var(--ink-2); text-decoration: none; font-weight: 600; }
+.changelog { margin: 6px 0; }
+.changelog ul { margin: 4px 0 8px; padding-left: 20px; }

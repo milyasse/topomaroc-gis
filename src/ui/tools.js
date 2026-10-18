@@ -2,11 +2,11 @@
 /** Boîte à outils cartographique : mesures, convertisseur, recherche, couches, légende, historique. */
 import * as crs from '../core/crs.js';
 import { polygonArea, inverse, densify } from '../core/geodesy.js';
-import { formatArea, formatLength, formatCoord } from '../core/units.js';
+import { formatArea, formatLength, formatCoord, fmtNum } from '../core/units.js';
 import { formatBearing, toDMS } from '../core/angles.js';
 import * as db from '../services/storage.js';
 import { declination } from '../services/compass.js';
-import { state, on, updateSettings, POINT_CODES, addFeature, nextPointNumber } from '../state.js';
+import { state, on, updateSettings, POINT_CODES, addFeature, nextPointNumber, openProject } from '../state.js';
 import { BASEMAPS } from '../map/basemaps.js';
 import * as M from '../map/map.js';
 import { h, icon, btn, mount, toast, field, select } from './dom.js';
@@ -19,6 +19,7 @@ const L = M.L;
 const TOOLS = [
   { id: 'measure-dist', label: 'Mesurer une distance', ic: 'ruler' },
   { id: 'measure-area', label: 'Mesurer une superficie', ic: 'polygon' },
+  { id: 'slope', label: 'Pente entre deux points', ic: 'line' },
   { id: 'convert', label: 'Convertir des coordonnées', ic: 'swap' },
   { id: 'search', label: 'Rechercher', ic: 'search' },
   { id: 'layers', label: 'Couches et fonds', ic: 'layers' },
@@ -31,6 +32,7 @@ const TOOLS = [
 export function render(root, sub) {
   if (sub === 'measure-dist') return measure(root, 'dist');
   if (sub === 'measure-area') return measure(root, 'area');
+  if (sub === 'slope') return slopeTool(root);
   if (sub === 'convert') return converter(root);
   if (sub === 'search') return search(root);
   if (sub === 'layers') return layers(root);
@@ -102,6 +104,91 @@ function measure(root, mode) {
   return () => { M.setClickHandler(null); lay.clearLayers(); };
 }
 
+// ------------------------------------------------------------- Pente entre deux points
+/** @param {HTMLElement} root */
+function slopeTool(root) {
+  /** @type {{lat:number, lon:number, z:number|null, label:string, src:string}[]} */ let pts = [];
+  const lay = M.layer('measures');
+  const out = h('div.results');
+  const SNAP = 22;
+  const paintMap = () => {
+    lay.clearLayers();
+    pts.forEach((p, i) => L.circleMarker([p.lat, p.lon], { pane: 'measures', radius: 7, color: '#fff', weight: 2, fillColor: i ? '#c62828' : '#2e7d32', fillOpacity: 1 }).bindTooltip(i ? 'B' : 'A', { permanent: true, direction: 'top', className: 'vx-tip' }).addTo(lay));
+    if (pts.length === 2) L.polyline(densify(pts[0].lat, pts[0].lon, pts[1].lat, pts[1].lon, 16), { pane: 'measures', color: '#e07b16', weight: 3 }).addTo(lay);
+  };
+  const compute = async () => {
+    if (pts.length < 2) { mount(out, h('p.small', null, pts.length ? 'Touchez le point d’arrivée B.' : 'Touchez le point de départ A (les points du projet sont accrochés et leur altitude saisie est utilisée).')); return; }
+    mount(out, h('div.loading', null, h('span.spinner'), 'Lecture du modèle de terrain…'));
+    const T = await import('../core/terrain.js');
+    const [a, b] = pts;
+    const inv = inverse(a.lat, a.lon, b.lat, b.lon);
+    /** @type {number[]} */ let prof = [];
+    let za = a.z, zb = b.z;
+    try {
+      const { gridFor } = await import('../services/dem.js');
+      const g = await gridFor({ minLon: Math.min(a.lon, b.lon), minLat: Math.min(a.lat, b.lat), maxLon: Math.max(a.lon, b.lon), maxLat: Math.max(a.lat, b.lat) });
+      const line = densify(a.lat, a.lon, b.lat, b.lon, 64);
+      prof = line.map(([lat, lon]) => { const p = T.lonLatToPixel(g.z, lon, lat); return T.sampleGrid(g, p.x, p.y); });
+      if (za == null) { za = prof[0]; a.src = 'MNT'; }
+      if (zb == null) { zb = prof[prof.length - 1]; b.src = 'MNT'; }
+    } catch (e) {
+      if (za == null || zb == null) { mount(out, h('p.err', null, `Altitudes indisponibles : ${/** @type {Error} */ (e).message} Saisissez l’altitude des points (édition du point).`)); return; }
+    }
+    const s = T.slopeBetween(/** @type {number} */ (za), /** @type {number} */ (zb), inv.distance);
+    // pente maximale du profil, lissée sur ≥ 30 m (résolution du MNT)
+    let maxPct = 0;
+    if (prof.length > 2) {
+      const step = inv.distance / (prof.length - 1);
+      const k = Math.max(1, Math.ceil(30 / step));
+      for (let i = 0; i + k < prof.length; i++) maxPct = Math.max(maxPct, Math.abs((prof[i + k] - prof[i]) / (k * step)) * 100);
+    }
+    const f1 = (/** @type {number} */ v, d = 1) => fmtNum(v, d);
+    mount(out,
+      h('div.big-grid', null,
+        h('div.big-figure', null, h('div.eyebrow', null, 'Pente A → B'), h('div.value', null, `${f1(s.pct)} %`), h('div.sub', null, `${f1(s.deg, 2)}° · ${T.slopeClass(s.pct)}`)),
+        h('div.big-figure', null, h('div.eyebrow', null, 'Dénivelé'), h('div.value', null, `${s.dz >= 0 ? '+' : ''}${f1(s.dz)} m`), h('div.sub', null, `sur ${formatLength(inv.distance)}`))),
+      h('p.small', null, `A : ${f1(/** @type {number} */ (za))} m (${a.src}) · B : ${f1(/** @type {number} */ (zb))} m (${b.src})${prof.length ? ` · pente max. du profil ${f1(maxPct)} %` : ''}`),
+      prof.length ? profileSvg(prof, inv.distance) : null,
+      h('p.small.muted', null, 'Altitudes MNT : SRTM ~30 m, ± 5 à 10 m. Pour un projet (route, canal, assainissement), un levé altimétrique est nécessaire.'),
+      h('div.btn-grid', null, btn('Recommencer', { variant: 'ghost', onclick: () => { pts = []; paintMap(); compute(); } }, 'undo')));
+  };
+  M.setClickHandler(async (e) => {
+    if (pts.length >= 2) pts = [];
+    const click = e.containerPoint;
+    /** @type {any} */ let snap = null;
+    for (const f of state.features) {
+      if (f.type !== 'point') continue;
+      const q = M.toPixel(f.wgs84.lat, f.wgs84.lon);
+      const d = Math.hypot(q.x - click.x, q.y - click.y);
+      if (d <= SNAP && (!snap || d < snap.d)) snap = { d, f };
+    }
+    const usable = snap?.f.altitude != null && snap.f.altitudeSource && !/GPS/.test(snap.f.altitudeSource);
+    pts.push(snap
+      ? { lat: snap.f.wgs84.lat, lon: snap.f.wgs84.lon, z: usable ? snap.f.altitude : null, label: snap.f.num, src: usable ? `point ${snap.f.num}, ${snap.f.altitudeSource}` : 'MNT' }
+      : { lat: e.latlng.lat, lon: e.latlng.lng, z: null, label: '', src: 'MNT' });
+    paintMap(); compute();
+  });
+  mount(root, back(), out);
+  compute();
+  return () => { M.setClickHandler(null); lay.clearLayers(); };
+}
+
+/** Profil en long (SVG). @param {number[]} z @param {number} dist */
+function profileSvg(z, dist) {
+  const W = 320, H = 120, P = 28;
+  const mn = Math.min(...z), mx = Math.max(...z), span = Math.max(1, mx - mn);
+  const X = (/** @type {number} */ i) => P + (i / (z.length - 1)) * (W - P - 6), Y = (/** @type {number} */ v) => H - 18 - ((v - mn) / span) * (H - 30);
+  const pts = z.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('class', 'profile-svg'); svg.setAttribute('role', 'img');
+  svg.setAttribute('aria-label', `Profil en long : de ${mn.toFixed(0)} à ${mx.toFixed(0)} m sur ${Math.round(dist)} m`);
+  svg.innerHTML = `<polygon points="${P},${H - 18} ${pts} ${W - 6},${H - 18}" fill="currentColor" fill-opacity=".12"/><polyline points="${pts}" fill="none" stroke="currentColor" stroke-width="2"/>`
+    + `<text x="2" y="${Y(mx) + 4}" font-size="9">${mx.toFixed(0)} m</text><text x="2" y="${Y(mn) + 4}" font-size="9">${mn.toFixed(0)} m</text>`
+    + `<text x="${P}" y="${H - 4}" font-size="9">A</text><text x="${W - 14}" y="${H - 4}" font-size="9">B · ${Math.round(dist)} m</text>`;
+  return svg;
+}
+
 // ------------------------------------------------------------- Convertisseur
 /** @param {HTMLElement} root */
 function converter(root) {
@@ -165,9 +252,11 @@ function search(root) {
 /** @param {HTMLElement} root */
 function layers(root) {
   const names = /** @type {Record<string,string>} */ ({ parcels: 'Parcelles', lines: 'Lignes', points: 'Points levés', nav: 'Cible de navigation', measures: 'Mesures temporaires' });
-  const paint = () => {
+  const paint = async () => {
     const order = state.settings.layerOrder;
+    const projBox = await projectLayersBox(paint);
     mount(root, back(),
+      projBox,
       h('fieldset.group', null, h('legend', null, 'Fond de carte'),
         [['satellite', 'Satellite'], ['plan', 'Plans'], ['autre', 'Autres']].map(([g, gl]) => h('div.bm-group', null, h('div.eyebrow', null, gl), BASEMAPS.filter((b) => b.group === g).map((b) => {
           const r = /** @type {HTMLInputElement} */ (h('input', { type: 'radio', name: 'bm', value: b.id, checked: state.settings.basemap === b.id }));
@@ -176,7 +265,7 @@ function layers(root) {
         }))),
         state.settings.basemap === 'custom' ? customForm() : null,
         h('p.small.muted', null, 'Satellite : au Maroc, l’imagerie Esri existe jusqu’au zoom 18 en zone rurale (19 en ville). Au-delà, l’application agrandit automatiquement la meilleure image disponible au lieu d’afficher une zone grise. Aucun fond n’est une référence cadastrale ; hors connexion, utilisez « Sans fond ».')),
-      h('fieldset.group', null, h('legend', null, 'Couches (de haut en bas)'),
+      h('fieldset.group', null, h('legend', null, 'Ordre des couches du projet ouvert (de haut en bas)'),
         order.map((k, i) => {
           const cb = /** @type {HTMLInputElement} */ (h('input', { type: 'checkbox', checked: /** @type {any} */ (state.settings.layers)[k] }));
           cb.addEventListener('change', () => updateSettings({ layers: { ...state.settings.layers, [k]: cb.checked } }));
@@ -194,6 +283,54 @@ function layers(root) {
     );
   };
   paint();
+}
+
+/**
+ * Couches organisées par projet : le projet ouvert (modifiable) et les autres projets en
+ * superposition (lecture seule), chacun avec ses couches Points / Parcelles / Lignes.
+ * @param {() => any} repaint
+ */
+async function projectLayersBox(repaint) {
+  const db = await import('../services/storage.js');
+  const projects = await db.listProjects();
+  const cur = state.project?.id;
+  const setCfg = async (/** @type {string} */ pid, /** @type {any} */ patch) => {
+    const all = { ...(/** @type {any} */ (state.settings).projectLayers ?? {}) };
+    all[pid] = { ...M.projectLayer(pid), ...patch };
+    await updateSettings(/** @type {any} */ ({ projectLayers: all }));
+  };
+  const rows = [];
+  let k = 0;
+  for (const p of projects) {
+    const isCur = p.id === cur;
+    const cfg = M.projectLayer(p.id);
+    const color = cfg.color ?? M.PROJECT_COLORS[k++ % M.PROJECT_COLORS.length];
+    const n = (isCur ? state.features : await db.listFeatures(p.id)).length;
+    const subs = /** @type {['points'|'parcels'|'lines', string][]} */ ([['points', 'Points'], ['parcels', 'Parcelles'], ['lines', 'Lignes']]);
+    const lay = /** @type {any} */ (state.settings.layers);
+    const visible = isCur ? subs.some(([s]) => lay[s]) : cfg.on;
+    const main = /** @type {HTMLInputElement} */ (h('input', { type: 'checkbox', checked: visible, 'aria-label': `Afficher ${p.name}` }));
+    main.addEventListener('change', async () => {
+      if (isCur) await updateSettings({ layers: { ...state.settings.layers, points: main.checked, parcels: main.checked, lines: main.checked } });
+      else await setCfg(p.id, { on: main.checked, color });
+      repaint();
+    });
+    const col = /** @type {HTMLInputElement} */ (h('input.color-in.sm', { type: 'color', value: color, 'aria-label': 'Couleur du projet', disabled: isCur }));
+    col.addEventListener('change', () => setCfg(p.id, { color: col.value }));
+    rows.push(h(`div.proj-layer${isCur ? '.current' : ''}`, null,
+      h('div.pl-head', null, main, isCur ? h('span.swatch', { style: { background: '#0f5e9c' } }) : col,
+        h('div.pl-name', null, h('b', null, p.name), h('small', null, isCur ? `ouvert · ${n} entité(s) · modifiable` : `${n} entité(s) · lecture seule`)),
+        h('button.icon-btn.sm', { type: 'button', title: 'Voir l’emprise', 'aria-label': `Zoomer sur ${p.name}`, onclick: async () => { if (!isCur && !cfg.on) await setCfg(p.id, { on: true, color }); if (!(await M.zoomToProject(p.id))) toast('Projet vide.', 'info'); repaint(); } }, icon('expand')),
+        isCur ? null : h('button.icon-btn.sm', { type: 'button', title: 'Ouvrir ce projet', 'aria-label': `Ouvrir ${p.name}`, onclick: async () => { await openProject(p.id); toast(`Projet « ${p.name} » ouvert.`, 'ok'); repaint(); } }, icon('folder'))),
+      visible ? h('div.pl-subs', null, subs.map(([key, label]) => {
+        const cb = /** @type {HTMLInputElement} */ (h('input', { type: 'checkbox', checked: isCur ? lay[key] : cfg[key] }));
+        cb.addEventListener('change', async () => { if (isCur) await updateSettings({ layers: { ...state.settings.layers, [key]: cb.checked } }); else await setCfg(p.id, { [key]: cb.checked, on: true, color }); });
+        return h('label.switch.sm', null, cb, h('span', null, label));
+      })) : null));
+  }
+  return h('fieldset.group', null, h('legend', null, 'Projets (couches par projet)'),
+    projects.length ? rows : h('p.small.muted', null, 'Aucun projet.'),
+    h('p.small.muted', null, 'Cochez plusieurs projets pour les superposer. Les projets non ouverts sont affichés en lecture seule, avec leur couleur ; touchez une entité pour ouvrir son projet.'));
 }
 
 /** Formulaire du fond personnalisé (URL XYZ fournie par l'utilisateur). */

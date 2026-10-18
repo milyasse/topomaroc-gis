@@ -563,6 +563,137 @@ await test('Satellite : au-delà de l’imagerie disponible, image agrandie au l
   return `${drawn} tuiles affichées au zoom 21, ${badge}`;
 });
 
+// ------------------------------------------------------------------------------------------ v1.2
+/** Tuile Terrarium synthétique : plan incliné de 10 % montant vers l'est (altitude 500 m au centre). */
+async function demRoute(page) {
+  await page.route(/elevation-tiles-prod\/terrarium/, async (route) => {
+    const [z, x, y] = route.request().url().match(/terrarium\/(\d+)\/(\d+)\/(\d+)/).slice(1).map(Number);
+    const png = await page.evaluate(async ([z, x, y]) => {
+      const T = await import('./src/core/terrain.js');
+      const c = document.createElement('canvas'); c.width = c.height = 256;
+      const ctx = c.getContext('2d'); const img = ctx.createImageData(256, 256);
+      const ref = T.lonLatToPixel(z, -8.1, 31.45);
+      for (let j = 0; j < 256; j++) for (let i = 0; i < 256; i++) {
+        const px = x * 256 + i + 0.5;
+        const east = (px - ref.x) * T.pixelSize(z, 31.45);
+        const v = 500 + 0.10 * east + 32768;
+        const k = 4 * (j * 256 + i);
+        img.data[k] = Math.floor(v / 256); img.data[k + 1] = Math.floor(v % 256); img.data[k + 2] = Math.round((v - Math.floor(v)) * 256); img.data[k + 3] = 255;
+      }
+      ctx.putImageData(img, 0, 0);
+      return c.toDataURL('image/png').split(',')[1];
+    }, [z, x, y]);
+    route.fulfill({ status: 200, contentType: 'image/png', body: Buffer.from(png, 'base64'), headers: { 'access-control-allow-origin': '*' } });
+  });
+}
+
+await test('Déplacer un point en édition (glisser sur la carte) + sommet de parcelle lié', async () => {
+  const { page, ctx, errors } = await newPage({ hash: '#/map' });
+  const ids = await seed(page, async () => {
+    const st = await import('./src/state.js'); const crs = await import('./src/core/crs.js');
+    const w = crs.toWGS84('EPSG:26191', [400000, 380000]);
+    const pt = await st.addFeature({ type: 'point', num: '9', code: 'borne', wgs84: { lat: w.lat, lon: w.lon }, input: { crsId: 'EPSG:26191', x: 400000, y: 380000 }, source: 'gps', accuracy: 4 });
+    const pa = await st.addFeature({ type: 'parcel', name: 'P', crsId: 'EPSG:26191', vertices: [{ x: 400000, y: 380000, pointId: pt.id, label: '9' }, { x: 400010, y: 380000 }, { x: 400010, y: 380010 }, { x: 400000, y: 380010 }] });
+    return { pt: pt.id, pa: pa.id };
+  });
+  await page.evaluate(async (id) => { const s = await import('./src/ui/survey.js'); const st = await import('./src/state.js'); s.editPoint(st.state.features.find((f) => f.id === id)); }, ids.pt);
+  await page.click('.modal button:has-text("Déplacer sur la carte")');
+  await page.waitForSelector('#action-bar button:has-text("Valider")');
+  // nouvelle position : 3 m à l'est (via le réticule)
+  await page.evaluate(async () => { const M = await import('./src/map/map.js'); const crs = await import('./src/core/crs.js'); const w = crs.toWGS84('EPSG:26191', [400003, 380000]); M.getMap().setView([w.lat, w.lon], 20, { animate: false }); });
+  await page.click('#action-bar button:has-text("Au réticule")');
+  await page.click('#action-bar button:has-text("Valider")');
+  await page.waitForSelector('.modal:has-text("Mettre à jour les parcelles")');
+  await page.click('.modal-actions button:has-text("Mettre à jour")');
+  await page.waitForSelector('.toast:has-text("déplacé")');
+  const r = await page.evaluate(async (ids) => {
+    const st = await import('./src/state.js'); const P = await import('./src/core/parcel.js');
+    const pt = st.state.features.find((f) => f.id === ids.pt), pa = st.state.features.find((f) => f.id === ids.pa);
+    return { x: pt.input.x, y: pt.input.y, moves: pt.moves.length, vx: pa.vertices[0].x, area: P.analyzeParcel(pa.vertices, pa.crsId).area };
+  }, ids);
+  assert(Math.abs(r.x - 400003) < 0.05 && Math.abs(r.y - 380000) < 0.05, JSON.stringify(r));
+  assert(r.moves === 1 && Math.abs(r.vx - r.x) < 1e-9, JSON.stringify(r));
+  assert(Math.abs(r.area - 85) < 1, `superficie ${r.area}`);
+  assert(errors.length === 0, errors.join(' | '));
+  await ctx.close();
+  return `point déplacé à X=${r.x.toFixed(2)} ; sommet lié suivi ; nouvelle superficie ${r.area.toFixed(2)} m²`;
+});
+
+await test('Couches par projet : superposition d’un 2e projet, activation/désactivation', async () => {
+  const { page, ctx, errors } = await newPage({ hash: '#/map' });
+  await seed(page, async () => {
+    const st = await import('./src/state.js');
+    await st.createProject({ name: 'Projet Nord' });
+    await st.addFeature({ type: 'parcel', name: 'N1', crsId: 'EPSG:26191', vertices: [[400000, 380100], [400050, 380100], [400050, 380150], [400000, 380150]].map(([x, y]) => ({ x, y })) });
+    await st.createProject({ name: 'Projet Sud' });
+    await st.addFeature({ type: 'parcel', name: 'S1', crsId: 'EPSG:26191', vertices: [[400000, 380000], [400050, 380000], [400050, 380050], [400000, 380050]].map(([x, y]) => ({ x, y })) });
+  });
+  await page.goto(BASE + '#/tools/layers');
+  await page.waitForSelector('.proj-layer');
+  assert(await page.locator('.proj-layer').count() === 2, 'deux projets listés');
+  const other = page.locator('.proj-layer:not(.current)');
+  await other.locator('.pl-head input[type=checkbox]').check();
+  await page.waitForFunction(async () => (await import('./src/map/map.js')).getMap().getPane('overlays').querySelectorAll('path').length > 0, null, { timeout: 8000 });
+  await other.locator('button[aria-label^="Zoomer"]').click();
+  await page.goto(BASE + '#/map'); await page.waitForTimeout(500);
+  await page.screenshot({ path: path.join(SHOTS, 'mobile-couches-projets.png') });
+  await page.goto(BASE + '#/tools/layers'); await page.waitForSelector('.proj-layer');
+  await page.locator('.proj-layer:not(.current) .pl-head input[type=checkbox]').uncheck();
+  await page.waitForFunction(async () => (await import('./src/map/map.js')).getMap().getPane('overlays').querySelectorAll('path').length === 0, null, { timeout: 8000 });
+  assert(errors.length === 0, errors.join(' | '));
+  await ctx.close();
+  return 'projet Nord superposé au projet Sud ouvert, puis masqué';
+});
+
+await test('Pente d’une parcelle (MNT) : plan incliné de 10 % → 10 %, exposition ouest', async () => {
+  const { page, ctx, errors } = await newPage({ hash: '#/map' });
+  await demRoute(page);
+  const pid = await seed(page, async () => {
+    const st = await import('./src/state.js');
+    const d = 0.0006;
+    const p = await st.addFeature({ type: 'parcel', name: 'Coteau', crsId: 'EPSG:4326', vertices: [[-8.1 - d, 31.45 - d], [-8.1 + d, 31.45 - d], [-8.1 + d, 31.45 + d], [-8.1 - d, 31.45 + d]].map(([x, y]) => ({ x, y })) });
+    return p.id;
+  });
+  await page.goto(BASE + `#/parcels/${pid}`);
+  await page.click('button:has-text("Calculer la pente (MNT)")');
+  await page.waitForSelector('.terrain-box .stat-v', { timeout: 15000 });
+  const t = await text(page, '.terrain-box');
+  assert(/10,0 %/.test(t), t);
+  assert(/ouest/.test(t), t);
+  await page.screenshot({ path: path.join(SHOTS, 'mobile-pente-parcelle.png') });
+  assert(errors.length === 0, errors.join(' | '));
+  await ctx.close();
+  return t.replace(/\s+/g, ' ').slice(0, 160);
+});
+
+await test('Outil « Pente entre deux points » : profil et pente', async () => {
+  const { page, ctx, errors } = await newPage({ hash: '#/tools/slope' });
+  await demRoute(page);
+  await page.evaluate(async () => { const M = await import('./src/map/map.js'); M.getMap().setView([31.45, -8.1], 17, { animate: false }); });
+  await page.waitForTimeout(300);
+  const px = async (lon, lat) => page.evaluate(async ([lon, lat]) => { const M = await import('./src/map/map.js'); const p = M.toPixel(lat, lon); const r = document.getElementById('map').getBoundingClientRect(); return [r.left + p.x, r.top + p.y]; }, [lon, lat]);
+  let [x, y] = await px(-8.1008, 31.4505); await page.mouse.click(x, y); await page.waitForTimeout(200);
+  [x, y] = await px(-8.0992, 31.4505); await page.mouse.click(x, y);
+  await page.waitForSelector('.profile-svg', { timeout: 15000 });
+  const t = await text(page, '.results');
+  assert(/1[0-9],[0-9] m/.test(t) || /\+1[0-9]/.test(t), t);
+  assert(/10,0 %|9,9 %|10,1 %/.test(t), t);
+  assert(errors.length === 0, errors.join(' | '));
+  await ctx.close();
+  return t.replace(/\s+/g, ' ').slice(0, 140);
+});
+
+await test('Version de l’application affichée (accueil et aide)', async () => {
+  const { page, ctx } = await newPage({ hash: '#/home' });
+  await page.waitForSelector('.version-tag');
+  const v = await text(page, '.version-tag');
+  assert(/v1\.2\.0/.test(v), v);
+  await page.goto(BASE + '#/help');
+  await page.waitForSelector('summary:has-text("Version v1.2.0")');
+  await ctx.close();
+  return v;
+});
+
 await test('Smartphone iOS / Android réels', null, { skip: 'aucun appareil physique disponible dans l’environnement de test : à valider sur le terrain (Safari iOS, Chrome Android)' });
 await test('Installation PWA sur l’écran d’accueil', null, { skip: 'nécessite une interaction utilisateur sur un appareil réel ; critères vérifiés automatiquement (manifeste, icônes, service worker, HTTPS)' });
 

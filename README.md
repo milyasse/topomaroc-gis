@@ -52,6 +52,12 @@ Détection : moins de 3 sommets, fermeture répétée, sommets en double (≤ 1 
 
 **Rapport PDF** : projet, date, plan coté (échelle graphique, nord), tableau des sommets (Lambert + WGS 84), tableau des côtés (longueurs, gisements en grades ou degrés, longueurs géodésiques, azimuts), superficie et périmètre, système, méthode, qualité estimée, mention « ne constitue pas un document cadastral officiel ». [Exemple](docs/exemple-rapport-parcelle.pdf).
 
+### Nouveautés v1.2
+- **Déplacer un point** depuis sa fiche : nouvelles coordonnées, glisser sur la carte (ou au réticule) ou position GPS actuelle ; l'historique des positions est conservé et les **sommets de parcelles rattachés au point suivent** (après confirmation).
+- **Couches par projet** (Outils → Couches) : superposition de plusieurs projets, chacun avec sa couleur et ses couches Points / Parcelles / Lignes activables ; le projet ouvert reste modifiable, les autres sont en lecture seule.
+- **Pente** : pour chaque parcelle, altitudes min/max/moyenne, dénivelé, pente moyenne et maximale (% et °, méthode de Horn), exposition et classe de pente ; outil **« Pente entre deux points »** avec profil en long. Source : MNT ouvert Terrarium (SRTM ~30 m, disponible jusqu'au zoom 15 au Maroc — mesuré), précision indicative ± 5 à 10 m. Altitude des points (saisie, GPS ou MNT).
+- **Numéro de version** affiché (accueil, aide avec historique des nouveautés, réglages, rapports PDF) avec l'identifiant de publication.
+
 ### Nouveautés v1.1
 - **Satellite à fort zoom** : mesure réelle de la disponibilité au Maroc ([docs/resultats-tests/tuiles.json](docs/resultats-tests/tuiles.json)) — l'imagerie Esri existe jusqu'au zoom 18 en zone rurale (19 en ville, 17 à Dakhla) ; au-delà le serveur renvoie une tuile grise. L'application détecte ces tuiles vides et **agrandit automatiquement la meilleure image disponible** (badge « Imagerie max. ici : zoom 18 »). Fonds satellite : Esri, Esri Clarity, Sentinel-2 2023 (EOX, usage non commercial), **fond personnalisé** (URL XYZ sous licence de l'utilisateur).
 - **« + Point » sur la carte** : placement au réticule ou au toucher, sans GPS, en série.
@@ -121,12 +127,13 @@ Choix techniques : JavaScript moderne typé par JSDoc (vérifié avec `tsc`), sa
 
 ## Tests
 
-Voir [docs/TESTS.md](docs/TESTS.md). Résumé : 57 tests unitaires (dont le partage de parcelles et l'assemblage de contours) (transformations identiques à PROJ à < 1 mm, superficies identiques à Shapely/GeographicLib-C, WMM identique à la NOAA) et 26 scénarios navigateur (GPS simulé : autorisation refusée, position indisponible, précision insuffisante, perte de signal, navigation et arrivée, hors connexion, import/export, sauvegarde/restauration…), exécutés à chaque publication, y compris **sur l’URL publique**.
+Voir [docs/TESTS.md](docs/TESTS.md). Résumé : 64 tests unitaires (dont partage de parcelles, assemblage de contours et pente) (transformations identiques à PROJ à < 1 mm, superficies identiques à Shapely/GeographicLib-C, WMM identique à la NOAA) et 31 scénarios navigateur (GPS simulé : autorisation refusée, position indisponible, précision insuffisante, perte de signal, navigation et arrivée, hors connexion, import/export, sauvegarde/restauration…), exécutés à chaque publication, y compris **sur l’URL publique**.
 
 ## Dépendances externes et limites connues
 
 - **Fonds de carte** en ligne (OpenStreetMap, Esri, OpenTopoMap, CARTO) : soumis aux conditions de leurs fournisseurs (attribution, usage modéré ; usage commercial de CARTO/Esri soumis à licence). Pas de téléchargement de tuiles pour le hors ligne (interdit par la politique OSM) : hors réseau, utiliser « Sans fond ». Les limites administratives affichées relèvent des fournisseurs ; aucun fond n’est une référence cadastrale.
 - **Recherche de lieux** : Nominatim (OpenStreetMap), en ligne uniquement.
+- **MNT (pente)** : tuiles Terrarium (AWS Open Data / Mapzen, sources SRTM et autres), en ligne uniquement ; pentes indicatives.
 - **GPS** : précision de l’appareil ; l’altitude affichée est indicative.
 - **Boussole** : dépend des capteurs ; iOS demande une autorisation ; direction « indicative » sans information de calibration.
 - **Merchich → WGS 84** : ≈ 7 m (EPSG:1166) ; non défini dans les zones Sahara.

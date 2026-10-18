@@ -178,3 +178,37 @@ on('resolution', (r) => {
   el.hidden = false;
   el.textContent = `Imagerie max. ici : zoom ${r.served} — image agrandie`;
 });
+
+// ------------------------------------------------------------- Déplacement d'un point
+/**
+ * Mode « déplacer un point » : marqueur glissable, toucher la carte ou réticule, puis Valider.
+ * @param {any} f @param {(lat:number, lon:number) => Promise<void>} onDone
+ */
+export function startMovePoint(f, onDone) {
+  stopModes();
+  mode = 'place';
+  if (location.hash !== '#/map') location.hash = '#/map';
+  const L = M.L;
+  const lay = M.layer('draft');
+  const start = L.latLng(f.wgs84.lat, f.wgs84.lon);
+  const ghost = L.circleMarker(start, { pane: 'draft', radius: 7, color: '#888', weight: 2, dashArray: '3 3', fill: false, interactive: false }).addTo(lay);
+  const mk = L.marker(start, { pane: 'draft', draggable: true, autoPan: true, icon: L.divIcon({ className: 'move-icon', html: '<span></span>', iconSize: [30, 30], iconAnchor: [15, 15] }) }).addTo(lay);
+  const line = L.polyline([start, start], { pane: 'draft', color: '#d6602a', weight: 2, dashArray: '4 6', interactive: false }).addTo(lay);
+  const info = h('span');
+  const paint = () => {
+    const p = mk.getLatLng();
+    line.setLatLngs([start, p]);
+    const d = M.getMap().distance(start, p);
+    info.textContent = `Point ${f.num ?? ''} : glissez-le ou touchez la nouvelle position — déplacement ${d < 100 ? d.toFixed(2) : Math.round(d)} m`;
+  };
+  mk.on('drag', paint);
+  M.getMap().setView(start, Math.max(M.getMap().getZoom(), 19));
+  M.setClickHandler((e) => { mk.setLatLng(e.latlng); paint(); });
+  const end = () => { lay.removeLayer(mk); lay.removeLayer(ghost); lay.removeLayer(line); M.setClickHandler(null); mode = 'none'; hideBar(); };
+  showBar(h('div.ab-text', null, icon('pointer'), info),
+    h('div.ab-row', null,
+      btn('Au réticule', { variant: 'ghost', onclick: () => { mk.setLatLng(M.getMap().getCenter()); paint(); } }, 'crosshair'),
+      btn('Annuler', { variant: 'ghost', onclick: () => { end(); toast('Déplacement annulé.', 'info'); } }, 'close'),
+      btn('Valider', { variant: 'primary', onclick: async () => { const p = mk.getLatLng(); end(); await onDone(p.lat, p.lng); } }, 'check')));
+  paint();
+}

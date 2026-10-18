@@ -7,6 +7,7 @@ import * as db from '../services/storage.js';
 import { state, on, addFeature, updateFeature, removeFeature, nextPointNumber, ensureProject, updateSettings, POINT_CODES, codeInfo } from '../state.js';
 import * as M from '../map/map.js';
 import { h, icon, btn, mount, toast, field, select, modal, confirmDialog } from './dom.js';
+import { parseNumber } from '../core/angles.js';
 import { coordInput } from './coordinput.js';
 import { anim } from './anim.js';
 import { startNavigation } from './nav.js';
@@ -199,26 +200,98 @@ export async function editPoint(f) {
   const nm = /** @type {HTMLInputElement} */ (h('input', { type: 'text', value: f.name ?? '' }));
   const cd = select(POINT_CODES.map((c) => ({ value: c.value, label: c.label })), f.code || 'divers');
   const ds = /** @type {HTMLTextAreaElement} */ (h('textarea', { rows: 3 }, f.description ?? ''));
-  const editable = f.source !== 'gps' && f.source !== 'nav';
+  const measured = f.source === 'gps' || f.source === 'nav';
   const id = f.input?.crsId ?? 'EPSG:4326';
   const [a, b] = crs.xyToInput(id, pointXY(f, id));
   const dec = crs.getCrs(id).unit === 'm' ? 3 : 8;
   const ci = coordInput({ crsId: id, a: a.toFixed(dec), b: b.toFixed(dec) });
+  const coordBox = h('div.coord-edit', { hidden: true },
+    measured ? h('p.issue.warning', null, icon('alert'), 'Ce point a été mesuré au GPS : les nouvelles coordonnées remplaceront la mesure (l’ancienne position est conservée dans l’historique du point).') : null,
+    ci.el);
+  let action = 'save';
+  const alt = /** @type {HTMLInputElement} */ (h('input', { type: 'text', inputmode: 'decimal', value: f.altitude != null ? String(Math.round(f.altitude * 100) / 100) : '', placeholder: 'm' }));
+  const altSrc = h('small.hint', null, f.altitude != null ? `Source : ${f.altitudeSource ?? (f.source === 'gps' ? 'GPS (ellipsoïdale, indicative)' : 'saisie')}` : 'Altitude inconnue');
+  const altBtn = btn('Altitude MNT', { variant: 'ghost', onclick: async () => {
+    try {
+      const { elevationAt } = await import('../services/dem.js');
+      const z = await elevationAt(f.wgs84.lat, f.wgs84.lon);
+      alt.value = z.toFixed(1); alt.dataset.src = 'MNT (SRTM ~30 m, ±5–10 m)'; altSrc.textContent = `Source : ${alt.dataset.src}`;
+    } catch (e) { toast(/** @type {Error} */ (e).message, 'warn'); }
+  } }, 'globe');
   const photoBox = h('div.photo-box');
   if (f.photoId) db.getPhoto(f.photoId).then((blob) => { if (blob) photoBox.append(h('img', { src: URL.createObjectURL(blob), alt: `Photographie du point ${f.num}` })); });
-  const meta = h('p.muted.small', null, `Source : ${f.source ?? '—'} · ${f.takenAt ? new Date(f.takenAt).toLocaleString('fr-FR') : ''}${f.accuracy != null ? ` · précision annoncée ±${f.accuracy.toFixed(1)} m` : ''}${f.gpsInfo?.mode === 'moyenne' ? ` · moyenne de ${f.gpsInfo.samples} positions sur ${f.gpsInfo.durationS} s (dispersion ${f.gpsInfo.spread} m)` : ''}`);
-  const ok = await modal({ title: `Point ${f.num ?? ''}`, body: () => [
+  const meta = h('p.muted.small', null, `Source : ${f.source ?? '—'} · ${f.takenAt ? new Date(f.takenAt).toLocaleString('fr-FR') : ''}${f.accuracy != null ? ` · précision annoncée ±${f.accuracy.toFixed(1)} m` : ''}${f.gpsInfo?.mode === 'moyenne' ? ` · moyenne de ${f.gpsInfo.samples} positions sur ${f.gpsInfo.durationS} s (dispersion ${f.gpsInfo.spread} m)` : ''}${f.moves?.length ? ` · déplacé ${f.moves.length} fois` : ''}`);
+  const ok = await modal({ title: `Point ${f.num ?? ''}`, body: (close) => [
     h('div.coord-pair', null, field('Numéro', n), field('Nom', nm)), field('Code', cd), field('Description', ds),
-    editable ? ci.el : h('p.small', null, icon('info'), ' Coordonnées issues du GPS : non modifiables (supprimez et relevez à nouveau si nécessaire). ', pointCoordText(f)),
+    h('fieldset.group', null, h('legend', null, 'Position'),
+      h('p.small', null, pointCoordText(f)),
+      h('div.btn-grid', null,
+        btn('Nouvelles coordonnées', { variant: 'ghost', onclick: (/** @type {Event} */ e) => { coordBox.hidden = false; action = 'coords'; /** @type {HTMLElement} */ (e.currentTarget).setAttribute('aria-pressed', 'true'); ci.focus(); } }, 'edit'),
+        btn('Déplacer sur la carte', { variant: 'ghost', onclick: () => { action = 'map'; close(true); } }, 'pointer'),
+        btn('Ma position GPS actuelle', { variant: 'ghost', onclick: () => { action = 'gps'; close(true); } }, 'locate')),
+      coordBox),
+    h('div.alt-row', null, field('Altitude (m)', alt), altBtn), altSrc,
     meta, photoBox,
   ], actions: [{ label: 'Annuler', value: false }, { label: 'Enregistrer', value: true, variant: 'primary' }] });
   if (!ok) return;
+  /** @type {any} */
   const upd = { ...f, num: n.value.trim(), name: nm.value.trim(), code: cd.value, description: ds.value.trim() };
-  if (editable) {
+  const z = parseNumber(alt.value);
+  if (alt.value.trim() === '') { upd.altitude = null; } else if (Number.isFinite(z) && z !== f.altitude) { upd.altitude = z; upd.altitudeSource = alt.dataset.src ?? 'saisie'; }
+  if (action === 'coords') {
     const r = ci.read();
     if (!r.ok || !r.xy || !r.check?.wgs84) { toast('Coordonnées invalides : modification non enregistrée.', 'error'); return; }
-    upd.wgs84 = r.check.wgs84; upd.input = { crsId: r.crsId, x: r.xy[0], y: r.xy[1] };
+    await relocatePoint(upd, { wgs84: r.check.wgs84, input: { crsId: r.crsId, x: r.xy[0], y: r.xy[1] }, how: 'saisie' });
+    return;
   }
   await updateFeature(upd, `Modification du point ${upd.num}`);
+  if (action === 'map') {
+    const { startMovePoint } = await import('./maptools.js');
+    startMovePoint(state.features.find((x) => x.id === f.id) ?? upd, async (lat, lon) => {
+      const cur = state.features.find((x) => x.id === f.id) ?? upd;
+      const iid = cur.input?.crsId ?? state.settings.displayCrs;
+      const xy = crs.fromWGS84(iid, lon, lat);
+      await relocatePoint(cur, { wgs84: { lat, lon }, input: { crsId: iid, x: xy[0], y: xy[1] }, how: 'carte' });
+    });
+    return;
+  }
+  if (action === 'gps') {
+    state.gps.start();
+    try {
+      const fix = await new Promise((res, rej) => {
+        if (state.gps.last && state.gps.age() < 5) { res(state.gps.last); return; }
+        const t = setTimeout(() => { state.gps.removeEventListener('fix', on1); rej(new Error('Pas de position GPS reçue en 20 s.')); }, 20000);
+        const on1 = (/** @type {any} */ e) => { clearTimeout(t); state.gps.removeEventListener('fix', on1); res(e.detail); };
+        state.gps.addEventListener('fix', on1);
+        toast('Recherche de votre position…', 'info', 2500);
+      });
+      const iid = upd.input?.crsId ?? state.settings.displayCrs;
+      const xy = crs.fromWGS84(iid, fix.lon, fix.lat);
+      await relocatePoint(upd, { wgs84: { lat: fix.lat, lon: fix.lon }, input: { crsId: iid, x: xy[0], y: xy[1] }, how: 'GPS', accuracy: fix.accuracy, altitude: fix.altitude });
+    } catch (e) { toast(/** @type {Error} */ (e).message, 'error'); } finally { state.gps.stop(); }
+    return;
+  }
   toast('Point modifié.', 'ok');
+}
+
+/**
+ * Change la position d'un point et, si l'utilisateur l'accepte, celle des sommets de parcelles
+ * et de lignes qui y sont rattachés (limites communes conservées).
+ * @param {any} f @param {{ wgs84: {lat:number, lon:number}, input: {crsId:string, x:number, y:number}, how: string, accuracy?: number|null, altitude?: number|null }} pos
+ */
+export async function relocatePoint(f, pos) {
+  const prev = { wgs84: f.wgs84, input: f.input, accuracy: f.accuracy ?? null, at: new Date().toISOString(), how: pos.how };
+  const moved = { ...f, wgs84: pos.wgs84, input: pos.input, accuracy: pos.accuracy ?? null, moves: [...(f.moves ?? []), prev] };
+  if (pos.how === 'GPS') { moved.source = 'gps'; moved.takenAt = new Date().toISOString(); if (pos.altitude != null) { moved.altitude = pos.altitude; moved.altitudeSource = 'GPS (ellipsoïdale, indicative)'; } }
+  else if (moved.source === 'gps' || moved.source === 'nav') moved.source = pos.how === 'carte' ? 'map' : 'manual';
+  const linked = state.features.filter((x) => (x.type === 'parcel' || x.type === 'line') && x.vertices.some((/** @type {any} */ v) => v.pointId === f.id));
+  await updateFeature(moved, `Déplacement du point ${f.num ?? ''}`);
+  if (linked.length && await confirmDialog('Mettre à jour les parcelles', `${linked.length} parcelle(s)/ligne(s) utilisent ce point comme sommet : ${linked.map((x) => x.name || 'sans nom').join(', ')}. Déplacer aussi ces sommets ?`, { confirmLabel: 'Mettre à jour' })) {
+    for (const x of linked) {
+      const [vx, vy] = pointXY(moved, x.crsId);
+      await updateFeature({ ...x, vertices: x.vertices.map((/** @type {any} */ v) => (v.pointId === f.id ? { ...v, x: vx, y: vy, accuracy: moved.accuracy } : v)) }, `Sommet ${f.num ?? ''} suivi`);
+    }
+  }
+  const d = Math.hypot((pos.wgs84.lat - f.wgs84.lat) * 111320, (pos.wgs84.lon - f.wgs84.lon) * 111320 * Math.cos(f.wgs84.lat * Math.PI / 180));
+  toast(`Point ${f.num ?? ''} déplacé de ${d < 100 ? d.toFixed(2) : Math.round(d)} m (${pos.how}).`, 'ok');
 }

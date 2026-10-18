@@ -286,6 +286,45 @@ function renderEditor(root, id) {
   const undo = h('button.icon-btn', { type: 'button', title: 'Annuler', 'aria-label': 'Annuler', onclick: async () => { const l = await state.history.undo(); if (l) toast(`Annulé : ${l}`); } }, icon('undo'));
   const redo = h('button.icon-btn', { type: 'button', title: 'Rétablir', 'aria-label': 'Rétablir', onclick: async () => { const l = await state.history.redo(); if (l) toast(`Rétabli : ${l}`); } }, icon('redo'));
 
+  // Relief et pente (MNT)
+  const terrainBox = h('div.terrain-box');
+  const vkey = (/** @type {any} */ p) => p.vertices.map((/** @type {any} */ v) => `${v.x.toFixed(3)},${v.y.toFixed(3)}`).join(';');
+  const paintTerrain = () => {
+    const p = get(); if (!p) return;
+    const t = p.terrain;
+    const fresh = t && t.key === vkey(p);
+    const calc = btn(t ? 'Recalculer la pente' : 'Calculer la pente (MNT)', { variant: t && fresh ? 'ghost' : 'primary', disabled: p.vertices.length < 3, onclick: async () => {
+      const T = await import('../core/terrain.js');
+      const { gridFor, DEM_SOURCE } = await import('../services/dem.js');
+      /** @type {HTMLButtonElement} */ (calc).disabled = true;
+      mount(body2, h('div.loading', null, h('span.spinner'), 'Lecture du modèle de terrain…'));
+      try {
+        const q = get();
+        const ring = q.vertices.map((/** @type {any} */ v) => { const w = crs.toWGS84(q.crsId, [v.x, v.y]); return /** @type {[number,number]} */ ([w.lon, w.lat]); });
+        const lons = ring.map((r) => r[0]), lats = ring.map((r) => r[1]);
+        const grid = await gridFor({ minLon: Math.min(...lons), minLat: Math.min(...lats), maxLon: Math.max(...lons), maxLat: Math.max(...lats) });
+        const r = T.polygonTerrain(grid, ring);
+        await updateFeature({ ...get(), terrain: { ...r, key: vkey(q), at: new Date().toISOString(), source: DEM_SOURCE } }, 'Calcul de la pente');
+      } catch (e) { toast(`Pente non calculée : ${/** @type {Error} */ (e).message}`, 'warn', 6000); paintTerrain(); }
+    } }, 'globe');
+    const body2 = h('div');
+    if (t) {
+      import('../core/terrain.js').then((T) => {
+        const f1 = (/** @type {number} */ v, d = 1) => fmtNum(v, d);
+        mount(body2,
+          fresh ? null : h('p.issue.warning', null, icon('alert'), 'Les sommets ont changé depuis le calcul : recalculez.'),
+          h('div.stats', null,
+            h('div.stat', null, icon('ruler'), h('div', null, h('div.stat-v', null, `${f1(t.slopeMeanPct)} %`), h('div.stat-l', null, `pente moyenne (${f1(t.slopeMeanDeg)}°) · ${T.slopeClass(t.slopeMeanPct)}`))),
+            h('div.stat', null, icon('alert'), h('div', null, h('div.stat-v', null, `${f1(t.slopeMaxPct)} %`), h('div.stat-l', null, 'pente maximale'))),
+            h('div.stat', null, icon('grid'), h('div', null, h('div.stat-v', null, `${f1(t.relief)} m`), h('div.stat-l', null, `dénivelé (${f1(t.elevMin, 0)} à ${f1(t.elevMax, 0)} m)`))),
+            h('div.stat', null, icon('compass'), h('div', null, h('div.stat-v', null, T.aspectLabel(t.aspect)), h('div.stat-l', null, `exposition${Number.isFinite(t.aspect) ? ` (${f1(t.aspect, 0)}°)` : ''} · pente générale ${f1(t.trendPct)} %`)))),
+          h('p.small.muted', null, `Altitude moyenne ${f1(t.elevMean, 0)} m · ${t.cells} cellule(s) de ${f1(t.cellSize, 0)} m · ${t.source}. Valeurs indicatives (MNT ~30 m, ± 5 à 10 m) : ne remplacent pas un levé altimétrique.`));
+      });
+    }
+    mount(terrainBox, h('div.row.wrap', null, h('div.eyebrow', null, 'Relief et pente'), h('span.spacer'), calc), body2);
+  };
+  paintTerrain();
+
   // Propriétaire / lots issus d'un partage
   const ownerBox = h('div.owner-box');
   const paintOwner = () => {
@@ -318,12 +357,12 @@ function renderEditor(root, id) {
     summary,
     h('div.editor-head', null, h('button.icon-btn', { type: 'button', 'aria-label': 'Retour à la liste', title: 'Retour à la liste', onclick: () => { location.hash = '#/parcels'; } }, icon('back')), title, rename, h('span.spacer'), undo, redo),
     h('div.muted.small', null, `Sommets en ${crs.getCrs(p0.crsId).label} (${crs.getCrs(p0.crsId).epsg ? 'EPSG:' + crs.getCrs(p0.crsId).epsg : ''})`),
-    results, ownerBox, issues, tabs, body, sides, between, actions,
+    results, ownerBox, issues, terrainBox, tabs, body, sides, between, actions,
   );
   paintTabs(); paintTab(); paintResults(); paintMap();
   if (p0.vertices.length) M.zoomToFeature(p0);
   projSel.addEventListener('change', paintResults);
-  const off = on('features', () => { if (!get()) { location.hash = '#/parcels'; return; } paintResults(); paintMap(); paintOwner(); if (tab === 'manual') tabManual(body, get, saveVertices, true); });
+  const off = on('features', () => { if (!get()) { location.hash = '#/parcels'; return; } paintResults(); paintMap(); paintOwner(); paintTerrain(); if (tab === 'manual') tabManual(body, get, saveVertices, true); });
   const off2 = on('settings', (s) => { if (s.areaUnit || s.angleUnit) paintResults(); });
   const offDatum = on('datum', () => { paintResults(); paintMap(); });
   return () => { off(); off2(); offDatum(); tabCleanup?.(); M.setClickHandler(null); draft.clearLayers(); };

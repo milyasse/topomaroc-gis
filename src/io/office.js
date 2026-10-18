@@ -5,7 +5,8 @@ import { degToGrad } from '../core/angles.js';
 import { formatHaACa, formatPercent } from '../core/units.js';
 import { pointXY, verticesXY, analyze } from './common.js';
 
-const APP = 'TopoMaroc GIS';
+import { APP_VERSION } from '../version.js';
+const APP = `TopoMaroc GIS v${APP_VERSION}`;
 export const DISCLAIMER = 'Document technique établi à partir des données saisies ou levées par l’utilisateur. Il ne constitue pas, à lui seul, un document cadastral ou foncier officiel. Les positions issues d’un GPS de smartphone ont une précision métrique ; seul un levé réalisé par un ingénieur géomètre-topographe (station totale, GNSS RTK) rattaché au réseau géodésique fait foi.';
 
 // ------------------------------------------------------------------ XLSX
@@ -172,6 +173,10 @@ export async function parcelReportPDF(f, project, opts = {}) {
     `Contrôle : superficie plane ${pc.label} = ${fnum(a.planeArea, 2)} m² ; superficie ellipsoïdale WGS 84 = ${fnum(a.geodesicArea, 2)} m² (écart ${a.diffPercent.toFixed(3)} %).`,
     `Datum : ${a.datum.datum}. Transformation vers WGS 84 : ${a.datum.transformation}.`,
   ];
+  if (f.terrain) {
+    const t = f.terrain;
+    methodLines.push(`Relief (indicatif, ${t.source}) : altitude ${fnum(t.elevMin, 0)} à ${fnum(t.elevMax, 0)} m, dénivelé ${fnum(t.relief, 1)} m, pente moyenne ${fnum(t.slopeMeanPct, 1)} % (${fnum(t.slopeMeanDeg, 1)}°), pente maximale ${fnum(t.slopeMaxPct, 1)} %${Number.isFinite(t.aspect) ? `, exposition ${fnum(t.aspect, 0)}°` : ''}.`);
+  }
   for (const l of methodLines) {
     const wrapped = doc.splitTextToSize(pdfText(l), W - 2 * M);
     doc.text(wrapped, M, y); y += wrapped.length * 3.8;
