@@ -1,0 +1,46 @@
+name: Vendor libraries & PROJ reference
+
+# Récupère les bibliothèques depuis npm, les regroupe en ESM dans vendor/,
+# et génère des valeurs de référence indépendantes (PROJ / GeographicLib / Shapely).
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/vendor/**'
+      - 'tools/reference/**'
+      - '.github/workflows/vendor.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: vendor
+  cancel-in-progress: false
+
+jobs:
+  vendor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build vendor bundles
+        run: bash tools/vendor/build-vendor.sh
+      - name: Generate PROJ reference values
+        run: |
+          pip install --quiet "pyproj>=3.6" shapely pygeomag
+          python tools/reference/make_reference.py
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add vendor tests/reference
+          if git diff --cached --quiet; then echo "Rien à valider"; exit 0; fi
+          git commit -m "chore(vendor): bibliothèques ESM et références PROJ [skip ci]"
+          git pull --rebase origin main
+          git push origin HEAD:main
