@@ -1,6 +1,6 @@
 {
   "base": "http://127.0.0.1:8080/",
-  "date": "2026-10-18T20:20:34.930Z",
+  "date": "2026-10-18T21:08:35.338Z",
   "passed": 20,
   "failed": 0,
   "skipped": 2,
@@ -8,121 +8,121 @@
     {
       "name": "Chargement de l’application sans erreur JavaScript",
       "status": "réussi",
-      "ms": 487,
+      "ms": 641,
       "detail": "8 actions sur l’écran d’accueil"
     },
     {
       "name": "Lien direct et rechargement d’une route profonde (#/parcels)",
       "status": "réussi",
-      "ms": 264,
+      "ms": 411,
       "detail": ""
     },
     {
       "name": "PWA : manifeste valide et service worker actif",
       "status": "réussi",
-      "ms": 214,
+      "ms": 368,
       "detail": "manifeste + service worker « activated »"
     },
     {
       "name": "Hors connexion : l’application redémarre depuis le cache (service worker)",
       "status": "réussi",
-      "ms": 2044,
+      "ms": 2368,
       "detail": "interface et modules servis hors ligne"
     },
     {
       "name": "Navigation : saisie Lambert Nord, distance et azimut cohérents",
       "status": "réussi",
-      "ms": 1365,
+      "ms": 1511,
       "detail": "distance 120 m, 45.0° NE · azimut vrai"
     },
     {
       "name": "Navigation : arrivée dans le rayon (10 m) → alerte visuelle",
       "status": "réussi",
-      "ms": 1398,
+      "ms": 1532,
       "detail": "arrivée détectée à 4 m, point atteint enregistré"
     },
     {
       "name": "Navigation : précision GPS insuffisante signalée",
       "status": "réussi",
-      "ms": 572,
+      "ms": 659,
       "detail": ""
     },
     {
       "name": "GPS : autorisation refusée",
       "status": "réussi",
-      "ms": 180,
+      "ms": 249,
       "detail": "—"
     },
     {
       "name": "GPS : position indisponible (erreur du capteur)",
       "status": "réussi",
-      "ms": 430,
+      "ms": 487,
       "detail": ""
     },
     {
       "name": "GPS : perte du signal (aucune mesure depuis 15 s) → état « signal perdu »",
       "status": "réussi",
-      "ms": 16525,
+      "ms": 16652,
       "detail": "état stale détecté après ~15 s sans nouvelle position"
     },
     {
       "name": "Levé : enregistrement GPS, persistance après rechargement",
       "status": "réussi",
-      "ms": 1430,
+      "ms": 1537,
       "detail": "2 points, annuler/rétablir, persistance IndexedDB"
     },
     {
       "name": "Levé : moyenne « attendre une meilleure précision »",
       "status": "réussi",
-      "ms": 3753,
+      "ms": 3875,
       "detail": ""
     },
     {
       "name": "Parcelle : carré 10 m × 10 m saisi en Lambert Nord → 100,00 m²",
       "status": "réussi",
-      "ms": 2354,
+      "ms": 2532,
       "detail": "superficie 100,00 m², périmètre 40,00 m"
     },
     {
       "name": "Parcelle : polygone auto-intersecté et sommets en double détectés",
       "status": "réussi",
-      "ms": 2346,
+      "ms": 2427,
       "detail": ""
     },
     {
       "name": "Parcelle : mode dessin sur la carte puis rapport PDF",
       "status": "réussi",
-      "ms": 2592,
+      "ms": 2630,
       "detail": "4 sommets dessinés, 2 930,57 m², PDF 24306 octets"
     },
     {
       "name": "Import CSV (séparateur ;) avec choix du système puis export GeoJSON/DXF/CSV/XLSX",
       "status": "réussi",
-      "ms": 6951,
-      "detail": "Leve_du_18_10_2026-20261018-2020.geojson, Leve_du_18_10_2026-20261018-2020-26191.dxf, Leve_du_18_10_2026-20261018-2020-26191.csv, Leve_du_18_10_2026-20261018-2020.xlsx"
+      "ms": 7330,
+      "detail": "Leve_du_18_10_2026-20261018-2108.geojson, Leve_du_18_10_2026-20261018-2108-26191.dxf, Leve_du_18_10_2026-20261018-2108-26191.csv, Leve_du_18_10_2026-20261018-2108.xlsx"
     },
     {
       "name": "Sauvegarde complète puis restauration",
       "status": "réussi",
-      "ms": 2404,
+      "ms": 2577,
       "detail": "1 projet(s), 1 entité(s) restaurés"
     },
     {
       "name": "Outils : convertisseur (Lambert Nord → tous systèmes) et mesure de distance",
       "status": "réussi",
-      "ms": 273,
+      "ms": 357,
       "detail": "origine (500 000 ; 300 000) → φ 33,3° λ −5,4° ; distance mesurée 148,64 m"
     },
     {
       "name": "Interface tablette et ordinateur (captures)",
       "status": "réussi",
-      "ms": 2050,
+      "ms": 2274,
       "detail": ""
     },
     {
       "name": "Mode sombre et thème clair",
       "status": "réussi",
-      "ms": 167,
+      "ms": 302,
       "detail": ""
     },
     {
