@@ -100,3 +100,23 @@ jobs:
           path: |
             tests/e2e/results.json
             tests/e2e/screenshots/
+      - name: Récupération du rapport des tests locaux
+        if: always()
+        uses: actions/download-artifact@v4
+        with:
+          name: e2e-local
+          path: e2e-local
+      - name: Publication du rapport dans le dépôt (docs/TESTS.md) et résumé
+        if: always()
+        run: |
+          mkdir -p docs/test-results
+          [ -f e2e-local/results.json ] && cp e2e-local/results.json docs/test-results/e2e-local.json || true
+          [ -f tests/e2e/results.json ] && cp tests/e2e/results.json docs/test-results/e2e-production.json || true
+          node tools/tests-report.mjs $(ls docs/test-results/e2e-local.json docs/test-results/e2e-production.json 2>/dev/null)
+          cat docs/TESTS.md >> "$GITHUB_STEP_SUMMARY"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/TESTS.md docs/test-results
+          git diff --cached --quiet && exit 0
+          git commit -q -m "docs(tests): rapport des tests ${GITHUB_SHA::7} [skip ci]"
+          git pull -q --rebase origin main && git push -q origin HEAD:main
