@@ -1,8 +1,8 @@
 # Résultats des tests — TopoMaroc GIS
 
-Généré le 2026-10-18 20:11 UTC par `tools/tests-report.mjs` à partir d'exécutions réelles. Aucun test n'est déclaré réussi sans avoir été exécuté.
+Généré le 2026-10-18 20:23 UTC par `tools/tests-report.mjs` à partir d'exécutions réelles. Aucun test n'est déclaré réussi sans avoir été exécuté.
 
-## 1. Tests unitaires (Node v22.22.0, `node --test`)
+## 1. Tests unitaires (Node v22.23.3, `node --test`)
 
 Références indépendantes : PROJ 9.8.1 (pyproj 3.8.0), GeographicLib-C (pyproj.Geod), Shapely, NOAA WMM 2025 (pygeomag), générées dans GitHub Actions par `tools/reference/make_reference.py`.
 
@@ -78,7 +78,7 @@ Constat documenté : PROJ n'applique pas EPSG:1166 dans les zones Sahara Nord/Su
 
 ## 2. Tests navigateur — http://127.0.0.1:8080/
 
-Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ordinateur 1440×900 ; GPS simulé. Exécution du 2026-10-18 20:08 UTC.
+Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ordinateur 1440×900 ; GPS simulé. Exécution du 2026-10-18 20:20 UTC.
 
 **20 réussi(s), 0 échoué(s), 2 non exécuté(s).**
 
@@ -98,8 +98,39 @@ Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ord
 | ✅ réussi | Levé : moyenne « attendre une meilleure précision » |  |
 | ✅ réussi | Parcelle : carré 10 m × 10 m saisi en Lambert Nord → 100,00 m² | superficie 100,00 m², périmètre 40,00 m |
 | ✅ réussi | Parcelle : polygone auto-intersecté et sommets en double détectés |  |
-| ✅ réussi | Parcelle : mode dessin sur la carte puis rapport PDF | 4 sommets dessinés, 2 930,57 m², PDF 24312 octets |
-| ✅ réussi | Import CSV (séparateur ;) avec choix du système puis export GeoJSON/DXF/CSV/XLSX | Leve_du_18_10_2026-20261018-2107.geojson, Leve_du_18_10_2026-20261018-2107-26191.dxf, Leve_du_18_10_2026-20261018-2107-26191.csv, Leve_du_18_10_2026-20261018-2107.xlsx |
+| ✅ réussi | Parcelle : mode dessin sur la carte puis rapport PDF | 4 sommets dessinés, 2 930,57 m², PDF 24306 octets |
+| ✅ réussi | Import CSV (séparateur ;) avec choix du système puis export GeoJSON/DXF/CSV/XLSX | Leve_du_18_10_2026-20261018-2020.geojson, Leve_du_18_10_2026-20261018-2020-26191.dxf, Leve_du_18_10_2026-20261018-2020-26191.csv, Leve_du_18_10_2026-20261018-2020.xlsx |
+| ✅ réussi | Sauvegarde complète puis restauration | 1 projet(s), 1 entité(s) restaurés |
+| ✅ réussi | Outils : convertisseur (Lambert Nord → tous systèmes) et mesure de distance | origine (500 000 ; 300 000) → φ 33,3° λ −5,4° ; distance mesurée 148,64 m |
+| ✅ réussi | Interface tablette et ordinateur (captures) |  |
+| ✅ réussi | Mode sombre et thème clair |  |
+| ⏸ non exécuté | Smartphone iOS / Android réels | aucun appareil physique disponible dans l’environnement de test : à valider sur le terrain (Safari iOS, Chrome Android) |
+| ⏸ non exécuté | Installation PWA sur l’écran d’accueil | nécessite une interaction utilisateur sur un appareil réel ; critères vérifiés automatiquement (manifeste, icônes, service worker, HTTPS) |
+
+## 3. Tests navigateur — https://milyasse.github.io/topomaroc-gis/
+
+Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ordinateur 1440×900 ; GPS simulé. Exécution du 2026-10-18 20:23 UTC.
+
+**20 réussi(s), 0 échoué(s), 2 non exécuté(s).**
+
+| Résultat | Scénario | Détail |
+|---|---|---|
+| ✅ réussi | Chargement de l’application sans erreur JavaScript | 8 actions sur l’écran d’accueil |
+| ✅ réussi | Lien direct et rechargement d’une route profonde (#/parcels) |  |
+| ✅ réussi | PWA : manifeste valide et service worker actif | manifeste + service worker « activated » |
+| ✅ réussi | Hors connexion : l’application redémarre depuis le cache (service worker) | interface et modules servis hors ligne |
+| ✅ réussi | Navigation : saisie Lambert Nord, distance et azimut cohérents | distance 120 m, 45.0° NE · azimut vrai |
+| ✅ réussi | Navigation : arrivée dans le rayon (10 m) → alerte visuelle | arrivée détectée à 4 m, point atteint enregistré |
+| ✅ réussi | Navigation : précision GPS insuffisante signalée |  |
+| ✅ réussi | GPS : autorisation refusée | — |
+| ✅ réussi | GPS : position indisponible (erreur du capteur) |  |
+| ✅ réussi | GPS : perte du signal (aucune mesure depuis 15 s) → état « signal perdu » | état stale détecté après ~15 s sans nouvelle position |
+| ✅ réussi | Levé : enregistrement GPS, persistance après rechargement | 2 points, annuler/rétablir, persistance IndexedDB |
+| ✅ réussi | Levé : moyenne « attendre une meilleure précision » |  |
+| ✅ réussi | Parcelle : carré 10 m × 10 m saisi en Lambert Nord → 100,00 m² | superficie 100,00 m², périmètre 40,00 m |
+| ✅ réussi | Parcelle : polygone auto-intersecté et sommets en double détectés |  |
+| ✅ réussi | Parcelle : mode dessin sur la carte puis rapport PDF | 4 sommets dessinés, 2 930,57 m², PDF 24306 octets |
+| ✅ réussi | Import CSV (séparateur ;) avec choix du système puis export GeoJSON/DXF/CSV/XLSX | Leve_du_18_10_2026-20261018-2023.geojson, Leve_du_18_10_2026-20261018-2023-26191.dxf, Leve_du_18_10_2026-20261018-2023-26191.csv, Leve_du_18_10_2026-20261018-2023.xlsx |
 | ✅ réussi | Sauvegarde complète puis restauration | 1 projet(s), 1 entité(s) restaurés |
 | ✅ réussi | Outils : convertisseur (Lambert Nord → tous systèmes) et mesure de distance | origine (500 000 ; 300 000) → φ 33,3° λ −5,4° ; distance mesurée 148,64 m |
 | ✅ réussi | Interface tablette et ordinateur (captures) |  |

@@ -1,0 +1,139 @@
+{
+  "base": "https://milyasse.github.io/topomaroc-gis/",
+  "date": "2026-10-18T20:23:13.918Z",
+  "passed": 20,
+  "failed": 0,
+  "skipped": 2,
+  "results": [
+    {
+      "name": "Chargement de l’application sans erreur JavaScript",
+      "status": "réussi",
+      "ms": 1014,
+      "detail": "8 actions sur l’écran d’accueil"
+    },
+    {
+      "name": "Lien direct et rechargement d’une route profonde (#/parcels)",
+      "status": "réussi",
+      "ms": 1091,
+      "detail": ""
+    },
+    {
+      "name": "PWA : manifeste valide et service worker actif",
+      "status": "réussi",
+      "ms": 670,
+      "detail": "manifeste + service worker « activated »"
+    },
+    {
+      "name": "Hors connexion : l’application redémarre depuis le cache (service worker)",
+      "status": "réussi",
+      "ms": 2444,
+      "detail": "interface et modules servis hors ligne"
+    },
+    {
+      "name": "Navigation : saisie Lambert Nord, distance et azimut cohérents",
+      "status": "réussi",
+      "ms": 1465,
+      "detail": "distance 120 m, 45.0° NE · azimut vrai"
+    },
+    {
+      "name": "Navigation : arrivée dans le rayon (10 m) → alerte visuelle",
+      "status": "réussi",
+      "ms": 2487,
+      "detail": "arrivée détectée à 4 m, point atteint enregistré"
+    },
+    {
+      "name": "Navigation : précision GPS insuffisante signalée",
+      "status": "réussi",
+      "ms": 625,
+      "detail": ""
+    },
+    {
+      "name": "GPS : autorisation refusée",
+      "status": "réussi",
+      "ms": 1341,
+      "detail": "—"
+    },
+    {
+      "name": "GPS : position indisponible (erreur du capteur)",
+      "status": "réussi",
+      "ms": 519,
+      "detail": ""
+    },
+    {
+      "name": "GPS : perte du signal (aucune mesure depuis 15 s) → état « signal perdu »",
+      "status": "réussi",
+      "ms": 16560,
+      "detail": "état stale détecté après ~15 s sans nouvelle position"
+    },
+    {
+      "name": "Levé : enregistrement GPS, persistance après rechargement",
+      "status": "réussi",
+      "ms": 1552,
+      "detail": "2 points, annuler/rétablir, persistance IndexedDB"
+    },
+    {
+      "name": "Levé : moyenne « attendre une meilleure précision »",
+      "status": "réussi",
+      "ms": 3901,
+      "detail": ""
+    },
+    {
+      "name": "Parcelle : carré 10 m × 10 m saisi en Lambert Nord → 100,00 m²",
+      "status": "réussi",
+      "ms": 3391,
+      "detail": "superficie 100,00 m², périmètre 40,00 m"
+    },
+    {
+      "name": "Parcelle : polygone auto-intersecté et sommets en double détectés",
+      "status": "réussi",
+      "ms": 2419,
+      "detail": ""
+    },
+    {
+      "name": "Parcelle : mode dessin sur la carte puis rapport PDF",
+      "status": "réussi",
+      "ms": 2718,
+      "detail": "4 sommets dessinés, 2 930,57 m², PDF 24306 octets"
+    },
+    {
+      "name": "Import CSV (séparateur ;) avec choix du système puis export GeoJSON/DXF/CSV/XLSX",
+      "status": "réussi",
+      "ms": 8086,
+      "detail": "Leve_du_18_10_2026-20261018-2023.geojson, Leve_du_18_10_2026-20261018-2023-26191.dxf, Leve_du_18_10_2026-20261018-2023-26191.csv, Leve_du_18_10_2026-20261018-2023.xlsx"
+    },
+    {
+      "name": "Sauvegarde complète puis restauration",
+      "status": "réussi",
+      "ms": 3455,
+      "detail": "1 projet(s), 1 entité(s) restaurés"
+    },
+    {
+      "name": "Outils : convertisseur (Lambert Nord → tous systèmes) et mesure de distance",
+      "status": "réussi",
+      "ms": 364,
+      "detail": "origine (500 000 ; 300 000) → φ 33,3° λ −5,4° ; distance mesurée 148,64 m"
+    },
+    {
+      "name": "Interface tablette et ordinateur (captures)",
+      "status": "réussi",
+      "ms": 2307,
+      "detail": ""
+    },
+    {
+      "name": "Mode sombre et thème clair",
+      "status": "réussi",
+      "ms": 204,
+      "detail": ""
+    },
+    {
+      "name": "Smartphone iOS / Android réels",
+      "status": "non exécuté",
+      "detail": "aucun appareil physique disponible dans l’environnement de test : à valider sur le terrain (Safari iOS, Chrome Android)"
+    },
+    {
+      "name": "Installation PWA sur l’écran d’accueil",
+      "status": "non exécuté",
+      "detail": "nécessite une interaction utilisateur sur un appareil réel ; critères vérifiés automatiquement (manifeste, icônes, service worker, HTTPS)"
+    }
+  ]
+}
