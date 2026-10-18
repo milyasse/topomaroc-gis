@@ -2,6 +2,7 @@
 /** Point d'entrée : initialisation, routage (hash, compatible GitHub Pages), barre d'état, accueil. */
 import * as crs from './core/crs.js';
 import { formatCoord, formatArea, formatLength } from './core/units.js';
+import { formatPercent } from './core/units.js';
 import { state, on, emit, loadSettings, openProject, updateSettings, codeInfo } from './state.js';
 import { openDB, requestPersistence } from './services/storage.js';
 import { accuracyQuality } from './services/gps.js';
@@ -11,6 +12,7 @@ import { anim, makeSheet } from './ui/anim.js';
 import { setLang, t } from './i18n/index.js';
 import { crsSelect } from './ui/coordinput.js';
 import { analyze } from './io/common.js';
+import { startPlacing, startSelecting, stopModes } from './ui/maptools.js';
 
 const ROUTES = /** @type {Record<string, { title: string, load: () => Promise<any>, ic: string }>} */ ({
   nav: { title: 'Aller à un point', ic: 'target', load: () => import('./ui/nav.js') },
@@ -36,6 +38,7 @@ async function boot() {
   M.initMap(/** @type {HTMLElement} */ (document.getElementById('map')));
   sheet = makeSheet(/** @type {HTMLElement} */ (document.getElementById('sheet')), /** @type {HTMLElement} */ (document.getElementById('sheet-handle')));
   wireChrome();
+  on('sheet-snap', (st) => { if (sheet && !document.getElementById('sheet')?.hidden) sheet.snap(st); });
   if (state.settings.lastProjectId) await openProject(state.settings.lastProjectId).catch(() => openProject(null));
   window.addEventListener('hashchange', route);
   await route();
@@ -61,6 +64,7 @@ async function route() {
   const param = rest.join('/') || undefined;
   cleanup?.(); cleanup = null;
   M.closePopup();
+  if (name !== 'map') stopModes();
   document.querySelectorAll('.dock a').forEach((a) => a.setAttribute('aria-current', String(/** @type {HTMLAnchorElement} */ (a).dataset.route === (name || 'home'))));
 
   const home = /** @type {HTMLElement} */ (document.getElementById('home'));
@@ -83,6 +87,7 @@ async function route() {
   }
   const r = ROUTES[name];
   if (!r) { location.hash = '#/home'; return; }
+  const wasHidden = sh.hidden;
   sh.hidden = false; document.body.classList.add('has-sheet');
   const title = /** @type {HTMLElement} */ (document.getElementById('sheet-title'));
   mount(title, icon(r.ic), h('span', null, r.title));
@@ -97,7 +102,7 @@ async function route() {
     cleanup = typeof c === 'function' ? c : null;
     content.scrollTop = 0;
     anim.panelIn(content);
-    if (sheet.state() === 'min') sheet.snap('mid'); else sheet.snap(/** @type {any} */ (sheet.state()));
+    if (wasHidden) sheet.snap('mid');
     M.invalidate();
   } catch (e) {
     console.error(e);
@@ -116,8 +121,8 @@ function renderHome(el) {
   mount(el,
     h('div.home-inner', null,
       h('div.home-brand', { 'data-stagger': '' }, h('img', { src: 'icons/icon.svg', alt: '', width: 56, height: 56 }), h('div', null, h('h1', null, 'TopoMaroc ', h('span', null, 'GIS')), h('p', null, t('tagline')))),
-      h('div.project-card', { 'data-stagger': '' },
-        p ? [h('div.eyebrow', null, 'Projet en cours'), h('div.pc-name', null, p.name), h('div.pc-sub', null, `${counts.points} point(s) · ${counts.parcels} parcelle(s) · ${crs.getCrs(state.settings.inputCrs).label}`)]
+      h('div.project-card', { 'data-stagger': '', role: 'button', tabindex: 0, title: 'Voir le projet', onclick: () => { location.hash = p ? `#/projects/${p.id}` : '#/projects'; } },
+        p ? [h('div.eyebrow', null, 'Projet en cours — toucher pour voir le détail'), h('div.pc-name', null, p.name), h('div.pc-sub', null, `${counts.points} point(s) · ${counts.parcels} parcelle(s) · ${crs.getCrs(state.settings.inputCrs).label}`)]
           : [h('div.eyebrow', null, 'Aucun projet ouvert'), h('div.pc-sub', null, 'Créez un projet ou reprenez-en un. Vos données restent sur cet appareil.')]),
       h('div.tiles', null,
         tile('#/nav', 'target', 'Aller à un point', 'Navigation GPS vers des coordonnées', true),
@@ -149,7 +154,7 @@ function wireChrome() {
   const pchip = /** @type {HTMLElement} */ (document.getElementById('chip-project'));
   const paintProject = () => mount(pchip, icon('folder'), h('span', null, state.project?.name ?? 'Aucun projet'));
   on('project', paintProject); paintProject();
-  pchip.addEventListener('click', () => { location.hash = '#/projects'; });
+  pchip.addEventListener('click', () => { location.hash = state.project ? `#/projects/${state.project.id}` : '#/projects'; });
 
   // Puce système d'affichage
   const cchip = /** @type {HTMLElement} */ (document.getElementById('chip-crs'));
@@ -186,6 +191,8 @@ function wireChrome() {
       following = false; M.setFollow(false); state.gps.stop(); locBtn.classList.remove('on');
     }
   });
+  document.getElementById('btn-addpt')?.addEventListener('click', () => startPlacing());
+  document.getElementById('btn-select')?.addEventListener('click', () => startSelecting());
   document.getElementById('btn-zin')?.addEventListener('click', () => M.getMap().zoomIn());
   document.getElementById('btn-zout')?.addEventListener('click', () => M.getMap().zoomOut());
   document.getElementById('btn-extent')?.addEventListener('click', () => (state.features.length ? M.zoomToAll() : M.zoomInitial()));
@@ -251,13 +258,19 @@ function wireChrome() {
       let a = null; try { a = f.type === 'parcel' && f.vertices.length >= 3 ? analyze(f) : null; } catch { /* */ }
       const w = crs.toWGS84(f.crsId, [f.vertices[0].x, f.vertices[0].y]);
       M.popup(w.lat, w.lon, h('div.pi', null, h('div.pi-title', null, icon(f.type === 'parcel' ? 'polygon' : 'line'), h('b', null, f.name || (f.type === 'parcel' ? 'Parcelle' : 'Ligne'))),
+        f.owner ? h('div.pi-owner', null, h('span.swatch', { style: { background: f.owner.color } }), h('b', null, f.owner.name), f.owner.percent != null ? ` · ${formatPercent(+f.owner.percent)}` : '') : null,
         a?.valid ? h('div', null, `${formatArea(a.area, /** @type {any} */ (state.settings.areaUnit))} · ${formatLength(a.perimeter)}`) : h('div.small', null, `${f.vertices.length} sommets`),
-        f.type === 'parcel' ? h('div.pi-actions', null, btn('Ouvrir', { variant: 'primary', onclick: () => { location.hash = `#/parcels/${f.id}`; } }, 'edit')) : null));
+        f.type === 'parcel' ? h('div.pi-actions', null,
+          btn('Ouvrir', { variant: 'primary', onclick: () => { location.hash = `#/parcels/${f.id}`; } }, 'edit'),
+          f.parentId ? null : btn('Partager', { variant: 'ghost', onclick: () => { location.hash = `#/parcels/${f.id}/share`; } }, 'users')) : null));
     }
   });
 
   // Erreurs de tuiles
-  on('tile-error', ({ offline }) => {
+  const tileWarned = new Set();
+  on('tile-error', ({ id, offline }) => {
+    if (tileWarned.has(id)) return;
+    tileWarned.add(id);
     toast(offline ? 'Hors connexion : le fond de carte n’est pas disponible. Les calculs, la saisie et le GPS fonctionnent.' : 'Le fond de carte ne répond pas. Essayez un autre fond (Outils → Couches) ou « Sans fond ».', 'warn', 7000);
   });
   window.addEventListener('offline', () => { document.body.classList.add('offline'); toast('Hors connexion : mode terrain (saisie, GPS, calculs et sauvegarde locale).', 'info', 5000); });

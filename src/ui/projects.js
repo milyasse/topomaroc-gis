@@ -23,11 +23,77 @@ export async function newProjectDialog() {
   return p;
 }
 
-/** @param {HTMLElement} root */
-export async function render(root) {
+/** @param {HTMLElement} root @param {string} [id] */
+export async function render(root, id) {
+  if (id) {
+    const off = on('features', () => detail(root, id));
+    const off2 = on('project', () => detail(root, id));
+    await detail(root, id);
+    return () => { off(); off2(); };
+  }
   const off = on('project', () => draw(root));
   await draw(root);
   return off;
+}
+
+/** Fiche détaillée d'un projet : statistiques, personnes, superficies, actions. @param {HTMLElement} root @param {string} id */
+async function detail(root, id) {
+  const p = await db.getProject(id);
+  if (!p) { mount(root, h('p.empty', null, 'Projet introuvable.'), btn('Tous les projets', { onclick: () => { location.hash = '#/projects'; } })); return; }
+  const isOpen = state.project?.id === id;
+  const feats = isOpen ? state.features : await db.listFeatures(id);
+  const { analyze } = await import('../io/common.js');
+  const { formatArea } = await import('../core/units.js');
+  const crs = await import('../core/crs.js');
+  const pts = feats.filter((f) => f.type === 'point');
+  const parcels = feats.filter((f) => f.type === 'parcel');
+  const top = parcels.filter((f) => !f.parentId);
+  let total = 0, invalid = 0;
+  /** @type {Map<string, {area:number, color:string, n:number}>} */ const people = new Map();
+  for (const f of parcels) {
+    let a = null; try { a = f.vertices.length >= 3 ? analyze(f) : null; } catch { /* */ }
+    if (!a?.valid) { if (!f.parentId) invalid++; continue; }
+    if (!f.parentId) total += a.area;
+    if (f.owner?.name && (f.parentId || !parcels.some((c) => c.parentId === f.id))) {
+      const k = f.owner.name.trim();
+      const e = people.get(k) ?? { area: 0, color: f.owner.color, n: 0 };
+      e.area += a.area; e.n++; people.set(k, e);
+    }
+  }
+  const src = { gps: 0, manual: 0, import: 0, map: 0, nav: 0 };
+  for (const f of pts) /** @type {any} */ (src)[f.source] = (/** @type {any} */ (src)[f.source] ?? 0) + 1;
+  const stat = (/** @type {string} */ label, /** @type {any} */ value, /** @type {string} */ ic) => h('div.stat', null, icon(ic), h('div', null, h('div.stat-v', null, value), h('div.stat-l', null, label)));
+  const unit = /** @type {any} */ (state.settings.areaUnit);
+  mount(root,
+    h('button.link-btn.back', { type: 'button', onclick: () => { location.hash = '#/projects'; } }, icon('back'), 'Tous les projets'),
+    h('div.project-hero', null,
+      h('div.eyebrow', null, isOpen ? 'Projet ouvert' : 'Projet'),
+      h('h3', null, p.name),
+      h('div.small.muted', null, `${p.date ? `Levé du ${new Date(p.date).toLocaleDateString('fr-FR')} · ` : ''}créé le ${new Date(p.createdAt).toLocaleDateString('fr-FR')} · modifié le ${new Date(p.updatedAt).toLocaleString('fr-FR')}`),
+      p.notes ? h('p.small', null, p.notes) : null,
+      h('div.small', null, icon('grid'), ` Système de travail : ${p.crsId ? crs.getCrs(p.crsId).label : '—'}`)),
+    h('div.stats', null,
+      stat('Points', String(pts.length), 'pin'),
+      stat('Parcelles', `${top.length}${invalid ? ` (${invalid} à corriger)` : ''}`, 'polygon'),
+      stat('Superficie totale', formatArea(total, unit), 'grid'),
+      stat('Personnes', String(people.size), 'users')),
+    pts.length ? h('p.small.muted', null, `Origine des points : ${src.gps} GPS · ${src.manual} saisis · ${src.map} placés sur la carte · ${src.import} importés · ${src.nav} atteints en navigation`) : null,
+    people.size ? h('div', null, h('h4', null, 'Superficie par personne'),
+      h('div.table-wrap', null, h('table.tbl', null, h('tbody', null, [...people.entries()].sort((a, b) => b[1].area - a[1].area).map(([name, e]) => h('tr', null,
+        h('td', null, h('span.swatch', { style: { background: e.color } }), ` ${name}`), h('td.num', null, `${e.n} lot(s)`), h('td.num', null, formatArea(e.area, unit)))))))) : null,
+    top.length ? h('div', null, h('h4', null, 'Parcelles'), top.map((f) => {
+      let a = null; try { a = analyze(f); } catch { /* */ }
+      const lots = parcels.filter((c) => c.parentId === f.id).length;
+      return h('div.item', null, icon('polygon'), h('div.item-main', { role: 'button', tabindex: 0, onclick: async () => { if (!isOpen) await openProject(id); location.hash = `#/parcels/${f.id}`; } },
+        h('div.item-title', null, h('b', null, f.name || 'Parcelle'), lots ? h('span.badge', null, `${lots} lots`) : null, f.owner ? h('span.badge', null, f.owner.name) : null),
+        h('div.item-sub', null, a?.valid ? formatArea(a.area, unit) : 'à corriger')));
+    })) : null,
+    h('div.btn-grid', null,
+      btn(isOpen ? 'Voir sur la carte' : 'Ouvrir et voir sur la carte', { variant: 'primary', onclick: async () => { if (!isOpen) await openProject(id); location.hash = '#/map'; setTimeout(() => M.zoomToAll(), 150); } }, 'map'),
+      btn('Exporter', { variant: 'ghost', onclick: async () => { if (!isOpen) await openProject(id); exportDialog(state.features, 'geojson'); } }, 'download'),
+      btn('Sauvegarder', { variant: 'ghost', onclick: () => backup([id], p.name) }, 'folder'),
+      isOpen ? null : btn('Ouvrir le projet', { variant: 'ghost', onclick: async () => { await openProject(id); toast(`Projet « ${p.name} » ouvert.`, 'ok'); } }, 'check')),
+  );
 }
 
 /** @param {HTMLElement} root */
@@ -40,10 +106,11 @@ async function draw(root) {
     if (!projects.length) { mount(list, h('p.empty', null, 'Aucun projet. Créez un projet ou importez une sauvegarde.')); return; }
     mount(list, projects.map((p) => h(`div.item${state.project?.id === p.id ? '.current' : ''}`, null,
       icon('folder'),
-      h('div.item-main', { role: 'button', tabindex: 0, onclick: async () => { await openProject(p.id); toast(`Projet « ${p.name} » ouvert.`, 'ok'); M.zoomToAll(); location.hash = '#/map'; } },
+      h('div.item-main', { role: 'button', tabindex: 0, onclick: () => { location.hash = `#/projects/${p.id}`; } },
         h('div.item-title', null, h('b', null, p.name), state.project?.id === p.id ? h('span.badge.q-good', null, 'ouvert') : null),
         h('div.item-sub', null, `${counts.get(p.id)} entité(s) · ${p.date || ''} · modifié le ${new Date(p.updatedAt).toLocaleString('fr-FR')}`)),
       h('div.item-actions', null,
+        h('button.icon-btn', { type: 'button', title: 'Ouvrir et voir sur la carte', 'aria-label': 'Voir sur la carte', onclick: async () => { await openProject(p.id); location.hash = '#/map'; setTimeout(() => M.zoomToAll(), 150); } }, icon('map')),
         h('button.icon-btn', { type: 'button', title: 'Sauvegarder (fichier)', 'aria-label': 'Sauvegarder', onclick: () => backup([p.id], p.name) }, icon('download')),
         h('button.icon-btn.danger', { type: 'button', title: 'Supprimer', 'aria-label': 'Supprimer le projet', onclick: () => del(p) }, icon('trash'))))));
   };

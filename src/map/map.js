@@ -6,9 +6,10 @@
  */
 import * as L from '../../vendor/leaflet/leaflet.mjs';
 import { BASEMAPS } from './basemaps.js';
+import { smartTileLayer } from './smarttiles.js';
 import * as crs from '../core/crs.js';
 import { densify } from '../core/geodesy.js';
-import { formatCoord, formatArea } from '../core/units.js';
+import { formatCoord, formatArea, fmtNum } from '../core/units.js';
 import { toDMS } from '../core/angles.js';
 import { verticesLL, analyze } from '../io/common.js';
 import { state, on, codeInfo, emit } from '../state.js';
@@ -42,7 +43,8 @@ export function initMap(el) {
   map.on('moveend', () => { const c = map.getCenter(); emit('cursor', { lat: c.lat, lon: c.lng, source: 'center' }); });
 
   on('features', () => renderFeatures());
-  on('settings', (p) => { if (p.basemap) setBasemap(p.basemap); if (p.layers || p.layerOrder) applyLayerSettings(); if (p.areaUnit) renderFeatures(); });
+  map.on('zoomend', () => requestAnimationFrame(fitLabels));
+  on('settings', (p) => { if (p.basemap || p.customBasemap) setBasemap(state.settings.basemap); if (p.layers || p.layerOrder) applyLayerSettings(); if (p.areaUnit) renderFeatures(); });
   on('datum', () => renderFeatures());
   state.gps.addEventListener('fix', (e) => updateGps(/** @type {any} */ (e).detail));
   state.gps.addEventListener('state', () => { if (state.gps.state === 'idle') groups.gps.clearLayers(); });
@@ -54,13 +56,30 @@ export function getMap() { return map; }
 // ------------------------------------------------------------- Fonds de carte
 /** @param {string} id */
 export function setBasemap(id) {
-  const def = BASEMAPS.find((b) => b.id === id) ?? BASEMAPS[0];
+  /** @type {any} */ let def = BASEMAPS.find((b) => b.id === id) ?? BASEMAPS[0];
   if (base) map.removeLayer(base);
   base = null;
   tileErrors = 0; tileWarned = false;
+  if (def.custom) {
+    const c = /** @type {any} */ (state.settings).customBasemap;
+    if (c?.url) def = { ...def, url: c.url, options: { maxZoom: 22, maxNativeZoom: Number(c.maxNativeZoom) || 19, attribution: c.attribution || c.label || 'Fond personnalisé' } };
+  }
   document.body.classList.toggle('no-basemap', !def.url);
+  emit('resolution', null);
   if (!def.url) return;
-  base = L.tileLayer(def.url, { ...def.options, detectRetina: false });
+  base = def.smart ? smartTileLayer(def.url, { ...def.options }) : L.tileLayer(def.url, { ...def.options, detectRetina: false });
+  /** @type {number|null} */ let served = null;
+  /** @type {any} */ let resTimer = null;
+  const flushRes = () => { const z = map.getZoom(); emit('resolution', served != null && served < z ? { requested: z, served } : null); };
+  map.off('zoomstart', /** @type {any} */ (map)._resReset);
+  /** @type {any} */ (map)._resReset = () => { served = null; };
+  map.on('zoomstart', /** @type {any} */ (map)._resReset);
+  base.on('resolution', (/** @type {any} */ e) => {
+    if (e.requested !== Math.round(map.getZoom())) return;
+    served = served == null ? e.served : Math.min(served, e.served);
+    clearTimeout(resTimer);
+    resTimer = setTimeout(flushRes, 150);
+  });
   base.on('tileerror', () => {
     tileErrors++;
     if (tileErrors >= 6 && !tileWarned) {
@@ -89,33 +108,93 @@ export function applyLayerSettings() {
 // ------------------------------------------------------------- Rendu des entités
 const esc = (/** @type {any} */ s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] ?? c));
 
-/** Icône de point selon le code (carré pour les points de référence). @param {any} f */
-function pointIcon(f) {
+/** Icône de point selon le code (carré pour les points de référence). @param {any} f @param {boolean} [sel] */
+function pointIcon(f, sel = false) {
   const ci = codeInfo(f.code);
   const shape = ci.ref ? 'sq' : 'ci';
   return L.divIcon({
-    className: 'pt-icon',
+    className: `pt-icon${sel ? ' selected' : ''}`,
     html: `<span class="pt-mark pt-${shape}" style="--c:${ci.color}"></span><span class="pt-label">${esc(f.num || f.name || '')}</span>`,
     iconSize: [18, 18], iconAnchor: [9, 9],
   });
 }
 
+let renderQueued = false;
+/** Rendu différé (une seule fois par image) pour rester fluide lors de modifications en série. */
 export function renderFeatures() {
-  if (!map) return;
+  if (!map || renderQueued) return;
+  renderQueued = true;
+  requestAnimationFrame(() => { renderQueued = false; renderNow(); });
+}
+
+/** Points sélectionnés (multi-sélection). */
+export const selection = new Set();
+let selectionMode = false;
+export const isSelecting = () => selectionMode;
+/** @param {boolean} v */
+export function setSelectionMode(v) {
+  selectionMode = v;
+  if (!v) selection.clear();
+  document.body.classList.toggle('selecting', v);
+  renderFeatures();
+  emit('selection', { mode: v, ids: [...selection] });
+}
+/** @param {string} id */
+export function toggleSelected(id) {
+  if (selection.has(id)) selection.delete(id); else selection.add(id);
+  renderFeatures();
+  emit('selection', { mode: selectionMode, ids: [...selection] });
+}
+/** @param {string[]} ids */
+export function selectIds(ids) { ids.forEach((i) => selection.add(i)); renderFeatures(); emit('selection', { mode: selectionMode, ids: [...selection] }); }
+
+const canvasRenderer = L.canvas({ padding: 0.3 });
+
+/** Transmet un clic sur une entité à l'outil actif (dessin, mesure, placement). @param {any} e */
+export function forwardClick(e) {
+  if (!clickHandler) return;
+  const latlng = e.latlng;
+  clickHandler({ latlng, containerPoint: map.latLngToContainerPoint(latlng) });
+}
+
+function renderNow() {
+  setTimeout(fitLabels, 50);
   groups.parcels.clearLayers(); groups.lines.clearLayers(); groups.points.clearLayers();
+  const unit = /** @type {any} */ (state.settings.areaUnit);
+  const parents = new Set(state.features.filter((f) => f.parentId).map((f) => f.parentId));
+  const points = state.features.filter((f) => f.type === 'point');
+  const many = points.length > 300 && !selectionMode;
   for (const f of state.features) {
     try {
       if (f.type === 'point') {
-        const m = L.marker([f.wgs84.lat, f.wgs84.lon], { icon: pointIcon(f), pane: 'points', keyboard: true, title: `Point ${f.num || f.name || ''}` });
-        m.on('click', (e) => { L.DomEvent.stopPropagation(e); emit('feature-click', f); });
+        const sel = selection.has(f.id);
+        let m;
+        if (many) {
+          const ci = codeInfo(f.code);
+          m = L.circleMarker([f.wgs84.lat, f.wgs84.lon], { renderer: canvasRenderer, radius: 5, color: '#fff', weight: 1.5, fillColor: ci.color, fillOpacity: 1, pane: 'points' });
+          m.bindTooltip(String(f.num || f.name || ''), { direction: 'top' });
+        } else {
+          m = L.marker([f.wgs84.lat, f.wgs84.lon], { icon: pointIcon(f, sel), pane: 'points', keyboard: true, title: `Point ${f.num || f.name || ''}` });
+        }
+        m.on('click', (e) => { L.DomEvent.stopPropagation(e); if (selectionMode) toggleSelected(f.id); else if (clickHandler) forwardClick(e); else emit('feature-click', f); });
         m.addTo(groups.points);
       } else if (f.type === 'parcel' && f.vertices.length >= 2) {
         const ll = verticesLL(f).map(([lon, lat]) => L.latLng(lat, lon));
         const a = f.vertices.length >= 3 ? analyze(f) : null;
-        const poly = L.polygon(ll, { pane: 'parcels', color: a && !a.valid ? '#c62828' : '#0f5e9c', weight: 2.5, fillColor: '#2f86c8', fillOpacity: 0.15 });
-        if (a?.valid) poly.bindTooltip(`<b>${esc(f.name || 'Parcelle')}</b><br>${formatArea(a.area, /** @type {any} */ (state.settings.areaUnit))}`, { permanent: true, direction: 'center', className: 'parcel-label' });
-        poly.on('click', (e) => { L.DomEvent.stopPropagation(e); emit('feature-click', f); });
+        const divided = parents.has(f.id);
+        const color = f.owner?.color ?? (a && !a.valid ? '#c62828' : '#0f5e9c');
+        const poly = L.polygon(ll, divided
+          ? { pane: 'parcels', color: '#0f3d5e', weight: 3.5, fill: false, dashArray: '10 6' }
+          : { pane: 'parcels', color, weight: f.owner ? 2 : 2.5, fillColor: f.owner?.color ?? '#2f86c8', fillOpacity: f.owner ? 0.38 : 0.15 });
+        if (a?.valid && !divided) {
+          const pct = f.owner?.percent != null ? `<span class="pl-pct">${fmtNum(+f.owner.percent, 2).replace(/,?0+$/, '')} %</span>` : '';
+          const who = f.owner ? `<b>${esc(f.owner.name)}</b><span class="pl-area">${formatArea(a.area, unit)}</span>${pct}` : `<b>${esc(f.name || 'Parcelle')}</b><span class="pl-area">${formatArea(a.area, unit)}</span>`;
+          poly.bindTooltip(who, { permanent: true, direction: 'center', className: `parcel-label${f.owner ? ' owned' : ''}` });
+        }
+        poly.on('click', (e) => { L.DomEvent.stopPropagation(e); if (clickHandler) forwardClick(e); else emit('feature-click', f); });
         poly.addTo(groups.parcels);
+        if (!divided && f.owner) poly.bringToFront();
+        poly.on('tooltipopen', () => requestAnimationFrame(fitLabels));
       } else if (f.type === 'line' && f.vertices.length >= 2) {
         const ll = verticesLL(f).map(([lon, lat]) => L.latLng(lat, lon));
         L.polyline(ll, { pane: 'lines', color: '#1e78c8', weight: 3 }).on('click', (e) => { L.DomEvent.stopPropagation(e); emit('feature-click', f); }).addTo(groups.lines);
@@ -123,6 +202,41 @@ export function renderFeatures() {
     } catch (err) { console.warn('Rendu impossible', f.id, err); }
   }
 }
+
+/**
+ * Adapte les étiquettes de parcelles à la place disponible à l'écran : complète, nom seul,
+ * ou masquée si la parcelle est trop petite ou si l'étiquette chevauche une autre.
+ */
+function fitLabels() {
+  if (!map) return;
+  /** @type {{el: HTMLElement, w: number, h: number, area: number, box?: DOMRect}[]} */
+  const items = [];
+  groups.parcels.eachLayer((/** @type {any} */ l) => {
+    const t = l.getTooltip?.(); const el = t?.getElement?.();
+    if (!el) return;
+    const b = l.getBounds();
+    const p1 = map.latLngToContainerPoint(b.getNorthWest()), p2 = map.latLngToContainerPoint(b.getSouthEast());
+    const w = Math.abs(p2.x - p1.x), hgt = Math.abs(p2.y - p1.y);
+    el.classList.remove('compact', 'hidden-label');
+    items.push({ el, w, h: hgt, area: w * hgt });
+  });
+  for (const it of items) {
+    if (it.el.offsetWidth > it.w * 0.95 || it.el.offsetHeight > it.h * 0.9) it.el.classList.add('compact');
+    if (it.el.offsetWidth > it.w * 1.25 || it.el.offsetHeight > it.h * 1.1) it.el.classList.add('hidden-label');
+  }
+  // chevauchements : on garde l'étiquette de la plus grande parcelle
+  items.sort((a, b) => b.area - a.area);
+  const kept = [];
+  for (const it of items) {
+    if (it.el.classList.contains('hidden-label')) continue;
+    const r = it.el.getBoundingClientRect();
+    if (kept.some((k) => !(r.right < k.left || r.left > k.right || r.bottom < k.top || r.top > k.bottom))) { it.el.classList.add('hidden-label'); continue; }
+    kept.push(r);
+  }
+}
+
+/** Projette un point WGS 84 en pixels écran. @param {number} lat @param {number} lon */
+export function toPixel(lat, lon) { return map.latLngToContainerPoint([lat, lon]); }
 
 /** Marges de cadrage tenant compte du panneau ouvert (bas sur mobile, gauche sur ordinateur). */
 function fitPadding() {

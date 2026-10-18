@@ -52,6 +52,15 @@ Détection : moins de 3 sommets, fermeture répétée, sommets en double (≤ 1 
 
 **Rapport PDF** : projet, date, plan coté (échelle graphique, nord), tableau des sommets (Lambert + WGS 84), tableau des côtés (longueurs, gisements en grades ou degrés, longueurs géodésiques, azimuts), superficie et périmètre, système, méthode, qualité estimée, mention « ne constitue pas un document cadastral officiel ». [Exemple](docs/exemple-rapport-parcelle.pdf).
 
+### Nouveautés v1.1
+- **Satellite à fort zoom** : mesure réelle de la disponibilité au Maroc ([docs/resultats-tests/tuiles.json](docs/resultats-tests/tuiles.json)) — l'imagerie Esri existe jusqu'au zoom 18 en zone rurale (19 en ville, 17 à Dakhla) ; au-delà le serveur renvoie une tuile grise. L'application détecte ces tuiles vides et **agrandit automatiquement la meilleure image disponible** (badge « Imagerie max. ici : zoom 18 »). Fonds satellite : Esri, Esri Clarity, Sentinel-2 2023 (EOX, usage non commercial), **fond personnalisé** (URL XYZ sous licence de l'utilisateur).
+- **« + Point » sur la carte** : placement au réticule ou au toucher, sans GPS, en série.
+- **Sélection multiple de points** → *Créer une parcelle* (contour automatique sans croisement, ordre de sélection ou numéros) ou *Ajouter à une parcelle* (insertion au meilleur endroit du contour).
+- **Dessin** : accrochage aux points et sommets existants (limites communes exactes), fermeture en touchant le premier sommet, barre d'action flottante, panneau réduit automatiquement.
+- **Partage d'une parcelle entre personnes** : parts en % ou en fractions (1/8, 7/16…), contrôle de la somme à 100 %, côté d'accès facultatif, **propositions de découpage** (bandes perpendiculaires donnant une façade à chacun, ou parallèles) classées par compacité et contiguïté, réglage fin de l'orientation, **superficies exactes** (dichotomie, écart < 1 mm²), génération des lots associés à chaque personne, **couleurs distinctes**, étiquettes nom / superficie / %, rapport PDF de partage. Proposition technique, sans valeur juridique.
+- **Association d'une parcelle à une personne** et **fiche projet** (statistiques, superficie totale, superficie par personne).
+- Ergonomie et performance : rendu de carte différé, étiquettes adaptées à la place disponible, rendu Canvas au-delà de 300 points, alertes de fond de carte non répétées.
+
 ### Carte et outils
 Leaflet (plan OpenStreetMap, satellite Esri, relief OpenTopoMap, fond clair CARTO, « sans fond » pour le hors ligne), couches activables et ordonnables, légende, coordonnées au toucher dans tous les systèmes (avec « Aller à », « Ajouter un point », « Copier »), barre de coordonnées (curseur ou centre) dans le système choisi, échelle, zoom, emprise initiale/projet, plein écran, suivi GPS, mesure de distances et de superficies (géodésiques), convertisseur de coordonnées, recherche de coordonnées et de lieux (Nominatim), historique des mesures, déclinaison magnétique et convergence des méridiens.
 
@@ -112,7 +121,7 @@ Choix techniques : JavaScript moderne typé par JSDoc (vérifié avec `tsc`), sa
 
 ## Tests
 
-Voir [docs/TESTS.md](docs/TESTS.md). Résumé : 47 tests unitaires (transformations identiques à PROJ à < 1 mm, superficies identiques à Shapely/GeographicLib-C, WMM identique à la NOAA) et 20 scénarios navigateur (GPS simulé : autorisation refusée, position indisponible, précision insuffisante, perte de signal, navigation et arrivée, hors connexion, import/export, sauvegarde/restauration…), exécutés à chaque publication, y compris **sur l’URL publique**.
+Voir [docs/TESTS.md](docs/TESTS.md). Résumé : 57 tests unitaires (dont le partage de parcelles et l'assemblage de contours) (transformations identiques à PROJ à < 1 mm, superficies identiques à Shapely/GeographicLib-C, WMM identique à la NOAA) et 26 scénarios navigateur (GPS simulé : autorisation refusée, position indisponible, précision insuffisante, perte de signal, navigation et arrivée, hors connexion, import/export, sauvegarde/restauration…), exécutés à chaque publication, y compris **sur l’URL publique**.
 
 ## Dépendances externes et limites connues
 

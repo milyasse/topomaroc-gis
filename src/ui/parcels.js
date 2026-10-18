@@ -3,18 +3,22 @@
 import * as crs from '../core/crs.js';
 import { analyzeParcel, totalArea } from '../core/parcel.js';
 import { formatArea, formatLength, fmtNum, AREA_UNITS, formatCoord } from '../core/units.js';
+import { formatPercent } from '../core/units.js';
 import { formatBearing } from '../core/angles.js';
 import { inverse } from '../core/geodesy.js';
 import { dist2D } from '../core/geometry.js';
 import { averagePosition, accuracyQuality } from '../services/gps.js';
-import { state, on, addFeature, updateFeature, removeFeature, updateSettings, ensureProject } from '../state.js';
+import { state, on, emit, addFeature, updateFeature, removeFeature, updateSettings, ensureProject } from '../state.js';
 import * as M from '../map/map.js';
 import { h, icon, btn, mount, toast, field, select, modal, confirmDialog, promptDialog, shareOrSave } from './dom.js';
 import { crsSelect } from './coordinput.js';
 import { anim } from './anim.js';
 import { parseAngle, parseNumber, gridBearing } from '../core/angles.js';
 import { importWizard, exportDialog } from './transfer.js';
-import { analyze, safeName } from '../io/common.js';
+import { analyze, safeName, pointXY } from '../io/common.js';
+import { renderShare } from './share.js';
+import { showBar, hideBar } from './maptools.js';
+import { OWNER_COLORS } from '../core/division.js';
 
 const L = M.L;
 /** @type {Set<string>} */ const selected = new Set();
@@ -28,13 +32,16 @@ const areaUnitSelect = () => {
 // ============================================================= Liste
 /** @param {HTMLElement} root @param {string} [id] */
 export function render(root, id) {
+  if (id && id.endsWith('/share')) return renderShare(root, id.split('/')[0]);
   if (id) return renderEditor(root, id);
   const list = h('div.parcel-list');
   const total = h('div.total-bar');
   const unit = areaUnitSelect();
 
   const paint = () => {
-    const parcels = state.features.filter((f) => f.type === 'parcel');
+    const all = state.features.filter((f) => f.type === 'parcel');
+    // parcelles d'origine suivies de leurs lots
+    const parcels = all.filter((f) => !f.parentId || !all.some((q) => q.id === f.parentId)).flatMap((f) => [f, ...all.filter((c) => c.parentId === f.id)]);
     for (const s of [...selected]) if (!parcels.some((p) => p.id === s)) selected.delete(s);
     if (!parcels.length) { mount(list, h('p.empty', null, 'Aucune parcelle. Créez-en une par levé GPS, saisie de coordonnées, import de fichier ou dessin sur la carte.')); total.hidden = true; return; }
     const res = new Map(parcels.map((p) => [p.id, safeAnalyze(p)]));
@@ -42,9 +49,11 @@ export function render(root, id) {
       const a = res.get(p.id);
       const cb = /** @type {HTMLInputElement} */ (h('input', { type: 'checkbox', checked: selected.has(p.id), 'aria-label': `Sélectionner ${p.name}` }));
       cb.addEventListener('change', () => { if (cb.checked) selected.add(p.id); else selected.delete(p.id); paintTotal(); });
-      return h('div.item', null, cb,
+      const lots = all.filter((c) => c.parentId === p.id).length;
+      return h(`div.item${p.parentId ? '.child' : ''}`, null, cb,
+        p.owner ? h('span.swatch', { style: { background: p.owner.color } }) : null,
         h('div.item-main', { role: 'button', tabindex: 0, onclick: () => { location.hash = `#/parcels/${p.id}`; } },
-          h('div.item-title', null, h('b', null, p.name || 'Parcelle sans nom'), a?.valid ? null : h('span.badge.q-poor', null, 'à corriger')),
+          h('div.item-title', null, h('b', null, p.parentId && p.owner ? p.owner.name : (p.name || 'Parcelle sans nom')), a?.valid ? null : h('span.badge.q-poor', null, 'à corriger'), lots ? h('span.badge', null, `${lots} lots`) : null, !p.parentId && p.owner ? h('span.badge', null, p.owner.name) : null),
           h('div.item-sub', null, a?.valid ? `${formatArea(a.area, /** @type {any} */ (state.settings.areaUnit))} · périmètre ${formatLength(a.perimeter)}` : `${p.vertices.length} sommet(s)`),
           h('div.item-sub.muted', null, `${crs.getCrs(p.crsId).label} · ${p.vertices.length} sommets`)),
         h('div.item-actions', null,
@@ -223,7 +232,8 @@ function renderEditor(root, id) {
     if (ll.length >= 3) L.polygon(ll, { pane: 'draft', color: '#d6602a', weight: 3, fillOpacity: 0.12, dashArray: '8 6', interactive: false }).addTo(draft);
     else if (ll.length === 2) L.polyline(ll, { pane: 'draft', color: '#d6602a', weight: 3, dashArray: '8 6' }).addTo(draft);
     ll.forEach((pt, i) => {
-      const m = L.marker(pt, { pane: 'draft', draggable: true, autoPan: true, icon: L.divIcon({ className: 'vx-icon', html: `<span>${(p.vertices[i].label || i + 1)}</span>`, iconSize: [26, 26], iconAnchor: [13, 13] }), title: `Sommet ${p.vertices[i].label || i + 1} — glisser pour déplacer` });
+      const m = L.marker(pt, { pane: 'draft', draggable: true, autoPan: true, icon: L.divIcon({ className: `vx-icon${i === 0 ? ' vx-first' : ''}`, html: `<span>${(p.vertices[i].label || i + 1)}</span>`, iconSize: [26, 26], iconAnchor: [13, 13] }), title: `Sommet ${p.vertices[i].label || i + 1} — glisser pour déplacer` });
+      m.on('click', (ev) => { L.DomEvent.stopPropagation(ev); if (i === 0) emit('first-vertex-click'); else M.forwardClick(ev); });
       m.on('dragend', async () => {
         const q = get(); const nl = m.getLatLng();
         const xy = crs.transform('EPSG:4326', q.crsId, [nl.lng, nl.lat]);
@@ -268,6 +278,7 @@ function renderEditor(root, id) {
         await shareOrSave(blob, `${safeName(p.name)}-rapport.pdf`);
       } catch (e) { toast(/** @type {Error} */ (e).message, 'error', 6000); }
     } }, 'file'),
+    get().parentId ? null : btn('Partager entre personnes', { variant: 'primary', onclick: () => { location.hash = `#/parcels/${pid}/share`; } }, 'users'),
     btn('Exporter', { variant: 'ghost', onclick: () => exportDialog([get()], 'dxf', get().name) }, 'download'),
     btn('Voir sur la carte', { variant: 'ghost', onclick: () => get().vertices.length && M.zoomToFeature(get()) }, 'map'),
     btn('Supprimer', { variant: 'ghost-danger', onclick: () => deleteParcel(get()) }, 'trash'),
@@ -275,16 +286,44 @@ function renderEditor(root, id) {
   const undo = h('button.icon-btn', { type: 'button', title: 'Annuler', 'aria-label': 'Annuler', onclick: async () => { const l = await state.history.undo(); if (l) toast(`Annulé : ${l}`); } }, icon('undo'));
   const redo = h('button.icon-btn', { type: 'button', title: 'Rétablir', 'aria-label': 'Rétablir', onclick: async () => { const l = await state.history.redo(); if (l) toast(`Rétabli : ${l}`); } }, icon('redo'));
 
+  // Propriétaire / lots issus d'un partage
+  const ownerBox = h('div.owner-box');
+  const paintOwner = () => {
+    const p = get(); if (!p) return;
+    const lots = state.features.filter((f) => f.parentId === p.id);
+    if (lots.length) {
+      mount(ownerBox, h('div.eyebrow', null, `Partagée entre ${lots.length} personne(s)`),
+        h('div.chips', null, lots.map((f) => h('button.chip', { type: 'button', onclick: () => { location.hash = `#/parcels/${f.id}`; } }, h('span.swatch', { style: { background: f.owner?.color } }), ` ${f.owner?.name ?? ''} · ${formatPercent(+f.owner?.percent || 0)}`))),
+        btn('Voir / refaire le partage', { variant: 'ghost', onclick: () => { location.hash = `#/parcels/${p.id}/share`; } }, 'users'));
+      return;
+    }
+    const setOwner = async () => {
+      const n = /** @type {HTMLInputElement} */ (h('input', { type: 'text', value: p.owner?.name ?? '', placeholder: 'Nom et prénom' }));
+      const c = /** @type {HTMLInputElement} */ (h('input', { type: 'color', value: p.owner?.color ?? OWNER_COLORS[state.features.filter((f) => f.owner).length % OWNER_COLORS.length] }));
+      const ok = await modal({ title: 'Propriétaire de la parcelle', body: () => [field('Personne', n), field('Couleur sur la carte', c)],
+        actions: [p.owner ? { label: 'Retirer', value: 'remove' } : { label: 'Annuler', value: false }, { label: 'Enregistrer', value: true, variant: 'primary' }] });
+      if (ok === 'remove') { const { owner, ...rest } = get(); void owner; await updateFeature(rest, 'Retrait du propriétaire'); return; }
+      if (!ok || !n.value.trim()) return;
+      await updateFeature({ ...get(), owner: { name: n.value.trim(), percent: p.parentId ? p.owner?.percent : 100, color: c.value } }, 'Propriétaire');
+    };
+    mount(ownerBox, p.owner
+      ? h('div.owner-line', null, h('span.swatch', { style: { background: p.owner.color } }), h('div', null, h('div.eyebrow', null, p.parentId ? 'Lot attribué à' : 'Propriétaire'), h('b', null, p.owner.name), p.owner.percent != null ? h('span.muted', null, ` · ${formatPercent(+p.owner.percent)}`) : null),
+        h('span.spacer'), h('button.icon-btn', { type: 'button', 'aria-label': 'Modifier le propriétaire', onclick: setOwner }, icon('edit')),
+        p.parentId ? h('button.link-btn', { type: 'button', onclick: () => { location.hash = `#/parcels/${p.parentId}/share`; } }, 'Parcelle d’origine') : null)
+      : h('div.row.wrap', null, btn('Associer à une personne', { variant: 'ghost', onclick: setOwner }, 'users')));
+  };
+  paintOwner();
+
   mount(root,
     summary,
     h('div.editor-head', null, h('button.icon-btn', { type: 'button', 'aria-label': 'Retour à la liste', title: 'Retour à la liste', onclick: () => { location.hash = '#/parcels'; } }, icon('back')), title, rename, h('span.spacer'), undo, redo),
     h('div.muted.small', null, `Sommets en ${crs.getCrs(p0.crsId).label} (${crs.getCrs(p0.crsId).epsg ? 'EPSG:' + crs.getCrs(p0.crsId).epsg : ''})`),
-    results, issues, tabs, body, sides, between, actions,
+    results, ownerBox, issues, tabs, body, sides, between, actions,
   );
   paintTabs(); paintTab(); paintResults(); paintMap();
   if (p0.vertices.length) M.zoomToFeature(p0);
   projSel.addEventListener('change', paintResults);
-  const off = on('features', () => { if (!get()) { location.hash = '#/parcels'; return; } paintResults(); paintMap(); if (tab === 'manual') tabManual(body, get, saveVertices, true); });
+  const off = on('features', () => { if (!get()) { location.hash = '#/parcels'; return; } paintResults(); paintMap(); paintOwner(); if (tab === 'manual') tabManual(body, get, saveVertices, true); });
   const off2 = on('settings', (s) => { if (s.areaUnit || s.angleUnit) paintResults(); });
   const offDatum = on('datum', () => { paintResults(); paintMap(); });
   return () => { off(); off2(); offDatum(); tabCleanup?.(); M.setClickHandler(null); draft.clearLayers(); };
@@ -425,15 +464,77 @@ function tabImport(el, get, save) {
 // ---------------- Onglet D : dessin
 /** @param {HTMLElement} el @param {()=>any} get @param {(v:any[], l:string)=>Promise<void>} save */
 function tabDraw(el, get, save) {
+  const SNAP_PX = 22;
+  const snap = /** @type {HTMLInputElement} */ (h('input', { type: 'checkbox', checked: true }));
+  const info = h('p.small.draw-info');
+  const closeBtn = btn('Fermer la parcelle', { variant: 'primary', onclick: () => finish() }, 'polygon');
+  const barClose = btn('Fermer la parcelle', { variant: 'primary', onclick: () => finish() }, 'polygon');
+  const barText = h('span');
+  showBar(h('div.ab-text', null, icon('polygon'), barText),
+    h('div.ab-row', null,
+      btn('Retirer le dernier', { variant: 'ghost', onclick: async () => { const p = get(); if (p.vertices.length) await save(p.vertices.slice(0, -1), 'Retrait du dernier sommet'); } }, 'undo'),
+      barClose));
+  const paintInfo = () => {
+    const n = get()?.vertices.length ?? 0;
+    /** @type {HTMLButtonElement} */ (closeBtn).disabled = n < 3;
+    /** @type {HTMLButtonElement} */ (barClose).disabled = n < 3;
+    barText.textContent = n < 3 ? `Dessin : ${n} sommet(s) — touchez la carte` : `Dessin : ${n} sommets — touchez le 1er sommet pour fermer`;
+    info.textContent = n < 3 ? `${n} sommet(s) — touchez la carte pour continuer (au moins 3).` : `${n} sommets — touchez le 1er sommet (cercle orange) pour fermer, ou « Fermer la parcelle ».`;
+    document.body.classList.toggle('can-close', n >= 3);
+  };
+  const finish = () => {
+    if ((get()?.vertices.length ?? 0) < 3) return;
+    M.setClickHandler(null);
+    document.body.classList.remove('can-close');
+    hideBar();
+    emit('sheet-snap', 'mid');
+    toast('Parcelle fermée.', 'ok');
+    location.hash = `#/parcels/${get().id}/manual`;
+  };
   M.setClickHandler(async (e) => {
     const p = get();
-    const xy = crs.transform('EPSG:4326', p.crsId, [e.latlng.lng, e.latlng.lat]);
-    await save([...p.vertices, { x: xy[0], y: xy[1], label: String(p.vertices.length + 1), drawn: true }], 'Sommet dessiné');
+    const click = e.containerPoint;
+    const dist = (/** @type {number} */ lat, /** @type {number} */ lon) => { const q = M.toPixel(lat, lon); return Math.hypot(q.x - click.x, q.y - click.y); };
+    // 1) fermeture : toucher le premier sommet
+    if (p.vertices.length >= 3) {
+      const w0 = crs.toWGS84(p.crsId, [p.vertices[0].x, p.vertices[0].y]);
+      if (dist(w0.lat, w0.lon) <= SNAP_PX) { finish(); return; }
+    }
+    // 2) accrochage aux points du projet et aux sommets des autres parcelles
+    /** @type {any} */ let best = null;
+    if (snap.checked) {
+      for (const f of state.features) {
+        if (f.type === 'point') {
+          const d = dist(f.wgs84.lat, f.wgs84.lon);
+          if (d <= SNAP_PX && (!best || d < best.d)) best = { d, xy: pointXY(f, p.crsId), label: String(f.num || ''), pointId: f.id, accuracy: f.accuracy ?? null };
+        } else if (f.type === 'parcel' && f.id !== p.id) {
+          for (const v of f.vertices) {
+            const w = crs.toWGS84(f.crsId, [v.x, v.y]);
+            const d = dist(w.lat, w.lon);
+            if (d <= SNAP_PX && (!best || d < best.d)) best = { d, xy: f.crsId === p.crsId ? [v.x, v.y] : crs.transform(f.crsId, p.crsId, [v.x, v.y]), label: v.label, pointId: v.pointId, accuracy: v.accuracy ?? null };
+          }
+        }
+      }
+    }
+    if (best && p.vertices.some((/** @type {any} */ v) => Math.abs(v.x - best.xy[0]) < 1e-9 && Math.abs(v.y - best.xy[1]) < 1e-9)) { toast('Ce sommet fait déjà partie de la parcelle.', 'warn', 1800); return; }
+    const xy = best ? best.xy : crs.transform('EPSG:4326', p.crsId, [e.latlng.lng, e.latlng.lat]);
+    const v = best
+      ? { x: xy[0], y: xy[1], label: best.label || String(p.vertices.length + 1), pointId: best.pointId, accuracy: best.accuracy, snapped: true }
+      : { x: xy[0], y: xy[1], label: String(p.vertices.length + 1), drawn: true };
+    await save([...p.vertices, v], best ? 'Sommet accroché' : 'Sommet dessiné');
+    if (best) toast(`Accroché au point ${best.label || ''}.`, 'info', 1200);
   });
-  mount(el, h('p.small', null, 'Touchez la carte pour ajouter les sommets dans l’ordre du contour. Faites glisser un sommet pour le déplacer. La précision dépend du zoom et du fond de carte : ce mode convient à une estimation, pas à un levé.'),
-    btn('Retirer le dernier sommet', { variant: 'ghost', onclick: async () => { const p = get(); if (p.vertices.length) await save(p.vertices.slice(0, -1), 'Retrait du dernier sommet'); } }, 'undo'),
-    btn('Terminer le dessin', { variant: 'primary', onclick: () => { M.setClickHandler(null); location.hash = `#/parcels/${get().id}/manual`; } }, 'check'));
-  return () => M.setClickHandler(null);
+  const off = on('features', paintInfo);
+  const offFirst = on('first-vertex-click', () => finish());
+  emit('sheet-snap', 'min');
+  paintInfo();
+  mount(el, h('p.small', null, 'Touchez la carte pour placer les sommets dans l’ordre du contour. Les points du projet et les sommets des parcelles voisines sont accrochés automatiquement (limites communes exactes).'),
+    h('label.switch', null, snap, h('span', null, 'Accrochage aux points et sommets existants')),
+    info,
+    h('div.btn-grid', null,
+      btn('Retirer le dernier', { variant: 'ghost', onclick: async () => { const p = get(); if (p.vertices.length) await save(p.vertices.slice(0, -1), 'Retrait du dernier sommet'); } }, 'undo'),
+      closeBtn));
+  return () => { off(); offFirst(); hideBar(); M.setClickHandler(null); document.body.classList.remove('can-close'); };
 }
 
 void fmtNum; void formatCoord; void selected;

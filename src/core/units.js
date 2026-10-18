@@ -62,3 +62,9 @@ export function formatNavDistance(m) {
 export function formatCoord(v, unit) {
   return unit === 'm' ? fmtNum(v, 3) : fmtNum(v, 7);
 }
+
+/** Pourcentage lisible (virgule décimale, zéros inutiles retirés). @param {number} v */
+export function formatPercent(v) {
+  if (!Number.isFinite(v)) return '—';
+  return `${fmtNum(v, 4).replace(/,?0+$/, '')} %`;
+}

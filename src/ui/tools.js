@@ -168,11 +168,14 @@ function layers(root) {
   const paint = () => {
     const order = state.settings.layerOrder;
     mount(root, back(),
-      h('fieldset.group', null, h('legend', null, 'Fond de carte'), BASEMAPS.map((b) => {
-        const r = /** @type {HTMLInputElement} */ (h('input', { type: 'radio', name: 'bm', value: b.id, checked: state.settings.basemap === b.id }));
-        r.addEventListener('change', () => updateSettings({ basemap: b.id }));
-        return h('label.radio', null, r, h('span', null, b.label));
-      }), h('p.small.muted', null, 'Les fonds en ligne ne sont pas des références cadastrales. Hors connexion, seules les tuiles déjà vues peuvent rester dans le cache du navigateur.')),
+      h('fieldset.group', null, h('legend', null, 'Fond de carte'),
+        [['satellite', 'Satellite'], ['plan', 'Plans'], ['autre', 'Autres']].map(([g, gl]) => h('div.bm-group', null, h('div.eyebrow', null, gl), BASEMAPS.filter((b) => b.group === g).map((b) => {
+          const r = /** @type {HTMLInputElement} */ (h('input', { type: 'radio', name: 'bm', value: b.id, checked: state.settings.basemap === b.id }));
+          r.addEventListener('change', () => { updateSettings({ basemap: b.id }).then(paint); });
+          return h('label.radio', null, r, h('span', null, b.label));
+        }))),
+        state.settings.basemap === 'custom' ? customForm() : null,
+        h('p.small.muted', null, 'Satellite : au Maroc, l’imagerie Esri existe jusqu’au zoom 18 en zone rurale (19 en ville). Au-delà, l’application agrandit automatiquement la meilleure image disponible au lieu d’afficher une zone grise. Aucun fond n’est une référence cadastrale ; hors connexion, utilisez « Sans fond ».')),
       h('fieldset.group', null, h('legend', null, 'Couches (de haut en bas)'),
         order.map((k, i) => {
           const cb = /** @type {HTMLInputElement} */ (h('input', { type: 'checkbox', checked: /** @type {any} */ (state.settings.layers)[k] }));
@@ -193,12 +196,32 @@ function layers(root) {
   paint();
 }
 
+/** Formulaire du fond personnalisé (URL XYZ fournie par l'utilisateur). */
+function customForm() {
+  const c = /** @type {any} */ (state.settings).customBasemap ?? {};
+  const url = /** @type {HTMLInputElement} */ (h('input', { type: 'url', value: c.url ?? '', placeholder: 'https://…/{z}/{x}/{y}.png', inputmode: 'url', spellcheck: false }));
+  const label = /** @type {HTMLInputElement} */ (h('input', { type: 'text', value: c.label ?? '', placeholder: 'ex. Orthophoto commune' }));
+  const mz = /** @type {HTMLInputElement} */ (h('input', { type: 'number', min: 10, max: 22, value: c.maxNativeZoom ?? 19 }));
+  const att = /** @type {HTMLInputElement} */ (h('input', { type: 'text', value: c.attribution ?? '', placeholder: 'Attribution exigée par le fournisseur' }));
+  return h('div.custom-bm', null,
+    field('Adresse des tuiles (XYZ)', url, 'Modèle avec {z}, {x}, {y} (et éventuellement {s}). Utilisez uniquement un service dont la licence vous y autorise (clé personnelle, orthophoto fournie par un organisme…).'),
+    h('div.coord-pair', null, field('Nom', label), field('Zoom natif max.', mz)), field('Attribution', att),
+    btn('Appliquer ce fond', { variant: 'primary', onclick: async () => {
+      const u = url.value.trim();
+      if (!/^https:\/\//.test(u) || !/\{z\}/.test(u) || !/\{x\}/.test(u) || !/\{y\}/.test(u)) { toast('Adresse invalide : HTTPS avec {z}, {x} et {y} requis.', 'error'); return; }
+      await updateSettings({ customBasemap: { url: u, label: label.value.trim(), maxNativeZoom: Number(mz.value) || 19, attribution: att.value.trim() } });
+      toast('Fond personnalisé appliqué.', 'ok');
+    } }, 'check'));
+}
+
 // ------------------------------------------------------------- Légende
 /** @param {HTMLElement} root */
 function legend(root) {
   mount(root, back(),
     h('ul.legend', null,
       h('li', null, h('span.lg.parcel'), 'Parcelle enregistrée (étiquette : superficie)'),
+      h('li', null, h('span.lg.owned'), 'Lot attribué à une personne (couleur de la personne, nom, superficie, part)'),
+      h('li', null, h('span.lg.divided'), 'Parcelle d’origine partagée (contour tireté)'),
       h('li', null, h('span.lg.parcel-bad'), 'Parcelle à corriger (géométrie invalide)'),
       h('li', null, h('span.lg.draft'), 'Parcelle en cours d’édition, sommets numérotés'),
       h('li', null, h('span.lg.line'), 'Ligne'),

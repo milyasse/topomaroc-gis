@@ -2,7 +2,7 @@
 /** Exports XLSX (tableaux) et PDF (rapport de superficie, fiche de levé). Chargés à la demande. */
 import * as crs from '../core/crs.js';
 import { degToGrad } from '../core/angles.js';
-import { formatHaACa } from '../core/units.js';
+import { formatHaACa, formatPercent } from '../core/units.js';
 import { pointXY, verticesXY, analyze } from './common.js';
 
 const APP = 'TopoMaroc GIS';
@@ -262,5 +262,105 @@ export async function surveySheetPDF(features, project, crsId) {
     doc.text(doc.splitTextToSize(pdfText(DISCLAIMER), 250), M, 200);
     doc.text(`Page ${p}/${n}`, W - M, 200, { align: 'right' });
   }
+  return doc.output('blob');
+}
+
+// ------------------------------------------------------------------ Rapport de partage
+/** @param {string} hex */
+function rgb(hex) { const m = hex.replace('#', '').match(/^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i); return m ? [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)] : [120, 120, 120]; }
+
+/**
+ * Rapport PDF d'un partage : plan des lots en couleur, tableau des parts, coordonnées.
+ * @param {any} parent @param {any[]} lots @param {any} project @returns {Promise<Blob>}
+ */
+export async function divisionReportPDF(parent, lots, project) {
+  const { jsPDF, autoTable } = await import('../../vendor/jspdf.mjs');
+  const { analyzeParcel } = await import('../core/parcel.js');
+  const pa = analyzeParcel(parent.vertices, parent.crsId, { method: 'plane' });
+  if (!pa.valid) throw new Error('Parcelle d’origine invalide.');
+  const planeId = pa.planeCrsId;
+  const pc = crs.getCrs(planeId);
+  const items = lots.map((f) => {
+    const a = analyzeParcel(f.vertices, f.crsId, { method: 'plane', planeCrsId: planeId });
+    const pts = /** @type {[number,number][]} */ (f.crsId === planeId ? f.vertices.map((/** @type {any} */ v) => [v.x, v.y]) : f.vertices.map((/** @type {any} */ v) => crs.transform(f.crsId, planeId, [v.x, v.y])));
+    return { f, a, pts };
+  }).sort((x, y) => (x.f.division?.index ?? 0) - (y.f.division?.index ?? 0));
+  const doc = new (/** @type {any} */ (jsPDF))({ unit: 'mm', format: 'a4' });
+  const W = 210, M = 14;
+  doc.setFillColor(15, 61, 94); doc.rect(0, 0, W, 22, 'F');
+  doc.setTextColor(255); doc.setFont('helvetica', 'bold'); doc.setFontSize(15); doc.text('Proposition de partage de parcelle', M, 10);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+  doc.text(pdfText(`${APP} - ${new Date().toLocaleString('fr-FR')}`), M, 16);
+  doc.text(pdfText(`Projet : ${project?.name ?? '-'}`), W - M, 10, { align: 'right' });
+  doc.text(pdfText(`Parcelle : ${parent.name || '-'}`), W - M, 16, { align: 'right' });
+  doc.setTextColor(30); doc.setFontSize(10);
+  doc.text(pdfText(`Superficie totale : ${fnum(pa.planeArea, 2)} m² (${formatHaACa(pa.planeArea)}) - ${items.length} lots - système ${pc.name}${pc.epsg ? ` (EPSG:${pc.epsg})` : ''}`), M, 29);
+
+  // Plan
+  const box = { x: M, y: 33, w: W - 2 * M, h: 105 };
+  const all = [...pa.plane, ...items.flatMap((i) => i.pts)];
+  const xs = all.map((p) => p[0]), ys = all.map((p) => p[1]);
+  const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
+  const s = Math.min((box.w - 24) / (maxX - minX || 1), (box.h - 24) / (maxY - minY || 1));
+  const ox = box.x + (box.w - (maxX - minX) * s) / 2, oy = box.y + (box.h + (maxY - minY) * s) / 2;
+  const P = (/** @type {[number,number]} */ p) => [ox + (p[0] - minX) * s, oy - (p[1] - minY) * s];
+  doc.setDrawColor(200); doc.setLineWidth(0.2); doc.rect(box.x, box.y, box.w, box.h);
+  for (const it of items) {
+    const sp = it.pts.map(P);
+    const segs = sp.slice(1).map((p, i) => [p[0] - sp[i][0], p[1] - sp[i][1]]);
+    const [r, g, b] = rgb(it.f.owner?.color ?? '#888888');
+    doc.setFillColor(Math.round(r + (255 - r) * 0.45), Math.round(g + (255 - g) * 0.45), Math.round(b + (255 - b) * 0.45));
+    doc.setDrawColor(r, g, b); doc.setLineWidth(0.5);
+    doc.lines(segs, sp[0][0], sp[0][1], [1, 1], 'FD', true);
+  }
+  // contour d'origine
+  const sp0 = pa.plane.map(P);
+  doc.setDrawColor(15, 61, 94); doc.setLineWidth(0.9);
+  doc.lines(sp0.slice(1).map((p, i) => [p[0] - sp0[i][0], p[1] - sp0[i][1]]), sp0[0][0], sp0[0][1], [1, 1], 'S', true);
+  doc.setFontSize(8); doc.setTextColor(20);
+  for (const it of items) {
+    const c = it.pts.reduce((acc, p) => [acc[0] + p[0] / it.pts.length, acc[1] + p[1] / it.pts.length], [0, 0]);
+    const [cx, cy] = P(/** @type {[number,number]} */ (c));
+    doc.setFont('helvetica', 'bold'); doc.text(pdfText(it.f.owner?.name ?? ''), cx, cy - 1, { align: 'center' });
+    doc.setFont('helvetica', 'normal'); doc.text(pdfText(`${fnum(it.a.planeArea, 2)} m²`), cx, cy + 3, { align: 'center' });
+  }
+  pa.plane.forEach((p, i) => { const [x, y] = P(p); doc.setFillColor(214, 64, 40); doc.circle(x, y, 0.9, 'F'); doc.setFontSize(7); doc.text(pdfText(parent.vertices[i].label || String(i + 1)), x + 1.5, y - 1.2); });
+  const nx = box.x + box.w - 8, ny = box.y + 6;
+  doc.setFillColor(30, 30, 30); doc.triangle(nx, ny, nx - 2.2, ny + 6, nx + 2.2, ny + 6, 'F'); doc.setFontSize(7); doc.text('Ng', nx, ny + 9.5, { align: 'center' });
+
+  // Tableau des parts
+  const bearing = parent.division?.bearing;
+  autoTable(doc, {
+    startY: box.y + box.h + 5, margin: { left: M, right: M },
+    head: [['', 'Personne', 'Part', 'Superficie cible (m²)', 'Superficie du lot (m²)', 'ha a ca', 'Périmètre (m)'].map(pdfText)],
+    body: items.map((it) => ['', it.f.owner?.name ?? '', formatPercent(+it.f.owner?.percent || 0), fnum(it.f.division?.target ?? (it.f.owner?.percent / 100) * pa.planeArea, 2), fnum(it.a.planeArea, 2), formatHaACa(it.a.planeArea), fnum(it.a.planePerimeter, 2)].map(pdfText)),
+    foot: [['', 'Total', '100 %', fnum(pa.planeArea, 2), fnum(items.reduce((t, i) => t + i.a.planeArea, 0), 2), '', ''].map(pdfText)],
+    styles: { fontSize: 8, cellPadding: 1.4 }, headStyles: { fillColor: [15, 61, 94] }, footStyles: { fillColor: [232, 238, 245], textColor: 20 },
+    columnStyles: { 0: { cellWidth: 5 }, 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' }, 6: { halign: 'right' } },
+    didDrawCell: (/** @type {any} */ d) => { if (d.section === 'body' && d.column.index === 0) { const [r, g, b] = rgb(items[d.row.index].f.owner?.color ?? '#888'); doc.setFillColor(r, g, b); doc.rect(d.cell.x + 1, d.cell.y + 1.2, 3, d.cell.height - 2.4, 'F'); } },
+  });
+  // @ts-ignore
+  let y = doc.lastAutoTable.finalY + 4;
+  doc.setFontSize(8.5); doc.setTextColor(30);
+  const method = `Méthode : découpage en bandes par des limites parallèles${bearing != null ? ` de gisement ${fnum(degToGrad(bearing), 4)} gr (${fnum(bearing, 3)}°)` : ''}, positionnées par calcul pour que chaque lot ait exactement la superficie correspondant à sa part (superficies planes dans la projection ${pc.label}).`;
+  const w = doc.splitTextToSize(pdfText(method), W - 2 * M); doc.text(w, M, y); y += w.length * 3.8 + 2;
+
+  // Coordonnées des sommets de chaque lot
+  for (const it of items) {
+    if (y > 250) { doc.addPage(); y = 20; }
+    autoTable(doc, {
+      startY: y, margin: { left: M, right: M },
+      head: [[pdfText(`Lot de ${it.f.owner?.name ?? ''}`), `X (m)`, `Y (m)`]],
+      body: it.f.vertices.map((/** @type {any} */ v, /** @type {number} */ i) => [pdfText(v.label || String(i + 1)), fnum(it.pts[i][0], 3), fnum(it.pts[i][1], 3)]),
+      styles: { fontSize: 7.5, cellPadding: 1 }, headStyles: { fillColor: rgb(it.f.owner?.color ?? '#555555') },
+      columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' } }, tableWidth: 110,
+    });
+    // @ts-ignore
+    y = doc.lastAutoTable.finalY + 3;
+  }
+  if (y > 255) { doc.addPage(); y = 20; }
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5);
+  doc.text(doc.splitTextToSize(pdfText('Proposition technique : ce document ne vaut ni acte de partage ni attribution de propriété. Le partage doit être convenu entre les intéressés et établi par un ingénieur géomètre-topographe, puis formalisé selon la procédure légale (notaire / adoul, ANCFCC).'), W - 2 * M), M, y);
+  addFooters(doc);
   return doc.output('blob');
 }

@@ -283,6 +283,9 @@ await test('Parcelle : mode dessin sur la carte puis rapport PDF', async () => {
   const box = await page.locator('#map').boundingBox();
   for (const [dx, dy] of [[-60, -200], [60, -200], [60, -100], [-60, -100]]) { await page.mouse.click(box.x + box.width / 2 + dx, box.y + box.height / 2 + dy); await page.waitForTimeout(300); }
   await page.waitForFunction(() => document.querySelectorAll('.vx-icon').length === 4);
+  await page.click('#action-bar button:has-text("Fermer la parcelle")');
+  await page.waitForFunction(() => /\/manual$/.test(location.hash));
+  await page.waitForTimeout(400);
   const v = await text(page, '.results .value');
   assert(/m²/.test(v), v);
   const [dl] = await Promise.all([page.waitForEvent('download', { timeout: 20000 }), page.click('button:has-text("Rapport PDF")')]);
@@ -395,6 +398,168 @@ await test('Mode sombre et thème clair', async () => {
   await page.selectOption('.group select >> nth=0', 'light');
   await page.waitForFunction(() => document.documentElement.dataset.theme === 'light');
   await ctx.close();
+});
+
+// ------------------------------------------------------------------------------------------ v1.1
+const FIXTURE = fs.readFileSync(path.join(path.dirname(new URL(import.meta.url).pathname), 'fixture-tile.jpg'));
+/** Ajoute des entités directement via les modules de l'application. */
+const seed = (page, fn, arg) => page.evaluate(fn, arg);
+
+await test('« + Point » : placement au réticule sans GPS (2 points)', async () => {
+  const { page, ctx, errors } = await newPage({ hash: '#/map' });
+  await page.click('#btn-addpt');
+  await page.waitForSelector('#action-bar:not([hidden]) button:has-text("Placer ici")');
+  await page.evaluate(async () => { const M = await import('./src/map/map.js'); M.getMap().setView([34.0209, -6.8498], 18, { animate: false }); });
+  await page.click('#action-bar button:has-text("Placer ici")');
+  await page.evaluate(async () => { const M = await import('./src/map/map.js'); M.getMap().panBy([80, 0], { animate: false }); });
+  await page.click('#action-bar button:has-text("Placer ici")');
+  await page.waitForFunction(async () => (await import('./src/state.js')).state.features.filter((f) => f.type === 'point' && f.source === 'map').length === 2);
+  const c = await page.evaluate(async () => (await import('./src/state.js')).state.features.find((f) => f.source === 'map').wgs84);
+  assert(Math.abs(c.lat - 34.0209) < 1e-5 && Math.abs(c.lon + 6.8498) < 1e-5, JSON.stringify(c));
+  await page.screenshot({ path: path.join(SHOTS, 'mobile-placement.png') });
+  await page.click('#action-bar button:has-text("Terminer")');
+  assert(errors.length === 0, errors.join(' | '));
+  await ctx.close();
+  return '2 points placés, position exacte du réticule';
+});
+
+await test('Sélection de 4 points sur la carte → parcelle (contour automatique)', async () => {
+  const { page, ctx, errors } = await newPage({ hash: '#/map' });
+  await seed(page, async () => {
+    const st = await import('./src/state.js'); const crs = await import('./src/core/crs.js');
+    const pts = [[400000, 380010], [400010, 380000], [400000, 380000], [400010, 380010]]; // désordonnés
+    let n = 1;
+    for (const [x, y] of pts) { const w = crs.toWGS84('EPSG:26191', [x, y]); await st.addFeature({ type: 'point', num: String(n++), code: 'borne', wgs84: { lat: w.lat, lon: w.lon }, input: { crsId: 'EPSG:26191', x, y }, source: 'manual' }); }
+    const M = await import('./src/map/map.js'); M.zoomToAll();
+  });
+  await page.waitForTimeout(500);
+  await page.click('#btn-select');
+  await page.waitForSelector('#action-bar:not([hidden])');
+  await page.click('#action-bar button:has-text("Visibles")');
+  await page.waitForSelector('#action-bar:has-text("4 point(s) sélectionné(s)")');
+  await page.click('#action-bar button:has-text("Créer une parcelle")');
+  await page.click('.modal-actions button:has-text("Créer")');
+  await page.waitForSelector('.sticky-summary:has-text("S =")');
+  const v = await text(page, '.sticky-summary');
+  assert(/100,00 m²/.test(v), v);
+  assert(errors.length === 0, errors.join(' | '));
+  await ctx.close();
+  return v;
+});
+
+await test('Dessin : accrochage aux points et fermeture en touchant le 1er sommet', async () => {
+  const { page, ctx } = await newPage({ hash: '#/map' });
+  await seed(page, async () => {
+    const st = await import('./src/state.js'); const crs = await import('./src/core/crs.js');
+    const w = crs.toWGS84('EPSG:26191', [400000, 380000]);
+    await st.addFeature({ type: 'point', num: '77', code: 'borne', wgs84: { lat: w.lat, lon: w.lon }, input: { crsId: 'EPSG:26191', x: 400000, y: 380000 }, source: 'manual' });
+    await st.updateSettings({ inputCrs: 'EPSG:26191' });
+  });
+  await page.goto(BASE + '#/parcels');
+  await page.click('button:has-text("Nouvelle parcelle")');
+  await page.selectOption('.modal select.crs-select', 'EPSG:26191');
+  await page.click('.mode-btn[data-mode="draw"]');
+  await page.waitForSelector('.tab[aria-selected="true"]:has-text("Dessin")');
+  await page.evaluate(async () => { const M = await import('./src/map/map.js'); const crs = await import('./src/core/crs.js'); const w = crs.toWGS84('EPSG:26191', [400010, 380020]); M.getMap().setView([w.lat, w.lon], 19, { animate: false }); });
+  await page.waitForTimeout(300);
+  const px = async (x, y) => page.evaluate(async ([x, y]) => { const M = await import('./src/map/map.js'); const crs = await import('./src/core/crs.js'); const w = crs.toWGS84('EPSG:26191', [x, y]); const p = M.toPixel(w.lat, w.lon); const r = document.getElementById('map').getBoundingClientRect(); return [r.left + p.x, r.top + p.y]; }, [x, y]);
+  // 1er sommet : 3 px à côté du point 77 → doit être accroché exactement
+  let [cx, cy] = await px(400000, 380000); await page.mouse.click(cx + 3, cy - 2); await page.waitForTimeout(300);
+  [cx, cy] = await px(400020, 380000); await page.mouse.click(cx, cy); await page.waitForTimeout(300);
+  [cx, cy] = await px(400020, 380030); await page.mouse.click(cx, cy); await page.waitForTimeout(300);
+  [cx, cy] = await px(400000, 380000); await page.mouse.click(cx + 2, cy + 2); // fermeture
+  await page.waitForSelector('.toast:has-text("Parcelle fermée")');
+  await page.waitForFunction(() => /\/manual$/.test(location.hash));
+  const v = await page.evaluate(async () => { const st = await import('./src/state.js'); const p = st.state.features.find((f) => f.type === 'parcel'); return { n: p.vertices.length, v0: p.vertices[0] }; });
+  assert(v.n === 3, `sommets ${v.n}`);
+  assert(v.v0.x === 400000 && v.v0.y === 380000 && v.v0.label === '77', JSON.stringify(v.v0));
+  await ctx.close();
+  return '1er sommet accroché exactement au point 77, parcelle fermée au toucher du 1er sommet';
+});
+
+await test('Partage : 3 personnes (1/8, 7/16, 7/16), propositions, lots colorés, rapport PDF', async () => {
+  const { page, ctx, errors } = await newPage({ hash: '#/map' });
+  const pid = await seed(page, async () => {
+    const st = await import('./src/state.js');
+    const c = [[386512.35, 371204.88], [386640.12, 371198.40], [386702.91, 371301.77], [386655.03, 371402.15], [386530.66, 371388.09], [386480.20, 371290.51]];
+    const p = await st.addFeature({ type: 'parcel', name: 'Melk', crsId: 'EPSG:26191', method: 'auto', vertices: c.map(([x, y], i) => ({ x, y, label: `B${i + 1}` })) });
+    return p.id;
+  });
+  await page.goto(BASE + `#/parcels/${pid}/share`);
+  await page.waitForSelector('.owner-row');
+  await page.click('button:has-text("Ajouter une personne")');
+  const names = page.locator('.owner-row input[type=text]:not(.share-in)');
+  const shares = page.locator('.owner-row input.share-in');
+  for (const [i, [n, s]] of [['Fatima', '1/8'], ['Ahmed', '7/16'], ['Khadija', '7/16']].entries()) { await names.nth(i).fill(n); await shares.nth(i).fill(s); }
+  await page.waitForSelector('.share-sum.ok');
+  await page.selectOption('select[aria-label="Côté d’accès"]', '0');
+  await page.click('button:has-text("Proposer des découpages")');
+  await page.waitForSelector('.prop-card[aria-pressed="true"]');
+  const nprops = await page.locator('.prop-card').count();
+  await page.screenshot({ path: path.join(SHOTS, 'mobile-partage-propositions.png') });
+  await page.click('button:has-text("Générer les parcelles")');
+  await page.waitForSelector('.toast:has-text("3 lots créés")');
+  const lots = await page.evaluate(async (pid) => {
+    const st = await import('./src/state.js'); const P = await import('./src/core/parcel.js');
+    return st.state.features.filter((f) => f.parentId === pid).map((f) => ({ n: f.owner.name, c: f.owner.color, a: P.analyzeParcel(f.vertices, f.crsId, { method: 'plane' }).planeArea }));
+  }, pid);
+  const total = lots.reduce((s, l) => s + l.a, 0);
+  assert(lots.length === 3 && new Set(lots.map((l) => l.c)).size === 3, JSON.stringify(lots));
+  assert(Math.abs(lots[0].a / total - 0.125) < 1e-9 && Math.abs(lots[1].a / total - 0.4375) < 1e-9, JSON.stringify(lots));
+  await page.goto(BASE + '#/map'); await page.waitForTimeout(400);
+  await page.evaluate(async (pid) => { const M = await import('./src/map/map.js'); const st = await import('./src/state.js'); M.zoomToFeature(st.state.features.find((f) => f.id === pid)); }, pid);
+  await page.waitForTimeout(500);
+  const labels = await page.locator('.parcel-label.owned').count();
+  assert(labels === 3, `étiquettes ${labels}`);
+  await page.screenshot({ path: path.join(SHOTS, 'mobile-partage-carte.png') });
+  await page.goto(BASE + `#/parcels/${pid}/share`);
+  const [dl] = await Promise.all([page.waitForEvent('download', { timeout: 20000 }), page.click('button:has-text("Rapport de partage (PDF)")')]);
+  const buf = fs.readFileSync(await dl.path());
+  assert(buf.subarray(0, 5).toString() === '%PDF-', 'PDF');
+  fs.writeFileSync(path.join(SHOTS, 'rapport-partage.pdf'), buf);
+  assert(errors.length === 0, errors.join(' | '));
+  await ctx.close();
+  return `${nprops} propositions ; lots ${lots.map((l) => `${l.n} ${l.a.toFixed(2)} m²`).join(', ')} ; PDF ${buf.length} octets`;
+});
+
+await test('Fiche projet : statistiques et superficie par personne', async () => {
+  const { page, ctx } = await newPage({ hash: '#/map' });
+  const id = await seed(page, async () => {
+    const st = await import('./src/state.js');
+    const p = await st.createProject({ name: 'Projet fiche' });
+    await st.addFeature({ type: 'parcel', name: 'A', crsId: 'EPSG:26191', owner: { name: 'Youssef', percent: 100, color: '#e6194b' }, vertices: [[400000, 380000], [400010, 380000], [400010, 380010], [400000, 380010]].map(([x, y]) => ({ x, y })) });
+    return p.id;
+  });
+  await page.goto(BASE + `#/projects/${id}`);
+  await page.waitForSelector('.project-hero h3:has-text("Projet fiche")');
+  const t = await text(page, '.stats');
+  assert(/100,00 m²/.test(t) && /Personnes/.test(t), t);
+  await page.waitForSelector('td:has-text("Youssef")');
+  await page.screenshot({ path: path.join(SHOTS, 'mobile-fiche-projet.png') });
+  await ctx.close();
+});
+
+await test('Satellite : au-delà de l’imagerie disponible, image agrandie au lieu d’une zone vide', async () => {
+  const { page, ctx, errors } = await newPage({ hash: '#/map' });
+  const PH = Buffer.alloc(2521, 7);
+  await page.route(/server\.arcgisonline\.com\/ArcGIS\/rest\/services\/World_Imagery/, (route) => {
+    const z = Number(route.request().url().match(/tile\/(\d+)\//)[1]);
+    if (z >= 19) route.fulfill({ status: 200, contentType: 'image/jpeg', body: PH, headers: { 'access-control-allow-origin': '*' } });
+    else route.fulfill({ status: 200, contentType: 'image/jpeg', body: FIXTURE, headers: { 'access-control-allow-origin': '*' } });
+  });
+  await page.evaluate(async () => { const st = await import('./src/state.js'); await st.updateSettings({ basemap: 'sat' }); const M = await import('./src/map/map.js'); M.getMap().setView([31.45, -8.10], 21, { animate: false }); });
+  await page.waitForSelector('#res-badge:not([hidden])', { timeout: 10000 });
+  const badge = await text(page, '#res-badge');
+  assert(/zoom 18/.test(badge), badge);
+  const drawn = await page.evaluate(() => [...document.querySelectorAll('.leaflet-tile-loaded')].filter((c) => c.tagName === 'CANVAS').length);
+  assert(drawn > 0, 'aucune tuile dessinée');
+  // couleur du pixel central = image agrandie (vert), pas la tuile vide
+  const px = await page.evaluate(() => { const c = document.querySelector('canvas.leaflet-tile-loaded'); const d = c.getContext('2d').getImageData(128, 128, 1, 1).data; return [d[0], d[1], d[2]]; });
+  assert(px[1] > px[0] && px[1] > 100, JSON.stringify(px));
+  await page.screenshot({ path: path.join(SHOTS, 'mobile-satellite-zoom21.png') });
+  assert(errors.length === 0, errors.join(' | '));
+  await ctx.close();
+  return `${drawn} tuiles affichées au zoom 21, ${badge}`;
 });
 
 await test('Smartphone iOS / Android réels', null, { skip: 'aucun appareil physique disponible dans l’environnement de test : à valider sur le terrain (Safari iOS, Chrome Android)' });

@@ -30,6 +30,7 @@ export const DEFAULT_SETTINGS = {
   layers: { parcels: true, lines: true, points: true, nav: true, measures: true },
   layerOrder: ['parcels', 'lines', 'points'],
   onboarded: false,
+  customBasemap: /** @type {null|{url:string,label?:string,maxNativeZoom?:number,attribution?:string}} */ (null),
 };
 
 export const state = {

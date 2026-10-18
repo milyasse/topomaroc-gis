@@ -52,7 +52,7 @@ export function bestInsertion(ring, p) {
 
 /**
  * Insère plusieurs points dans un contour (chacun au meilleur endroit).
- * @param {XY[]} ring @param {XY[]} pts @returns {{ ring: XY[], positions: number[] }}
+ * @param {XY[]} ring @param {XY[]} pts @returns {{ ring: XY[], positions: number[], perimeter: number }}
  */
 export function insertAll(ring, pts) {
   const r = ring.slice();

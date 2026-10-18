@@ -7,7 +7,7 @@
   <meta name="description" content="Application SIG topographique pour le Maroc : Lambert Maroc (Merchich), UTM, WGS 84, navigation GPS vers un point, levé de points, calcul de superficies, exports DXF/PDF/XLSX. Fonctionne hors ligne.">
   <meta name="theme-color" content="#0f3d5e">
   <meta name="color-scheme" content="light dark">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' blob: data: https://nominatim.openstreetmap.org; font-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' blob: data: https://nominatim.openstreetmap.org https://server.arcgisonline.com https://services.arcgisonline.com https://clarity.maptiles.arcgis.com https://tiles.maps.eox.at; font-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
@@ -66,6 +66,11 @@
       <symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
       <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></symbol>
       <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+      <symbol id="i-pin-plus" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><path d="M12 7v6M9 10h6"/></symbol>
+      <symbol id="i-select" viewBox="0 0 24 24"><path d="M3 3h4M3 3v4M21 3h-4M21 3v4M3 21h4M3 21v-4M21 21h-4M21 21v-4"/><circle cx="9" cy="10" r="1.6" fill="currentColor"/><circle cx="15" cy="9" r="1.6" fill="currentColor"/><circle cx="12" cy="15" r="1.6" fill="currentColor"/></symbol>
+      <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/></symbol>
+      <symbol id="i-split" viewBox="0 0 24 24"><path d="M4 4h16v16H4zM10 4v16M15 4v16"/></symbol>
+      <symbol id="i-magnet" viewBox="0 0 24 24"><path d="M6 3v8a6 6 0 0 0 12 0V3M6 3h4v8a2 2 0 0 0 4 0V3h4M6 7h4M14 7h4"/></symbol>
     </defs>
   </svg>
 
@@ -87,6 +92,8 @@
       <div class="map-ctrls" role="toolbar" aria-label="Contrôles de la carte">
         <button id="btn-zin" class="map-btn" type="button" aria-label="Zoom avant" title="Zoom avant"><svg class="ic"><use href="#i-plus"/></svg></button>
         <button id="btn-zout" class="map-btn" type="button" aria-label="Zoom arrière" title="Zoom arrière"><svg class="ic"><use href="#i-minus"/></svg></button>
+        <button id="btn-addpt" class="map-btn map-btn-accent" type="button" aria-label="Ajouter un point sur la carte" title="Ajouter un point (sans GPS)"><svg class="ic"><use href="#i-pin-plus"/></svg></button>
+        <button id="btn-select" class="map-btn" type="button" aria-label="Sélectionner des points" title="Sélectionner des points"><svg class="ic"><use href="#i-select"/></svg></button>
         <button id="btn-locate" class="map-btn" type="button" aria-label="Ma position (suivi)" title="Ma position (suivi)"><svg class="ic"><use href="#i-locate"/></svg></button>
         <button id="btn-extent" class="map-btn" type="button" aria-label="Emprise initiale" title="Emprise du projet / du Maroc"><svg class="ic"><use href="#i-globe"/></svg></button>
         <button id="btn-layers" class="map-btn" type="button" aria-label="Couches" title="Couches et fonds"><svg class="ic"><use href="#i-layers"/></svg></button>
@@ -94,6 +101,8 @@
       </div>
       <div class="north-badge" aria-hidden="true" title="La carte est toujours orientée nord en haut">N</div>
       <div class="center-cross" aria-hidden="true"></div>
+      <div id="res-badge" class="res-badge" hidden></div>
+      <div id="action-bar" class="action-bar" hidden></div>
       <button id="coordbar" class="coordbar" type="button" aria-label="Coordonnées (toucher pour copier)"></button>
 
       <section id="sheet" class="sheet" hidden aria-labelledby="sheet-title">
