@@ -10,6 +10,7 @@ import * as M from '../map/map.js';
 import { h, icon, btn, mount, toast, field, select } from './dom.js';
 import { coordInput } from './coordinput.js';
 import { anim } from './anim.js';
+import { pointInput } from '../services/autocrs.js';
 import { pointXY } from '../io/common.js';
 
 const RADII = [50, 20, 10, 5];
@@ -284,12 +285,11 @@ function checkArrival(dist, root) {
 async function saveReached() {
   const f = state.gps.last, t = state.navTarget;
   if (!f || !t) { toast('Aucune position GPS disponible.', 'warn'); return; }
-  const disp = state.settings.displayCrs;
-  const xy = crs.fromWGS84(disp, f.lon, f.lat);
+  const input = pointInput(f.lon, f.lat);
   const d = nav.last?.distance;
   await addFeature({
     type: 'point', num: nextPointNumber(), name: `Atteint ${t.name}`, code: 'cible',
-    wgs84: { lat: f.lat, lon: f.lon }, input: { crsId: disp, x: xy[0], y: xy[1] },
+    wgs84: { lat: f.lat, lon: f.lon }, input,
     accuracy: f.accuracy, altitude: f.altitude, source: 'nav', takenAt: new Date(f.timestamp).toISOString(),
     description: `Position GPS à l’arrivée sur « ${t.name} » (${t.crsId} ${t.x.toFixed(3)} ; ${t.y.toFixed(3)}). Écart restant : ${d != null ? d.toFixed(2) + ' m' : 'inconnu'}.`,
   }, 'Point atteint');

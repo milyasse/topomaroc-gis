@@ -52,6 +52,12 @@ Détection : moins de 3 sommets, fermeture répétée, sommets en double (≤ 1 
 
 **Rapport PDF** : projet, date, plan coté (échelle graphique, nord), tableau des sommets (Lambert + WGS 84), tableau des côtés (longueurs, gisements en grades ou degrés, longueurs géodésiques, azimuts), superficie et périmètre, système, méthode, qualité estimée, mention « ne constitue pas un document cadastral officiel ». [Exemple](docs/exemple-rapport-parcelle.pdf).
 
+### Nouveautés v1.3 — projection automatique selon la zone
+- Le système de projection est choisi automatiquement d'après la zone où l'on se trouve : position GPS (précision ≤ 2 km), ou centre de la carte (zoom ≥ 9) si le GPS est éteint. La puce du système affiche un badge **AUTO** et un message signale chaque changement de zone.
+- Limites (domaines d'usage EPSG enregistrés dans `src/core/crs.js`) : Lambert Nord au nord de 31,5° N, Sud de 27,665° à 31,5° N, Sahara Nord de 24,3° à 27,665° N, Sahara Sud au sud de 24,3° N ; option UTM 28/29/30 selon la longitude. Hystérésis de 0,02° (~2 km) le long des limites (`src/core/zones.js`).
+- **Chaque point collecté** (levé GPS, « + Point », point pointé sur la carte, point atteint en navigation, déplacement d'un point) est enregistré dans la zone de **sa propre position** (`src/services/autocrs.js`). Réglages → « Recalculer dans leur zone » met à jour les points déjà levés (WGS 84 inchangé, ancienne valeur conservée dans `input.original`).
+- Choisir un système à la main désactive le mode automatique (réactivable dans la puce ou les Réglages). Les parcelles gardent leur système de création ; la superficie plane d'une parcelle en WGS 84 est calculée dans la zone de son centre.
+
 ### Nouveautés v1.2
 - **Déplacer un point** depuis sa fiche : nouvelles coordonnées, glisser sur la carte (ou au réticule) ou position GPS actuelle ; l'historique des positions est conservé et les **sommets de parcelles rattachés au point suivent** (après confirmation).
 - **Couches par projet** (Outils → Couches) : superposition de plusieurs projets, chacun avec sa couleur et ses couches Points / Parcelles / Lignes activables ; le projet ouvert reste modifiable, les autres sont en lecture seule.

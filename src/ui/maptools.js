@@ -10,6 +10,7 @@ import { state, on, addFeature, updateFeature, nextPointNumber, ensureProject, P
 import * as M from '../map/map.js';
 import { h, icon, btn, mount, toast, field, select, modal } from './dom.js';
 import { anim } from './anim.js';
+import { pointInput } from '../services/autocrs.js';
 import { pointXY } from '../io/common.js';
 
 const bar = () => /** @type {HTMLElement} */ (document.getElementById('action-bar'));
@@ -57,10 +58,9 @@ export function startPlacing() {
 /** @param {number} lat @param {number} lon @param {string} code */
 async function placePoint(lat, lon, code) {
   await ensureProject();
-  const id = crs.getCrs(state.settings.displayCrs).kind === 'projected' ? state.settings.displayCrs : 'EPSG:4326';
-  const xy = crs.fromWGS84(id, lon, lat);
+  const input = pointInput(lon, lat, { allowGeographic: true });
   const num = nextPointNumber();
-  await addFeature({ type: 'point', num, name: '', code, description: 'Placé sur la carte', wgs84: { lat, lon }, input: { crsId: id, x: xy[0], y: xy[1] }, accuracy: null, source: 'map', takenAt: new Date().toISOString() }, `Point ${num} (carte)`);
+  await addFeature({ type: 'point', num, name: '', code, description: 'Placé sur la carte', wgs84: { lat, lon }, input, accuracy: null, source: 'map', takenAt: new Date().toISOString() }, `Point ${num} (carte)`);
   if (state.settings.vibrate) navigator.vibrate?.(30);
   toast(`Point ${num} placé. Précision = celle du pointé sur la carte.`, 'ok', 2000);
 }

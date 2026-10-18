@@ -14,6 +14,8 @@ import { crsSelect } from './ui/coordinput.js';
 import { analyze } from './io/common.js';
 import { startPlacing, startSelecting, stopModes } from './ui/maptools.js';
 import { APP_VERSION, versionLabel } from './version.js';
+import { startAutoCrs, manualCrsChoice } from './services/autocrs.js';
+import { FAMILIES, zoneAt } from './core/zones.js';
 
 const ROUTES = /** @type {Record<string, { title: string, load: () => Promise<any>, ic: string }>} */ ({
   nav: { title: 'Aller à un point', ic: 'target', load: () => import('./ui/nav.js') },
@@ -39,6 +41,7 @@ async function boot() {
   M.initMap(/** @type {HTMLElement} */ (document.getElementById('map')));
   sheet = makeSheet(/** @type {HTMLElement} */ (document.getElementById('sheet')), /** @type {HTMLElement} */ (document.getElementById('sheet-handle')));
   wireChrome();
+  startAutoCrs(M.getMap());
   on('sheet-snap', (st) => { if (sheet && !document.getElementById('sheet')?.hidden) sheet.snap(st); });
   if (state.settings.lastProjectId) await openProject(state.settings.lastProjectId).catch(() => openProject(null));
   window.addEventListener('hashchange', route);
@@ -143,6 +146,12 @@ function renderHome(el) {
 }
 
 // ------------------------------------------------------------- Habillage permanent
+/** Libellé court d'un système pour la puce (écran étroit). @param {string} id */
+function shortCrs(id) {
+  const m = { 'EPSG:26191': 'Lambert Nord', 'EPSG:26192': 'Lambert Sud', 'EPSG:26194': 'Sahara Nord', 'EPSG:26195': 'Sahara Sud', 'EPSG:4326': 'WGS 84', 'EPSG:4261': 'Merchich' };
+  return /** @type {Record<string,string>} */ (m)[id] ?? crs.getCrs(id).label.replace(/ \(WGS 84\)$/, '');
+}
+
 function wireChrome() {
   // Empêche le défilement parasite du conteneur de la carte (focus d'un champ du panneau)
   const stage = /** @type {HTMLElement} */ (document.querySelector('.stage'));
@@ -160,14 +169,49 @@ function wireChrome() {
 
   // Puce système d'affichage
   const cchip = /** @type {HTMLElement} */ (document.getElementById('chip-crs'));
-  const paintCrs = () => mount(cchip, icon('grid'), h('span', null, crs.getCrs(state.settings.displayCrs).label));
-  on('settings', (p) => { if (p.displayCrs) paintCrs(); if (p.theme || 'contrast' in p) applyTheme(); });
+  const paintCrs = () => {
+    const auto = !!state.settings.autoCrs;
+    cchip.classList.toggle('auto', auto);
+    cchip.title = auto ? 'Système choisi automatiquement selon votre zone (toucher pour changer)' : 'Système d’affichage choisi manuellement';
+    mount(cchip, icon('grid'), h('span', { title: crs.getCrs(state.settings.displayCrs).label }, shortCrs(state.settings.displayCrs)), auto ? h('b.chip-auto', { 'aria-label': 'automatique' }, 'AUTO') : null);
+  };
+  on('settings', (p) => { if (p.displayCrs || 'autoCrs' in p) paintCrs(); if (p.theme || 'contrast' in p) applyTheme(); });
   paintCrs();
+  on('zone-change', ({ from, to, source }) => {
+    anim.flash(cchip);
+    toast(`Zone ${source === 'gps' ? 'GPS' : 'de la carte'} : ${crs.getCrs(to).label} (au lieu de ${crs.getCrs(from).label}). Les nouveaux points y seront enregistrés.`, 'info', 5000);
+  });
   cchip.addEventListener('click', async () => {
     const s = crsSelect(state.settings.displayCrs);
-    const ok = await modal({ title: 'Système d’affichage des coordonnées', body: () => [h('p.small', null, 'Système utilisé pour la barre de coordonnées, les listes et les exports par défaut. La carte reste en WGS 84 / Web Mercator.'), s],
+    const auto = /** @type {HTMLInputElement} */ (h('input', { type: 'checkbox', checked: !!state.settings.autoCrs }));
+    const fam = /** @type {HTMLSelectElement} */ (h('select', null, FAMILIES.map((f) => h('option', { value: f.value, selected: f.value === (state.settings.autoFamily ?? 'lambert') }, f.label))));
+    const famBox = h('div', { hidden: !auto.checked }, fam);
+    const manBox = h('div', { hidden: auto.checked }, s);
+    auto.addEventListener('change', () => { famBox.hidden = !auto.checked; manBox.hidden = auto.checked; });
+    const ok = await modal({ title: 'Système de projection', body: () => [
+      h('label.switch', null, auto, h('span', null, 'Automatique selon ma zone de navigation')),
+      h('p.small', null, 'La zone est déterminée par votre position GPS (ou, sans GPS, par le centre de la carte). Chaque point collecté est enregistré dans la zone de sa propre position.'),
+      famBox, manBox,
+      h('p.small.muted', null, 'La carte reste en WGS 84 / Web Mercator ; ce système sert à la barre de coordonnées, aux listes, à la saisie et aux exports par défaut.')],
       actions: [{ label: 'Annuler', value: false }, { label: 'Appliquer', value: true, variant: 'primary' }] });
-    if (ok) updateSettings({ displayCrs: s.value });
+    if (!ok) return;
+    if (auto.checked) {
+      const fam2 = /** @type {'lambert'|'utm'} */ (fam.value);
+      await updateSettings({ autoCrs: true, autoFamily: fam2 });
+      const g = state.gps.last; const c = M.getMap().getCenter();
+      const ref = g && state.gps.age() < 120 ? { lon: g.lon, lat: g.lat, src: 'gps' } : { lon: c.lng, lat: c.lat, src: 'carte' };
+      const z = zoneAt(ref.lon, ref.lat, fam2);
+      if (z && z !== state.settings.displayCrs) {
+        const patch = /** @type {any} */ ({ displayCrs: z });
+        if (crs.getCrs(state.settings.inputCrs).kind === 'projected') patch.inputCrs = z;
+        await updateSettings(patch);
+      }
+      toast(`Projection automatique : ${crs.getCrs(state.settings.displayCrs).label}.`, 'ok');
+    } else {
+      await updateSettings({ autoCrs: false });
+      await manualCrsChoice('displayCrs', s.value);
+      toast('Projection fixée manuellement.', 'info');
+    }
   });
 
   // Pastille GPS
@@ -232,13 +276,14 @@ function wireChrome() {
       h('div.pi-actions', null,
         btn('Aller à', { variant: 'primary', onclick: async () => {
           const { startNavigation } = await import('./ui/nav.js');
-          const id = state.settings.displayCrs; const xy = crs.fromWGS84(id, lon, lat);
+          const { pointCrs } = await import('./services/autocrs.js');
+          const id = pointCrs(lon, lat); const xy = crs.fromWGS84(id, lon, lat);
           startNavigation({ lat, lon, name: 'Point de la carte', crsId: id, x: xy[0], y: xy[1] });
         } }, 'target'),
         btn('Ajouter un point', { variant: 'ghost', onclick: async () => {
           const { addFeature, nextPointNumber } = await import('./state.js');
-          const id = state.settings.displayCrs; const xy = crs.fromWGS84(id, lon, lat);
-          await addFeature({ type: 'point', num: nextPointNumber(), name: '', code: 'divers', wgs84: { lat, lon }, input: { crsId: id, x: xy[0], y: xy[1] }, accuracy: null, source: 'map', description: 'Pointé sur la carte', takenAt: new Date().toISOString() }, 'Point pointé');
+          const { pointInput } = await import('./services/autocrs.js');
+          await addFeature({ type: 'point', num: nextPointNumber(), name: '', code: 'divers', wgs84: { lat, lon }, input: pointInput(lon, lat), accuracy: null, source: 'map', description: 'Pointé sur la carte', takenAt: new Date().toISOString() }, 'Point pointé');
           M.closePopup(); toast('Point ajouté (pointé sur la carte).', 'ok');
         } }, 'plus'),
         btn('Copier', { variant: 'ghost', onclick: async () => { try { await navigator.clipboard.writeText(rows.map((r) => `${r.label}: ${r.value}`).join('\n')); toast('Coordonnées copiées.', 'ok'); } catch { toast('Copie impossible.', 'warn'); } } }, 'copy')));

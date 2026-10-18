@@ -8,6 +8,9 @@ import { requestPersistence } from '../services/storage.js';
 import { h, icon, btn, mount, toast, field, select } from './dom.js';
 import { crsSelect, crsInfo } from './coordinput.js';
 import { versionLabel } from '../version.js';
+import { manualCrsChoice, zoneMismatches } from '../services/autocrs.js';
+import { FAMILIES } from '../core/zones.js';
+import { updateFeature } from '../state.js';
 
 /** @param {HTMLElement} root */
 export function render(root) {
@@ -17,9 +20,29 @@ export function render(root) {
   const contrast = /** @type {HTMLInputElement} */ (h('input', { type: 'checkbox', checked: s.contrast }));
   contrast.addEventListener('change', () => updateSettings({ contrast: contrast.checked }));
   const inCrs = crsSelect(s.inputCrs);
-  inCrs.addEventListener('change', () => updateSettings({ inputCrs: inCrs.value }));
+  inCrs.addEventListener('change', () => manualCrsChoice('inputCrs', inCrs.value));
   const dispCrs = crsSelect(s.displayCrs);
-  dispCrs.addEventListener('change', () => updateSettings({ displayCrs: dispCrs.value }));
+  dispCrs.addEventListener('change', async () => {
+    if (await manualCrsChoice('displayCrs', dispCrs.value)) { autoChk.checked = false; famBox.hidden = true; toast('Choix manuel : projection automatique désactivée.', 'info', 4000); }
+  });
+  const autoChk = /** @type {HTMLInputElement} */ (h('input', { type: 'checkbox', checked: !!s.autoCrs, id: 'set-autocrs' }));
+  const fam = select(FAMILIES, s.autoFamily ?? 'lambert');
+  const famBox = h('div', { hidden: !s.autoCrs }, field('Famille de systèmes', fam));
+  autoChk.addEventListener('change', async () => { famBox.hidden = !autoChk.checked; await updateSettings({ autoCrs: autoChk.checked }); toast(autoChk.checked ? 'Projection automatique activée : elle s’appliquera au prochain déplacement ou fix GPS.' : 'Projection automatique désactivée.', 'info'); });
+  fam.addEventListener('change', () => updateSettings({ autoFamily: /** @type {any} */ (fam.value) }));
+  const mis = h('div.small');
+  const paintMis = () => {
+    const m = zoneMismatches(state.features, fam.value);
+    mount(mis, m.length
+      ? [h('p', null, `${m.length} point(s) du projet sont enregistrés dans un système qui n’est pas celui de leur zone (ex. point ${m[0].f.num ?? ''} : ${m[0].from === '—' ? '—' : crs.getCrs(m[0].from).label} → ${crs.getCrs(m[0].to).label}).`),
+        btn('Recalculer dans leur zone', { variant: 'ghost', onclick: async () => {
+          for (const x of m) await updateFeature({ ...x.f, input: x.input }, `Zone du point ${x.f.num ?? ''}`);
+          toast(`${m.length} point(s) recalculé(s) dans leur zone (positions inchangées, ancienne valeur conservée).`, 'ok', 5000); paintMis();
+        } }, 'grid')]
+      : h('p.muted', null, state.features.some((f) => f.type === 'point') ? 'Tous les points du projet sont enregistrés dans la zone de leur position.' : 'Aucun point dans le projet ouvert.'));
+  };
+  fam.addEventListener('change', paintMis);
+  paintMis();
   const ang = select([{ value: 'deg', label: 'Degrés décimaux (°)' }, { value: 'grad', label: 'Grades (gr) — usage topographique' }, { value: 'dms', label: 'Degrés, minutes, secondes' }], s.angleUnit);
   ang.addEventListener('change', () => updateSettings({ angleUnit: /** @type {any} */ (ang.value) }));
   const area = select(Object.entries(AREA_UNITS).map(([k, u]) => ({ value: k, label: u.label })), s.areaUnit);
@@ -50,6 +73,9 @@ export function render(root) {
   mount(root,
     h('fieldset.group', null, h('legend', null, 'Affichage'), field('Thème', theme), h('label.switch', null, contrast, h('span', null, 'Contraste renforcé (plein soleil)')), field('Langue', lang)),
     h('fieldset.group', null, h('legend', null, 'Systèmes de coordonnées'),
+      h('label.switch', null, autoChk, h('span', null, 'Projection automatique selon ma zone de navigation')),
+      h('p.small.muted', null, 'Zone déterminée par la position GPS (sinon le centre de la carte), limites tirées des domaines d’usage EPSG : Lambert Nord au nord de 31,5° N, Sud de 27,66° à 31,5° N, Sahara Nord de 24,3° à 27,66° N, Sahara Sud au sud de 24,3° N. Chaque point collecté est enregistré dans la zone de sa propre position.'),
+      famBox, h('div.zone-box', { id: 'zone-mismatch' }, mis),
       field('Système de saisie par défaut', inCrs), field('Système d’affichage (barre de coordonnées, listes)', dispCrs, 'Système de la carte : WGS 84 / Web Mercator (Leaflet). Les coordonnées sont transformées à l’affichage.')),
     h('fieldset.group', null, h('legend', null, 'Unités'), field('Angles et azimuts', ang), field('Superficies', area)),
     h('fieldset.group', null, h('legend', null, 'Transformation Merchich → WGS 84'),

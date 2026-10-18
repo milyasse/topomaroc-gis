@@ -1,9 +1,16 @@
 // @ts-check
 /** Version de l'application (numérotation sémantique) et historique des nouveautés. */
-export const APP_VERSION = '1.2.0';
+export const APP_VERSION = '1.3.0';
 export const APP_DATE = '2026-10-18';
 
 export const CHANGELOG = [
+  {
+    version: '1.3.0', date: '2026-10-18', items: [
+      'Système de projection automatique selon la zone de navigation (position GPS, sinon centre de la carte) : Lambert Nord / Sud / Sahara Nord / Sahara Sud, ou UTM 28 / 29 / 30.',
+      'Chaque point collecté est enregistré dans la zone de sa propre position ; recalcul des points existants dans leur zone (Réglages).',
+      'Badge « AUTO » et message lors d’un changement de zone ; choix manuel toujours possible.',
+    ],
+  },
   {
     version: '1.2.0', date: '2026-10-18', items: [
       'Déplacement d’un point en édition : nouvelles coordonnées, glisser sur la carte ou position GPS actuelle ; les parcelles qui utilisent ce point sont mises à jour.',

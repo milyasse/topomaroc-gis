@@ -30,6 +30,9 @@ export const DEFAULT_SETTINGS = {
   layers: { parcels: true, lines: true, points: true, nav: true, measures: true },
   layerOrder: ['parcels', 'lines', 'points'],
   onboarded: false,
+  /** Système de projection choisi automatiquement selon la zone de navigation (v1.3). */
+  autoCrs: true,
+  autoFamily: /** @type {'lambert'|'utm'} */ ('lambert'),
   projectLayers: /** @type {Record<string, {on?:boolean, points?:boolean, parcels?:boolean, lines?:boolean, color?:string|null}>} */ ({}),
   customBasemap: /** @type {null|{url:string,label?:string,maxNativeZoom?:number,attribution?:string}} */ (null),
 };

@@ -1,6 +1,6 @@
 // Fichier généré par tools/gen-precache.mjs — ne pas modifier à la main.
 self.PRECACHE = {
- "version": "d52f27d510a2",
+ "version": "3f552f9029bf",
  "files": [
   "./",
   "./index.html",
@@ -16,6 +16,7 @@ self.PRECACHE = {
   "./src/core/parcel.js",
   "./src/core/terrain.js",
   "./src/core/units.js",
+  "./src/core/zones.js",
   "./src/i18n/fr.js",
   "./src/i18n/index.js",
   "./src/io/common.js",
@@ -25,6 +26,7 @@ self.PRECACHE = {
   "./src/map/basemaps.js",
   "./src/map/map.js",
   "./src/map/smarttiles.js",
+  "./src/services/autocrs.js",
   "./src/services/compass.js",
   "./src/services/dem.js",
   "./src/services/gps.js",

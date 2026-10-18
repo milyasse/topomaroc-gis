@@ -12,6 +12,7 @@
  *    les grands polygones (> 10 km).
  */
 import * as crs from './crs.js';
+import { zoneAt } from './zones.js';
 import * as geo from './geodesy.js';
 import * as G from './geometry.js';
 import { gridBearing } from './angles.js';
@@ -76,7 +77,7 @@ export function analyzeParcel(vertices, crsId, opts = {}) {
   const planeCrsId = src.kind === 'projected'
     ? crsId
     : (opts.planeCrsId && crs.getCrs(opts.planeCrsId).kind === 'projected' ? opts.planeCrsId
-      : (crs.bestLambertZone(centerLon, centerLat) || `EPSG:326${crs.utmZoneFor(centerLon)}`));
+      : (zoneAt(centerLon, centerLat) || crs.bestLambertZone(centerLon, centerLat) || `EPSG:326${crs.utmZoneFor(centerLon)}`));
   const plane = src.kind === 'projected' ? pts : wgs.map((p) => crs.fromWGS84(planeCrsId, p.lon, p.lat));
 
   // Contrôles de validité

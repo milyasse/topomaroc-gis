@@ -574,3 +574,7 @@ label.switch.sm input { width: 18px; height: 18px; }
 .version-tag { color: var(--ink-2); text-decoration: none; font-weight: 600; }
 .changelog { margin: 6px 0; }
 .changelog ul { margin: 4px 0 8px; padding-left: 20px; }
+
+/* v1.3 — projection automatique */
+.chip-auto { font-size: .62rem; letter-spacing: .04em; padding: 1px 4px; border-radius: 4px; background: var(--accent); color: var(--accent-ink); margin-left: 4px; font-weight: 700; }
+.zone-box { display: grid; gap: 6px; }

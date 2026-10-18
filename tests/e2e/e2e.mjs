@@ -405,6 +405,11 @@ await test('Mode sombre et thème clair', async () => {
 const FIXTURE = fs.readFileSync(path.join(path.dirname(new URL(import.meta.url).pathname), 'fixture-tile.jpg'));
 /** Ajoute des entités directement via les modules de l'application. */
 const seed = (page, fn, arg) => page.evaluate(fn, arg);
+/** Attend qu'une fonction asynchrone évaluée dans la page renvoie une valeur vraie. */
+async function until(page, fn, timeout = 8000) {
+  const t0 = Date.now();
+  for (;;) { if (await page.evaluate(fn)) return; if (Date.now() - t0 > timeout) throw new Error('délai dépassé : ' + String(fn).slice(0, 120)); await page.waitForTimeout(100); }
+}
 
 await test('« + Point » : placement au réticule sans GPS (2 points)', async () => {
   const { page, ctx, errors } = await newPage({ hash: '#/map' });
@@ -414,7 +419,7 @@ await test('« + Point » : placement au réticule sans GPS (2 points)', async (
   await page.click('#action-bar button:has-text("Placer ici")');
   await page.evaluate(async () => { const M = await import('./src/map/map.js'); M.getMap().panBy([80, 0], { animate: false }); });
   await page.click('#action-bar button:has-text("Placer ici")');
-  await page.waitForFunction(async () => (await import('./src/state.js')).state.features.filter((f) => f.type === 'point' && f.source === 'map').length === 2);
+  await until(page, async () => (await import('./src/state.js')).state.features.filter((f) => f.type === 'point' && f.source === 'map').length === 2);
   const c = await page.evaluate(async () => (await import('./src/state.js')).state.features.find((f) => f.source === 'map').wgs84);
   assert(Math.abs(c.lat - 34.0209) < 1e-5 && Math.abs(c.lon + 6.8498) < 1e-5, JSON.stringify(c));
   await page.screenshot({ path: path.join(SHOTS, 'mobile-placement.png') });
@@ -633,13 +638,13 @@ await test('Couches par projet : superposition d’un 2e projet, activation/dés
   assert(await page.locator('.proj-layer').count() === 2, 'deux projets listés');
   const other = page.locator('.proj-layer:not(.current)');
   await other.locator('.pl-head input[type=checkbox]').check();
-  await page.waitForFunction(async () => (await import('./src/map/map.js')).getMap().getPane('overlays').querySelectorAll('path').length > 0, null, { timeout: 8000 });
+  await until(page, async () => (await import('./src/map/map.js')).getMap().getPane('overlays').querySelectorAll('path').length > 0);
   await other.locator('button[aria-label^="Zoomer"]').click();
   await page.goto(BASE + '#/map'); await page.waitForTimeout(500);
   await page.screenshot({ path: path.join(SHOTS, 'mobile-couches-projets.png') });
   await page.goto(BASE + '#/tools/layers'); await page.waitForSelector('.proj-layer');
   await page.locator('.proj-layer:not(.current) .pl-head input[type=checkbox]').uncheck();
-  await page.waitForFunction(async () => (await import('./src/map/map.js')).getMap().getPane('overlays').querySelectorAll('path').length === 0, null, { timeout: 8000 });
+  await until(page, async () => (await import('./src/map/map.js')).getMap().getPane('overlays').querySelectorAll('path').length === 0);
   assert(errors.length === 0, errors.join(' | '));
   await ctx.close();
   return 'projet Nord superposé au projet Sud ouvert, puis masqué';
@@ -683,13 +688,87 @@ await test('Outil « Pente entre deux points » : profil et pente', async () => 
   return t.replace(/\s+/g, ' ').slice(0, 140);
 });
 
+await test('Projection automatique : Rabat (Lambert Nord) → Agadir (Lambert Sud), points enregistrés dans leur zone', async () => {
+  const { page, ctx, errors } = await newPage({ hash: '#/survey' });
+  await page.waitForSelector('.gps-card.st-active', { timeout: 8000 });
+  await page.waitForSelector('#chip-crs:has-text("Lambert Nord") .chip-auto');
+  await page.click('button:has-text("Enregistrer le point GPS")');
+  await until(page, async () => (await import('./src/state.js')).state.features.filter((f) => f.type === 'point').length === 1);
+  // Déplacement simulé vers Agadir (30,42° N)
+  await ctx.setGeolocation({ latitude: 30.4202, longitude: -9.5982, accuracy: 4 });
+  await page.waitForSelector('#chip-crs:has-text("Lambert Sud")', { timeout: 8000 });
+  await page.waitForSelector('.toast:has-text("Lambert Sud Maroc")');
+  await page.waitForTimeout(400);
+  await page.click('button:has-text("Enregistrer le point GPS")');
+  await until(page, async () => (await import('./src/state.js')).state.features.filter((f) => f.type === 'point').length === 2);
+  const r = await page.evaluate(async () => {
+    const st = await import('./src/state.js'); const crs = await import('./src/core/crs.js');
+    const pts = st.state.features.filter((f) => f.type === 'point');
+    return { s: st.state.settings, pts: pts.map((f) => ({ id: f.input.crsId, auto: f.input.zoneAuto, back: crs.toWGS84(f.input.crsId, [f.input.x, f.input.y]), w: f.wgs84 })) };
+  });
+  assert(r.s.displayCrs === 'EPSG:26192' && r.s.inputCrs === 'EPSG:26192', `réglages ${r.s.displayCrs} / ${r.s.inputCrs}`);
+  assert(r.pts[0].id === 'EPSG:26191' && r.pts[1].id === 'EPSG:26192', r.pts.map((p) => p.id).join(', '));
+  for (const p of r.pts) assert(p.auto && Math.abs(p.back.lat - p.w.lat) < 1e-7 && Math.abs(p.back.lon - p.w.lon) < 1e-7, 'aller-retour ' + JSON.stringify(p));
+  await page.screenshot({ path: path.join(SHOTS, 'mobile-zone-auto.png') });
+  assert(errors.length === 0, errors.join(' | '));
+  await ctx.close();
+  return 'point 1 en EPSG:26191 (Rabat), point 2 en EPSG:26192 (Agadir), réglages basculés';
+});
+
+await test('Projection automatique sans GPS : « + Point » à Laâyoune → Lambert Sahara Nord ; choix manuel désactive l’automatique', async () => {
+  const { page, ctx, errors } = await newPage({ hash: '#/map', denyGeo: true });
+  await page.evaluate(async () => { const M = await import('./src/map/map.js'); M.getMap().setView([27.1536, -13.2033], 16, { animate: false }); });
+  await page.waitForSelector('#chip-crs:has-text("Sahara Nord")', { timeout: 5000 });
+  await page.click('#btn-addpt');
+  await page.click('#action-bar button:has-text("Placer ici")');
+  await until(page, async () => (await import('./src/state.js')).state.features.filter((f) => f.source === 'map').length === 1);
+  const id = await page.evaluate(async () => (await import('./src/state.js')).state.features.find((f) => f.source === 'map').input.crsId);
+  assert(id === 'EPSG:26194', id);
+  await page.click('#action-bar button:has-text("Terminer")');
+  // Vue d'ensemble du pays : pas de bascule
+  await page.evaluate(async () => { const M = await import('./src/map/map.js'); M.zoomInitial(); });
+  await page.waitForTimeout(600);
+  assert(/Sahara Nord/.test(await text(page, '#chip-crs')), 'bascule en vue d’ensemble');
+  // Choix manuel (puce) : UTM 28N fixe → automatique désactivé
+  await page.click('#chip-crs');
+  await page.uncheck('.modal label.switch input');
+  await page.selectOption('.modal select.crs-select', 'EPSG:32628');
+  await page.click('.modal-actions button:has-text("Appliquer")');
+  await page.waitForSelector('#chip-crs:has-text("UTM 28N")');
+  assert(await page.locator('#chip-crs .chip-auto').count() === 0, 'badge AUTO encore présent');
+  await page.evaluate(async () => { const M = await import('./src/map/map.js'); M.getMap().setView([34.02, -6.85], 15, { animate: false }); });
+  await page.waitForTimeout(600);
+  assert(/UTM 28N/.test(await text(page, '#chip-crs')), 'le mode manuel a été écrasé');
+  assert(errors.length === 0, errors.join(' | '));
+  await ctx.close();
+  return 'point carte en EPSG:26194 ; vue pays ignorée ; choix manuel respecté';
+});
+
+await test('Réglages : recalcul des points anciens dans leur zone', async () => {
+  const { page, ctx, errors } = await newPage({ hash: '#/home', denyGeo: true });
+  await seed(page, async () => {
+    const st = await import('./src/state.js'); const crs = await import('./src/core/crs.js');
+    const w = { lat: 30.42, lon: -9.6 }; const xy = crs.fromWGS84('EPSG:26191', w.lon, w.lat); // Agadir saisi à tort en zone Nord
+    await st.addFeature({ type: 'point', num: '1', code: 'borne', wgs84: w, input: { crsId: 'EPSG:26191', x: xy[0], y: xy[1] }, source: 'gps' });
+  });
+  await page.goto(BASE + '#/settings');
+  await page.waitForSelector('#zone-mismatch:has-text("1 point(s)")');
+  await page.click('#zone-mismatch button:has-text("Recalculer dans leur zone")');
+  await page.waitForSelector('#zone-mismatch:has-text("Tous les points")');
+  const f = await page.evaluate(async () => (await import('./src/state.js')).state.features[0]);
+  assert(f.input.crsId === 'EPSG:26192' && f.input.original?.crsId === 'EPSG:26191' && f.wgs84.lat === 30.42, JSON.stringify(f.input));
+  assert(errors.length === 0, errors.join(' | '));
+  await ctx.close();
+  return `E ${f.input.x.toFixed(2)} N ${f.input.y.toFixed(2)} (Lambert Sud), ancienne valeur conservée`;
+});
+
 await test('Version de l’application affichée (accueil et aide)', async () => {
   const { page, ctx } = await newPage({ hash: '#/home' });
   await page.waitForSelector('.version-tag');
   const v = await text(page, '.version-tag');
-  assert(/v1\.2\.0/.test(v), v);
+  assert(/v1\.3\.0/.test(v), v);
   await page.goto(BASE + '#/help');
-  await page.waitForSelector('summary:has-text("Version v1.2.0")');
+  await page.waitForSelector('summary:has-text("Version v1.3.0")');
   await ctx.close();
   return v;
 });

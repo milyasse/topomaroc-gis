@@ -12,6 +12,7 @@ import { coordInput } from './coordinput.js';
 import { anim } from './anim.js';
 import { startNavigation } from './nav.js';
 import { pointXY } from '../io/common.js';
+import { pointInput } from '../services/autocrs.js';
 
 /** Ligne de coordonnées d'un point dans le SRC d'affichage. @param {any} f */
 export function pointCoordText(f) {
@@ -99,16 +100,15 @@ export function render(root) {
       }
       progress.hidden = true; /** @type {HTMLButtonElement} */ (recBtn).disabled = false;
     }
-    const disp = state.settings.displayCrs;
-    const xy = crs.fromWGS84(disp, fix.lon, fix.lat);
+    const inp = pointInput(fix.lon, fix.lat);
     let photoId = null;
     if (photo.files?.[0]) photoId = await db.savePhoto(photo.files[0]);
     const rec = await addFeature({
       type: 'point', num: num.value.trim() || nextPointNumber(), name: name.value.trim(), code: code.value, description: desc.value.trim(),
-      wgs84: { lat: fix.lat, lon: fix.lon }, input: { crsId: disp, x: xy[0], y: xy[1] }, accuracy: fix.accuracy, altitude: fix.altitude,
+      wgs84: { lat: fix.lat, lon: fix.lon }, input: inp, accuracy: fix.accuracy, altitude: fix.altitude,
       source: 'gps', gpsInfo, photoId, takenAt: new Date(fix.timestamp).toISOString(),
     }, `Point ${num.value}`);
-    toast(`Point ${rec.num} enregistré (±${fix.accuracy.toFixed(1)} m).`, 'ok');
+    toast(`Point ${rec.num} enregistré (±${fix.accuracy.toFixed(1)} m) · ${crs.getCrs(inp.crsId).label}.`, 'ok');
     if (state.settings.vibrate) navigator.vibrate?.(60);
     num.value = nextPointNumber(); name.value = ''; desc.value = ''; photo.value = '';
     anim.flash(num);
@@ -249,9 +249,7 @@ export async function editPoint(f) {
     const { startMovePoint } = await import('./maptools.js');
     startMovePoint(state.features.find((x) => x.id === f.id) ?? upd, async (lat, lon) => {
       const cur = state.features.find((x) => x.id === f.id) ?? upd;
-      const iid = cur.input?.crsId ?? state.settings.displayCrs;
-      const xy = crs.fromWGS84(iid, lon, lat);
-      await relocatePoint(cur, { wgs84: { lat, lon }, input: { crsId: iid, x: xy[0], y: xy[1] }, how: 'carte' });
+      await relocatePoint(cur, { wgs84: { lat, lon }, input: relocInput(cur, lon, lat), how: 'carte' });
     });
     return;
   }
@@ -265,13 +263,22 @@ export async function editPoint(f) {
         state.gps.addEventListener('fix', on1);
         toast('Recherche de votre position…', 'info', 2500);
       });
-      const iid = upd.input?.crsId ?? state.settings.displayCrs;
-      const xy = crs.fromWGS84(iid, fix.lon, fix.lat);
-      await relocatePoint(upd, { wgs84: { lat: fix.lat, lon: fix.lon }, input: { crsId: iid, x: xy[0], y: xy[1] }, how: 'GPS', accuracy: fix.accuracy, altitude: fix.altitude });
+      await relocatePoint(upd, { wgs84: { lat: fix.lat, lon: fix.lon }, input: relocInput(upd, fix.lon, fix.lat), how: 'GPS', accuracy: fix.accuracy, altitude: fix.altitude });
     } catch (e) { toast(/** @type {Error} */ (e).message, 'error'); } finally { state.gps.stop(); }
     return;
   }
   toast('Point modifié.', 'ok');
+}
+
+/**
+ * Système d'enregistrement d'un point déplacé : zone automatique de sa nouvelle position
+ * (mode automatique), sinon le système d'origine du point.
+ * @param {any} f @param {number} lon @param {number} lat
+ */
+function relocInput(f, lon, lat) {
+  if (state.settings.autoCrs || !f.input?.crsId) return pointInput(lon, lat);
+  const xy = crs.fromWGS84(f.input.crsId, lon, lat);
+  return { crsId: f.input.crsId, x: xy[0], y: xy[1] };
 }
 
 /**
