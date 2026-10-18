@@ -1,0 +1,2851 @@
+{
+ "date": "2026-10-18T21:07:16.304Z",
+ "results": [
+  {
+   "provider": "esri",
+   "place": "Rabat (ville)",
+   "z": 14,
+   "status": 200,
+   "size": 23890,
+   "md5": "e7117c295b2dcfbeb8483b95a24608b1",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri",
+   "place": "Rabat (ville)",
+   "z": 16,
+   "status": 200,
+   "size": 28638,
+   "md5": "10356ea903a4e9e8aff103e105e222d6",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri",
+   "place": "Rabat (ville)",
+   "z": 17,
+   "status": 200,
+   "size": 27237,
+   "md5": "ec15f275821a3559368cecc0eb0dcedd",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri",
+   "place": "Rabat (ville)",
+   "z": 18,
+   "status": 200,
+   "size": 24046,
+   "md5": "72b03745bb59c538d763dd1a9a3e4069",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri",
+   "place": "Rabat (ville)",
+   "z": 19,
+   "status": 200,
+   "size": 18527,
+   "md5": "fab0a8923782fcb21dbe1066b92ea94e",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri",
+   "place": "Rabat (ville)",
+   "z": 20,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "esri",
+   "place": "Rabat (ville)",
+   "z": 21,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "esri",
+   "place": "Saïs rural (Meknès)",
+   "z": 14,
+   "status": 200,
+   "size": 15908,
+   "md5": "8c25b04584810df210443b0b75bbebc2",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri",
+   "place": "Saïs rural (Meknès)",
+   "z": 16,
+   "status": 200,
+   "size": 13757,
+   "md5": "ab25e51ff400112b335c7848bb44600c",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri",
+   "place": "Saïs rural (Meknès)",
+   "z": 17,
+   "status": 200,
+   "size": 6050,
+   "md5": "d172a4172f2d9cdd88b7e8553bab7b8f",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri",
+   "place": "Saïs rural (Meknès)",
+   "z": 18,
+   "status": 200,
+   "size": 4388,
+   "md5": "07e82690f44354a04dcff2e9fb838b5b",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri",
+   "place": "Saïs rural (Meknès)",
+   "z": 19,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "esri",
+   "place": "Saïs rural (Meknès)",
+   "z": 20,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "esri",
+   "place": "Saïs rural (Meknès)",
+   "z": 21,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "esri",
+   "place": "Souss rural (Agadir)",
+   "z": 14,
+   "status": 200,
+   "size": 19582,
+   "md5": "bc8eddd0c796e908e3fc24f215545abd",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri",
+   "place": "Souss rural (Agadir)",
+   "z": 16,
+   "status": 200,
+   "size": 16587,
+   "md5": "e645f8746d89d14f447c5d544aae3aa1",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri",
+   "place": "Souss rural (Agadir)",
+   "z": 17,
+   "status": 200,
+   "size": 14151,
+   "md5": "30369e5c19103745069e5fc212fc2ad0",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri",
+   "place": "Souss rural (Agadir)",
+   "z": 18,
+   "status": 200,
+   "size": 13646,
+   "md5": "0c92f8eecc491d3aa4f60f249f068e82",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri",
+   "place": "Souss rural (Agadir)",
+   "z": 19,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "esri",
+   "place": "Souss rural (Agadir)",
+   "z": 20,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "esri",
+   "place": "Souss rural (Agadir)",
+   "z": 21,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "esri",
+   "place": "Haouz rural (Marrakech)",
+   "z": 14,
+   "status": 200,
+   "size": 12487,
+   "md5": "a75360f13f9d0dae78edf7fb0200ecf2",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri",
+   "place": "Haouz rural (Marrakech)",
+   "z": 16,
+   "status": 200,
+   "size": 10567,
+   "md5": "a1c33852c17802d0a832e1b332d886c7",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri",
+   "place": "Haouz rural (Marrakech)",
+   "z": 17,
+   "status": 200,
+   "size": 8040,
+   "md5": "2e5f9167aaf80fc6ad47b3101216d333",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri",
+   "place": "Haouz rural (Marrakech)",
+   "z": 18,
+   "status": 200,
+   "size": 5596,
+   "md5": "9f2b868c1bfeb8e5b91ede0c6be1c3bd",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri",
+   "place": "Haouz rural (Marrakech)",
+   "z": 19,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "esri",
+   "place": "Haouz rural (Marrakech)",
+   "z": 20,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "esri",
+   "place": "Haouz rural (Marrakech)",
+   "z": 21,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "esri",
+   "place": "Oriental rural (Oujda)",
+   "z": 14,
+   "status": 200,
+   "size": 13217,
+   "md5": "17df9c0f052433faa5b5dd9a43776587",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri",
+   "place": "Oriental rural (Oujda)",
+   "z": 16,
+   "status": 200,
+   "size": 10868,
+   "md5": "9df0a4542b96ec866dd70c2402cc92eb",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri",
+   "place": "Oriental rural (Oujda)",
+   "z": 17,
+   "status": 200,
+   "size": 10468,
+   "md5": "e75c7929866b029c3ffde213c13ec997",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri",
+   "place": "Oriental rural (Oujda)",
+   "z": 18,
+   "status": 200,
+   "size": 10571,
+   "md5": "98886215c0164c7a5e4e969fba78f648",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri",
+   "place": "Oriental rural (Oujda)",
+   "z": 19,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "esri",
+   "place": "Oriental rural (Oujda)",
+   "z": 20,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "esri",
+   "place": "Oriental rural (Oujda)",
+   "z": 21,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "esri",
+   "place": "Dakhla",
+   "z": 14,
+   "status": 200,
+   "size": 22892,
+   "md5": "8f73c496ba05e69b80332eca5707105e",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri",
+   "place": "Dakhla",
+   "z": 16,
+   "status": 200,
+   "size": 27709,
+   "md5": "7fe94eaa793a4112eda538feb61a1a9f",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri",
+   "place": "Dakhla",
+   "z": 17,
+   "status": 200,
+   "size": 24048,
+   "md5": "c55d3818bbb4ae3ccde498bdf818b153",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri",
+   "place": "Dakhla",
+   "z": 18,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "esri",
+   "place": "Dakhla",
+   "z": 19,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "esri",
+   "place": "Dakhla",
+   "z": 20,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "esri",
+   "place": "Dakhla",
+   "z": 21,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Rabat (ville)",
+   "z": 14,
+   "status": 200,
+   "size": 31377,
+   "md5": "26d53ffa48e68c93a1c3fca739936294",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Rabat (ville)",
+   "z": 16,
+   "status": 200,
+   "size": 31208,
+   "md5": "d72f65fde09fd5c3d9dc74153adc2444",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Rabat (ville)",
+   "z": 17,
+   "status": 200,
+   "size": 27923,
+   "md5": "718886834368838ae2090fc8be4a7e59",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Rabat (ville)",
+   "z": 18,
+   "status": 200,
+   "size": 22148,
+   "md5": "b958d035c220e3352e35a722b3ee3e3f",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Rabat (ville)",
+   "z": 19,
+   "status": 200,
+   "size": 15369,
+   "md5": "5102aa6057ac2c4ed7d085672c32187e",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Rabat (ville)",
+   "z": 20,
+   "status": 404,
+   "size": 196,
+   "md5": "62962daa1b19bbcc2db10b7bfd531ea6",
+   "type": "text/html; charset=iso-8859-1",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Rabat (ville)",
+   "z": 21,
+   "status": 404,
+   "size": 196,
+   "md5": "62962daa1b19bbcc2db10b7bfd531ea6",
+   "type": "text/html; charset=iso-8859-1",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Saïs rural (Meknès)",
+   "z": 14,
+   "status": 200,
+   "size": 28654,
+   "md5": "8d9a5afd7522be7f58a36c6f05b6be50",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Saïs rural (Meknès)",
+   "z": 16,
+   "status": 200,
+   "size": 21065,
+   "md5": "9de29744e5929b989fb7572219b36073",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Saïs rural (Meknès)",
+   "z": 17,
+   "status": 200,
+   "size": 18792,
+   "md5": "0e6e6db56f530fbd2919495daab748bd",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Saïs rural (Meknès)",
+   "z": 18,
+   "status": 404,
+   "size": 196,
+   "md5": "62962daa1b19bbcc2db10b7bfd531ea6",
+   "type": "text/html; charset=iso-8859-1",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Saïs rural (Meknès)",
+   "z": 19,
+   "status": 404,
+   "size": 196,
+   "md5": "62962daa1b19bbcc2db10b7bfd531ea6",
+   "type": "text/html; charset=iso-8859-1",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Saïs rural (Meknès)",
+   "z": 20,
+   "status": 404,
+   "size": 196,
+   "md5": "62962daa1b19bbcc2db10b7bfd531ea6",
+   "type": "text/html; charset=iso-8859-1",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Saïs rural (Meknès)",
+   "z": 21,
+   "status": 404,
+   "size": 196,
+   "md5": "62962daa1b19bbcc2db10b7bfd531ea6",
+   "type": "text/html; charset=iso-8859-1",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Souss rural (Agadir)",
+   "z": 14,
+   "status": 200,
+   "size": 35593,
+   "md5": "e93c5054d4b8357199eb7bcb75a3d002",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Souss rural (Agadir)",
+   "z": 16,
+   "status": 200,
+   "size": 26858,
+   "md5": "31e87c0285579918b09b5b4d928347d6",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Souss rural (Agadir)",
+   "z": 17,
+   "status": 200,
+   "size": 22647,
+   "md5": "e9cf7925bf6253f8940ead4115b5d30d",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Souss rural (Agadir)",
+   "z": 18,
+   "status": 404,
+   "size": 196,
+   "md5": "62962daa1b19bbcc2db10b7bfd531ea6",
+   "type": "text/html; charset=iso-8859-1",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Souss rural (Agadir)",
+   "z": 19,
+   "status": 404,
+   "size": 196,
+   "md5": "62962daa1b19bbcc2db10b7bfd531ea6",
+   "type": "text/html; charset=iso-8859-1",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Souss rural (Agadir)",
+   "z": 20,
+   "status": 404,
+   "size": 196,
+   "md5": "62962daa1b19bbcc2db10b7bfd531ea6",
+   "type": "text/html; charset=iso-8859-1",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Souss rural (Agadir)",
+   "z": 21,
+   "status": 404,
+   "size": 196,
+   "md5": "62962daa1b19bbcc2db10b7bfd531ea6",
+   "type": "text/html; charset=iso-8859-1",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Haouz rural (Marrakech)",
+   "z": 14,
+   "status": 200,
+   "size": 16617,
+   "md5": "df9d42a715adf908dcf9863a19595346",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Haouz rural (Marrakech)",
+   "z": 16,
+   "status": 200,
+   "size": 11815,
+   "md5": "d213baa7878d33a1fb841f8e1538a73e",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Haouz rural (Marrakech)",
+   "z": 17,
+   "status": 200,
+   "size": 9275,
+   "md5": "f2e75d4075e46c5ae8813257f3b3a3d2",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Haouz rural (Marrakech)",
+   "z": 18,
+   "status": 404,
+   "size": 196,
+   "md5": "62962daa1b19bbcc2db10b7bfd531ea6",
+   "type": "text/html; charset=iso-8859-1",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Haouz rural (Marrakech)",
+   "z": 19,
+   "status": 404,
+   "size": 196,
+   "md5": "62962daa1b19bbcc2db10b7bfd531ea6",
+   "type": "text/html; charset=iso-8859-1",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Haouz rural (Marrakech)",
+   "z": 20,
+   "status": 404,
+   "size": 196,
+   "md5": "62962daa1b19bbcc2db10b7bfd531ea6",
+   "type": "text/html; charset=iso-8859-1",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Haouz rural (Marrakech)",
+   "z": 21,
+   "status": 404,
+   "size": 196,
+   "md5": "62962daa1b19bbcc2db10b7bfd531ea6",
+   "type": "text/html; charset=iso-8859-1",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Oriental rural (Oujda)",
+   "z": 14,
+   "status": 200,
+   "size": 23011,
+   "md5": "115ca9dd6534eb990881768da3caece8",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Oriental rural (Oujda)",
+   "z": 16,
+   "status": 200,
+   "size": 16288,
+   "md5": "c7d0fdca5f4b4ce81ef820d983add789",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Oriental rural (Oujda)",
+   "z": 17,
+   "status": 200,
+   "size": 15192,
+   "md5": "eb5131497383b5f4d5664cc66c7e7766",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Oriental rural (Oujda)",
+   "z": 18,
+   "status": 404,
+   "size": 196,
+   "md5": "62962daa1b19bbcc2db10b7bfd531ea6",
+   "type": "text/html; charset=iso-8859-1",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Oriental rural (Oujda)",
+   "z": 19,
+   "status": 404,
+   "size": 196,
+   "md5": "62962daa1b19bbcc2db10b7bfd531ea6",
+   "type": "text/html; charset=iso-8859-1",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Oriental rural (Oujda)",
+   "z": 20,
+   "status": 404,
+   "size": 196,
+   "md5": "62962daa1b19bbcc2db10b7bfd531ea6",
+   "type": "text/html; charset=iso-8859-1",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Oriental rural (Oujda)",
+   "z": 21,
+   "status": 404,
+   "size": 196,
+   "md5": "62962daa1b19bbcc2db10b7bfd531ea6",
+   "type": "text/html; charset=iso-8859-1",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Dakhla",
+   "z": 14,
+   "status": 200,
+   "size": 32863,
+   "md5": "5c2a7d192eee449d519c82f61ef02c3c",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Dakhla",
+   "z": 16,
+   "status": 200,
+   "size": 34977,
+   "md5": "fca1c5dfe06349ba2ff144033130ccbf",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Dakhla",
+   "z": 17,
+   "status": 200,
+   "size": 30929,
+   "md5": "9f634b2c3f19db8b09323eb7b572eeb9",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Dakhla",
+   "z": 18,
+   "status": 404,
+   "size": 196,
+   "md5": "62962daa1b19bbcc2db10b7bfd531ea6",
+   "type": "text/html; charset=iso-8859-1",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Dakhla",
+   "z": 19,
+   "status": 404,
+   "size": 196,
+   "md5": "62962daa1b19bbcc2db10b7bfd531ea6",
+   "type": "text/html; charset=iso-8859-1",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Dakhla",
+   "z": 20,
+   "status": 404,
+   "size": 196,
+   "md5": "62962daa1b19bbcc2db10b7bfd531ea6",
+   "type": "text/html; charset=iso-8859-1",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_clarity",
+   "place": "Dakhla",
+   "z": 21,
+   "status": 404,
+   "size": 196,
+   "md5": "62962daa1b19bbcc2db10b7bfd531ea6",
+   "type": "text/html; charset=iso-8859-1",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_services",
+   "place": "Rabat (ville)",
+   "z": 14,
+   "status": 200,
+   "size": 23890,
+   "md5": "e7117c295b2dcfbeb8483b95a24608b1",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_services",
+   "place": "Rabat (ville)",
+   "z": 16,
+   "status": 200,
+   "size": 28638,
+   "md5": "10356ea903a4e9e8aff103e105e222d6",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_services",
+   "place": "Rabat (ville)",
+   "z": 17,
+   "status": 200,
+   "size": 27237,
+   "md5": "ec15f275821a3559368cecc0eb0dcedd",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_services",
+   "place": "Rabat (ville)",
+   "z": 18,
+   "status": 200,
+   "size": 24046,
+   "md5": "72b03745bb59c538d763dd1a9a3e4069",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_services",
+   "place": "Rabat (ville)",
+   "z": 19,
+   "status": 200,
+   "size": 18527,
+   "md5": "fab0a8923782fcb21dbe1066b92ea94e",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_services",
+   "place": "Rabat (ville)",
+   "z": 20,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_services",
+   "place": "Rabat (ville)",
+   "z": 21,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_services",
+   "place": "Saïs rural (Meknès)",
+   "z": 14,
+   "status": 200,
+   "size": 15908,
+   "md5": "8c25b04584810df210443b0b75bbebc2",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_services",
+   "place": "Saïs rural (Meknès)",
+   "z": 16,
+   "status": 200,
+   "size": 13757,
+   "md5": "ab25e51ff400112b335c7848bb44600c",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_services",
+   "place": "Saïs rural (Meknès)",
+   "z": 17,
+   "status": 200,
+   "size": 6050,
+   "md5": "d172a4172f2d9cdd88b7e8553bab7b8f",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_services",
+   "place": "Saïs rural (Meknès)",
+   "z": 18,
+   "status": 200,
+   "size": 4388,
+   "md5": "07e82690f44354a04dcff2e9fb838b5b",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_services",
+   "place": "Saïs rural (Meknès)",
+   "z": 19,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_services",
+   "place": "Saïs rural (Meknès)",
+   "z": 20,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_services",
+   "place": "Saïs rural (Meknès)",
+   "z": 21,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_services",
+   "place": "Souss rural (Agadir)",
+   "z": 14,
+   "status": 200,
+   "size": 19582,
+   "md5": "bc8eddd0c796e908e3fc24f215545abd",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_services",
+   "place": "Souss rural (Agadir)",
+   "z": 16,
+   "status": 200,
+   "size": 16587,
+   "md5": "e645f8746d89d14f447c5d544aae3aa1",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_services",
+   "place": "Souss rural (Agadir)",
+   "z": 17,
+   "status": 200,
+   "size": 14151,
+   "md5": "30369e5c19103745069e5fc212fc2ad0",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_services",
+   "place": "Souss rural (Agadir)",
+   "z": 18,
+   "status": 200,
+   "size": 13646,
+   "md5": "0c92f8eecc491d3aa4f60f249f068e82",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_services",
+   "place": "Souss rural (Agadir)",
+   "z": 19,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_services",
+   "place": "Souss rural (Agadir)",
+   "z": 20,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_services",
+   "place": "Souss rural (Agadir)",
+   "z": 21,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_services",
+   "place": "Haouz rural (Marrakech)",
+   "z": 14,
+   "status": 200,
+   "size": 12487,
+   "md5": "a75360f13f9d0dae78edf7fb0200ecf2",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_services",
+   "place": "Haouz rural (Marrakech)",
+   "z": 16,
+   "status": 200,
+   "size": 10567,
+   "md5": "a1c33852c17802d0a832e1b332d886c7",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_services",
+   "place": "Haouz rural (Marrakech)",
+   "z": 17,
+   "status": 200,
+   "size": 8040,
+   "md5": "2e5f9167aaf80fc6ad47b3101216d333",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_services",
+   "place": "Haouz rural (Marrakech)",
+   "z": 18,
+   "status": 200,
+   "size": 5596,
+   "md5": "9f2b868c1bfeb8e5b91ede0c6be1c3bd",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_services",
+   "place": "Haouz rural (Marrakech)",
+   "z": 19,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_services",
+   "place": "Haouz rural (Marrakech)",
+   "z": 20,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_services",
+   "place": "Haouz rural (Marrakech)",
+   "z": 21,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_services",
+   "place": "Oriental rural (Oujda)",
+   "z": 14,
+   "status": 200,
+   "size": 13217,
+   "md5": "17df9c0f052433faa5b5dd9a43776587",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_services",
+   "place": "Oriental rural (Oujda)",
+   "z": 16,
+   "status": 200,
+   "size": 10868,
+   "md5": "9df0a4542b96ec866dd70c2402cc92eb",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_services",
+   "place": "Oriental rural (Oujda)",
+   "z": 17,
+   "status": 200,
+   "size": 10468,
+   "md5": "e75c7929866b029c3ffde213c13ec997",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_services",
+   "place": "Oriental rural (Oujda)",
+   "z": 18,
+   "status": 200,
+   "size": 10571,
+   "md5": "98886215c0164c7a5e4e969fba78f648",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_services",
+   "place": "Oriental rural (Oujda)",
+   "z": 19,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_services",
+   "place": "Oriental rural (Oujda)",
+   "z": 20,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_services",
+   "place": "Oriental rural (Oujda)",
+   "z": 21,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_services",
+   "place": "Dakhla",
+   "z": 14,
+   "status": 200,
+   "size": 22892,
+   "md5": "8f73c496ba05e69b80332eca5707105e",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_services",
+   "place": "Dakhla",
+   "z": 16,
+   "status": 200,
+   "size": 27709,
+   "md5": "7fe94eaa793a4112eda538feb61a1a9f",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_services",
+   "place": "Dakhla",
+   "z": 17,
+   "status": 200,
+   "size": 24048,
+   "md5": "c55d3818bbb4ae3ccde498bdf818b153",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_services",
+   "place": "Dakhla",
+   "z": 18,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_services",
+   "place": "Dakhla",
+   "z": 19,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_services",
+   "place": "Dakhla",
+   "z": 20,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_services",
+   "place": "Dakhla",
+   "z": 21,
+   "status": 200,
+   "size": 2521,
+   "md5": "f27d9de7f80c13501f470595e327aa6d",
+   "type": "image/jpeg",
+   "placeholder": true
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Rabat (ville)",
+   "z": 14,
+   "status": 200,
+   "size": 11539,
+   "md5": "37ccedd883d90195136393778e86828c",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Rabat (ville)",
+   "z": 16,
+   "status": 200,
+   "size": 6214,
+   "md5": "6f46ab75d07e412277ff08489d6022e3",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Rabat (ville)",
+   "z": 17,
+   "status": 200,
+   "size": 3470,
+   "md5": "4b270c0eefd047abdde80f38652671e9",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Rabat (ville)",
+   "z": 18,
+   "status": 200,
+   "size": 2405,
+   "md5": "088c16558213122947dac8c8c70c8e53",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Rabat (ville)",
+   "z": 19,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Rabat (ville)",
+   "z": 20,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Rabat (ville)",
+   "z": 21,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Saïs rural (Meknès)",
+   "z": 14,
+   "status": 200,
+   "size": 8713,
+   "md5": "61104ea25057082290280b1542ae5250",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Saïs rural (Meknès)",
+   "z": 16,
+   "status": 200,
+   "size": 3377,
+   "md5": "1a4135e5089fa63825e0b40f678deccf",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Saïs rural (Meknès)",
+   "z": 17,
+   "status": 200,
+   "size": 1885,
+   "md5": "7dda21076eb85ab9e363b8301f689827",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Saïs rural (Meknès)",
+   "z": 18,
+   "status": 200,
+   "size": 1438,
+   "md5": "6e39ddc855c043dbf49c4814a234b70d",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Saïs rural (Meknès)",
+   "z": 19,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Saïs rural (Meknès)",
+   "z": 20,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Saïs rural (Meknès)",
+   "z": 21,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Souss rural (Agadir)",
+   "z": 14,
+   "status": 200,
+   "size": 10353,
+   "md5": "acda10b30aa00af160ddc3795e99cbbd",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Souss rural (Agadir)",
+   "z": 16,
+   "status": 200,
+   "size": 4548,
+   "md5": "a7200cab97532d6d8c7dfc85acbf4b43",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Souss rural (Agadir)",
+   "z": 17,
+   "status": 200,
+   "size": 2509,
+   "md5": "e298a53fab1232a8b370c9799694ff38",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Souss rural (Agadir)",
+   "z": 18,
+   "status": 200,
+   "size": 1890,
+   "md5": "03884ad70672dff3e2950a1d79da358f",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Souss rural (Agadir)",
+   "z": 19,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Souss rural (Agadir)",
+   "z": 20,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Souss rural (Agadir)",
+   "z": 21,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Haouz rural (Marrakech)",
+   "z": 14,
+   "status": 200,
+   "size": 7109,
+   "md5": "cdbdd206db8c97aea5d72b8263b88e1e",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Haouz rural (Marrakech)",
+   "z": 16,
+   "status": 200,
+   "size": 3245,
+   "md5": "587594bd48035ccb02fbbe567c0de267",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Haouz rural (Marrakech)",
+   "z": 17,
+   "status": 200,
+   "size": 2008,
+   "md5": "6588a77975d6d7d5ec6d96dc3a0d8124",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Haouz rural (Marrakech)",
+   "z": 18,
+   "status": 200,
+   "size": 1325,
+   "md5": "53d69029a8830967338665837bad9eb2",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Haouz rural (Marrakech)",
+   "z": 19,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Haouz rural (Marrakech)",
+   "z": 20,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Haouz rural (Marrakech)",
+   "z": 21,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Oriental rural (Oujda)",
+   "z": 14,
+   "status": 200,
+   "size": 5503,
+   "md5": "4c5874a8523d9459cd7f2ddcc7e457d6",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Oriental rural (Oujda)",
+   "z": 16,
+   "status": 200,
+   "size": 2405,
+   "md5": "d8bfa0e6948868041667402ce391c537",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Oriental rural (Oujda)",
+   "z": 17,
+   "status": 200,
+   "size": 1810,
+   "md5": "092b792d26491fca8ce74b783df6670b",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Oriental rural (Oujda)",
+   "z": 18,
+   "status": 200,
+   "size": 1416,
+   "md5": "3b5f1ea283c1392032c8241e6b5e0e79",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Oriental rural (Oujda)",
+   "z": 19,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Oriental rural (Oujda)",
+   "z": 20,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Oriental rural (Oujda)",
+   "z": 21,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Dakhla",
+   "z": 14,
+   "status": 200,
+   "size": 8110,
+   "md5": "48421d5de0712429cf180f492810c85a",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Dakhla",
+   "z": 16,
+   "status": 200,
+   "size": 2796,
+   "md5": "a16d3e42ab6de60ab9315a83948ee175",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Dakhla",
+   "z": 17,
+   "status": 200,
+   "size": 1764,
+   "md5": "04e283ca2b14afd424e323883e009516",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Dakhla",
+   "z": 18,
+   "status": 200,
+   "size": 1527,
+   "md5": "5bc741b2986c37b0240c69b549dd8fe6",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Dakhla",
+   "z": 19,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Dakhla",
+   "z": 20,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2016",
+   "place": "Dakhla",
+   "z": 21,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Rabat (ville)",
+   "z": 14,
+   "status": 200,
+   "size": 14937,
+   "md5": "793201991f3d9f4f57174fd43cbdf6a7",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Rabat (ville)",
+   "z": 16,
+   "status": 200,
+   "size": 9934,
+   "md5": "2491d10c25bcd8afb55b7236211aaafb",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Rabat (ville)",
+   "z": 17,
+   "status": 200,
+   "size": 5958,
+   "md5": "4b174bcd2e31969aa00e9ad4e2d77fdf",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Rabat (ville)",
+   "z": 18,
+   "status": 200,
+   "size": 3596,
+   "md5": "4fbb33a16d4766af5bac8a1da970898e",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Rabat (ville)",
+   "z": 19,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Rabat (ville)",
+   "z": 20,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Rabat (ville)",
+   "z": 21,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Saïs rural (Meknès)",
+   "z": 14,
+   "status": 200,
+   "size": 10480,
+   "md5": "859a79ebf1cc96bbfd2f5471089f3e49",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Saïs rural (Meknès)",
+   "z": 16,
+   "status": 200,
+   "size": 4447,
+   "md5": "72c816aaab1972bee15aae3c9e0f592d",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Saïs rural (Meknès)",
+   "z": 17,
+   "status": 200,
+   "size": 2189,
+   "md5": "95b22371b7df0b75f00937d03aaa1355",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Saïs rural (Meknès)",
+   "z": 18,
+   "status": 200,
+   "size": 1500,
+   "md5": "9e8558fc376f906b567d93b5add435c1",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Saïs rural (Meknès)",
+   "z": 19,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Saïs rural (Meknès)",
+   "z": 20,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Saïs rural (Meknès)",
+   "z": 21,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Souss rural (Agadir)",
+   "z": 14,
+   "status": 200,
+   "size": 15865,
+   "md5": "dbf2b5b91609a19fb9556ad16c5efe8c",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Souss rural (Agadir)",
+   "z": 16,
+   "status": 200,
+   "size": 7974,
+   "md5": "2f637142fffd244ab07239258039b178",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Souss rural (Agadir)",
+   "z": 17,
+   "status": 200,
+   "size": 5147,
+   "md5": "3e5c6b42f6d7d1d00bc645f0e7e246b1",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Souss rural (Agadir)",
+   "z": 18,
+   "status": 200,
+   "size": 3326,
+   "md5": "1eb3557e49d85b96dc54c513a0fe8d12",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Souss rural (Agadir)",
+   "z": 19,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Souss rural (Agadir)",
+   "z": 20,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Souss rural (Agadir)",
+   "z": 21,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Haouz rural (Marrakech)",
+   "z": 14,
+   "status": 200,
+   "size": 10313,
+   "md5": "faf922137f4f252e2dc7e5dbc009741f",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Haouz rural (Marrakech)",
+   "z": 16,
+   "status": 200,
+   "size": 5382,
+   "md5": "cf57447a84775651ba31507a1044ba4f",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Haouz rural (Marrakech)",
+   "z": 17,
+   "status": 200,
+   "size": 3778,
+   "md5": "0844086635f95c7a2db3a4df36cf8675",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Haouz rural (Marrakech)",
+   "z": 18,
+   "status": 200,
+   "size": 1775,
+   "md5": "686d556fe6819789894cb22526ad794d",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Haouz rural (Marrakech)",
+   "z": 19,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Haouz rural (Marrakech)",
+   "z": 20,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Haouz rural (Marrakech)",
+   "z": 21,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Oriental rural (Oujda)",
+   "z": 14,
+   "status": 200,
+   "size": 10536,
+   "md5": "1c80639e2b0969fc8f6442c3aa19e585",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Oriental rural (Oujda)",
+   "z": 16,
+   "status": 200,
+   "size": 4857,
+   "md5": "17865ea85974c28ae5eeb0451db4e521",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Oriental rural (Oujda)",
+   "z": 17,
+   "status": 200,
+   "size": 3213,
+   "md5": "5405c200bc7ebc69ff9915bdfe3ba424",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Oriental rural (Oujda)",
+   "z": 18,
+   "status": 200,
+   "size": 2097,
+   "md5": "1dc9a9743781e9625dc93a2e923cf684",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Oriental rural (Oujda)",
+   "z": 19,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Oriental rural (Oujda)",
+   "z": 20,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Oriental rural (Oujda)",
+   "z": 21,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Dakhla",
+   "z": 14,
+   "status": 200,
+   "size": 17396,
+   "md5": "c60174fa9fbd364958b8d502c64ae821",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Dakhla",
+   "z": 16,
+   "status": 200,
+   "size": 10637,
+   "md5": "476e58141920157a6aba4ab5fab72ae0",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Dakhla",
+   "z": 17,
+   "status": 200,
+   "size": 6616,
+   "md5": "c865e5f930a970673eac5287ab9d04bd",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Dakhla",
+   "z": 18,
+   "status": 200,
+   "size": 3790,
+   "md5": "c1ea4a93836e7d0b5a622856588dd8d2",
+   "type": "image/jpeg",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Dakhla",
+   "z": 19,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Dakhla",
+   "z": 20,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "eox_s2_2023",
+   "place": "Dakhla",
+   "z": 21,
+   "status": 404,
+   "size": 1225,
+   "md5": "5cd9258fde8769b2ce1f65cf29e3510d",
+   "type": "",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Rabat (ville)",
+   "z": 14,
+   "status": 200,
+   "size": 6356,
+   "md5": "e68c6feeca3b2c644eea4e7e39556e6c",
+   "type": "image/png",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Rabat (ville)",
+   "z": 16,
+   "status": 200,
+   "size": 17584,
+   "md5": "e06955cf632ee9dfaa15a06a65723a90",
+   "type": "image/png",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Rabat (ville)",
+   "z": 17,
+   "status": 200,
+   "size": 872,
+   "md5": "9cba0016abb5cf4d8a5a51c68403b529",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Rabat (ville)",
+   "z": 18,
+   "status": 200,
+   "size": 872,
+   "md5": "9cba0016abb5cf4d8a5a51c68403b529",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Rabat (ville)",
+   "z": 19,
+   "status": 200,
+   "size": 872,
+   "md5": "9cba0016abb5cf4d8a5a51c68403b529",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Rabat (ville)",
+   "z": 20,
+   "status": 200,
+   "size": 875,
+   "md5": "2e3f659f2c7a81aacd199dab5bd0e4a3",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Rabat (ville)",
+   "z": 21,
+   "status": 200,
+   "size": 875,
+   "md5": "2e3f659f2c7a81aacd199dab5bd0e4a3",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Saïs rural (Meknès)",
+   "z": 14,
+   "status": 200,
+   "size": 1706,
+   "md5": "2ad8d231ddd33c2f1ce990f05f2e1375",
+   "type": "image/png",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Saïs rural (Meknès)",
+   "z": 16,
+   "status": 200,
+   "size": 872,
+   "md5": "9cba0016abb5cf4d8a5a51c68403b529",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Saïs rural (Meknès)",
+   "z": 17,
+   "status": 200,
+   "size": 872,
+   "md5": "9cba0016abb5cf4d8a5a51c68403b529",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Saïs rural (Meknès)",
+   "z": 18,
+   "status": 200,
+   "size": 872,
+   "md5": "9cba0016abb5cf4d8a5a51c68403b529",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Saïs rural (Meknès)",
+   "z": 19,
+   "status": 200,
+   "size": 872,
+   "md5": "9cba0016abb5cf4d8a5a51c68403b529",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Saïs rural (Meknès)",
+   "z": 20,
+   "status": 200,
+   "size": 875,
+   "md5": "2e3f659f2c7a81aacd199dab5bd0e4a3",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Saïs rural (Meknès)",
+   "z": 21,
+   "status": 200,
+   "size": 875,
+   "md5": "2e3f659f2c7a81aacd199dab5bd0e4a3",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Souss rural (Agadir)",
+   "z": 14,
+   "status": 200,
+   "size": 872,
+   "md5": "9cba0016abb5cf4d8a5a51c68403b529",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Souss rural (Agadir)",
+   "z": 16,
+   "status": 200,
+   "size": 872,
+   "md5": "9cba0016abb5cf4d8a5a51c68403b529",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Souss rural (Agadir)",
+   "z": 17,
+   "status": 200,
+   "size": 872,
+   "md5": "9cba0016abb5cf4d8a5a51c68403b529",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Souss rural (Agadir)",
+   "z": 18,
+   "status": 200,
+   "size": 872,
+   "md5": "9cba0016abb5cf4d8a5a51c68403b529",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Souss rural (Agadir)",
+   "z": 19,
+   "status": 200,
+   "size": 872,
+   "md5": "9cba0016abb5cf4d8a5a51c68403b529",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Souss rural (Agadir)",
+   "z": 20,
+   "status": 200,
+   "size": 875,
+   "md5": "2e3f659f2c7a81aacd199dab5bd0e4a3",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Souss rural (Agadir)",
+   "z": 21,
+   "status": 200,
+   "size": 875,
+   "md5": "2e3f659f2c7a81aacd199dab5bd0e4a3",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Haouz rural (Marrakech)",
+   "z": 14,
+   "status": 200,
+   "size": 872,
+   "md5": "9cba0016abb5cf4d8a5a51c68403b529",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Haouz rural (Marrakech)",
+   "z": 16,
+   "status": 200,
+   "size": 872,
+   "md5": "9cba0016abb5cf4d8a5a51c68403b529",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Haouz rural (Marrakech)",
+   "z": 17,
+   "status": 200,
+   "size": 872,
+   "md5": "9cba0016abb5cf4d8a5a51c68403b529",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Haouz rural (Marrakech)",
+   "z": 18,
+   "status": 200,
+   "size": 872,
+   "md5": "9cba0016abb5cf4d8a5a51c68403b529",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Haouz rural (Marrakech)",
+   "z": 19,
+   "status": 200,
+   "size": 872,
+   "md5": "9cba0016abb5cf4d8a5a51c68403b529",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Haouz rural (Marrakech)",
+   "z": 20,
+   "status": 200,
+   "size": 875,
+   "md5": "2e3f659f2c7a81aacd199dab5bd0e4a3",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Haouz rural (Marrakech)",
+   "z": 21,
+   "status": 200,
+   "size": 875,
+   "md5": "2e3f659f2c7a81aacd199dab5bd0e4a3",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Oriental rural (Oujda)",
+   "z": 14,
+   "status": 200,
+   "size": 872,
+   "md5": "9cba0016abb5cf4d8a5a51c68403b529",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Oriental rural (Oujda)",
+   "z": 16,
+   "status": 200,
+   "size": 872,
+   "md5": "9cba0016abb5cf4d8a5a51c68403b529",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Oriental rural (Oujda)",
+   "z": 17,
+   "status": 200,
+   "size": 872,
+   "md5": "9cba0016abb5cf4d8a5a51c68403b529",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Oriental rural (Oujda)",
+   "z": 18,
+   "status": 200,
+   "size": 872,
+   "md5": "9cba0016abb5cf4d8a5a51c68403b529",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Oriental rural (Oujda)",
+   "z": 19,
+   "status": 200,
+   "size": 872,
+   "md5": "9cba0016abb5cf4d8a5a51c68403b529",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Oriental rural (Oujda)",
+   "z": 20,
+   "status": 200,
+   "size": 875,
+   "md5": "2e3f659f2c7a81aacd199dab5bd0e4a3",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Oriental rural (Oujda)",
+   "z": 21,
+   "status": 200,
+   "size": 875,
+   "md5": "2e3f659f2c7a81aacd199dab5bd0e4a3",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Dakhla",
+   "z": 14,
+   "status": 200,
+   "size": 872,
+   "md5": "9cba0016abb5cf4d8a5a51c68403b529",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Dakhla",
+   "z": 16,
+   "status": 200,
+   "size": 8289,
+   "md5": "9efc5e82a93c623dc7f4ea2cdcc5f1ae",
+   "type": "image/png",
+   "placeholder": false
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Dakhla",
+   "z": 17,
+   "status": 200,
+   "size": 872,
+   "md5": "9cba0016abb5cf4d8a5a51c68403b529",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Dakhla",
+   "z": 18,
+   "status": 200,
+   "size": 872,
+   "md5": "9cba0016abb5cf4d8a5a51c68403b529",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Dakhla",
+   "z": 19,
+   "status": 200,
+   "size": 872,
+   "md5": "9cba0016abb5cf4d8a5a51c68403b529",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Dakhla",
+   "z": 20,
+   "status": 200,
+   "size": 875,
+   "md5": "2e3f659f2c7a81aacd199dab5bd0e4a3",
+   "type": "image/png",
+   "placeholder": true
+  },
+  {
+   "provider": "esri_labels",
+   "place": "Dakhla",
+   "z": 21,
+   "status": 200,
+   "size": 875,
+   "md5": "2e3f659f2c7a81aacd199dab5bd0e4a3",
+   "type": "image/png",
+   "placeholder": true
+  }
+ ],
+ "summary": {
+  "esri | Rabat (ville)": {
+   "14": "ok 23k",
+   "16": "ok 28k",
+   "17": "ok 27k",
+   "18": "ok 23k",
+   "19": "ok 18k",
+   "20": "vide",
+   "21": "vide"
+  },
+  "esri | Saïs rural (Meknès)": {
+   "14": "ok 16k",
+   "16": "ok 13k",
+   "17": "ok 6k",
+   "18": "ok 4k",
+   "19": "vide",
+   "20": "vide",
+   "21": "vide"
+  },
+  "esri | Souss rural (Agadir)": {
+   "14": "ok 19k",
+   "16": "ok 16k",
+   "17": "ok 14k",
+   "18": "ok 13k",
+   "19": "vide",
+   "20": "vide",
+   "21": "vide"
+  },
+  "esri | Haouz rural (Marrakech)": {
+   "14": "ok 12k",
+   "16": "ok 10k",
+   "17": "ok 8k",
+   "18": "ok 5k",
+   "19": "vide",
+   "20": "vide",
+   "21": "vide"
+  },
+  "esri | Oriental rural (Oujda)": {
+   "14": "ok 13k",
+   "16": "ok 11k",
+   "17": "ok 10k",
+   "18": "ok 10k",
+   "19": "vide",
+   "20": "vide",
+   "21": "vide"
+  },
+  "esri | Dakhla": {
+   "14": "ok 22k",
+   "16": "ok 27k",
+   "17": "ok 23k",
+   "18": "vide",
+   "19": "vide",
+   "20": "vide",
+   "21": "vide"
+  },
+  "esri_clarity | Rabat (ville)": {
+   "14": "ok 31k",
+   "16": "ok 30k",
+   "17": "ok 27k",
+   "18": "ok 22k",
+   "19": "ok 15k",
+   "20": "HTTP 404",
+   "21": "HTTP 404"
+  },
+  "esri_clarity | Saïs rural (Meknès)": {
+   "14": "ok 28k",
+   "16": "ok 21k",
+   "17": "ok 18k",
+   "18": "HTTP 404",
+   "19": "HTTP 404",
+   "20": "HTTP 404",
+   "21": "HTTP 404"
+  },
+  "esri_clarity | Souss rural (Agadir)": {
+   "14": "ok 35k",
+   "16": "ok 26k",
+   "17": "ok 22k",
+   "18": "HTTP 404",
+   "19": "HTTP 404",
+   "20": "HTTP 404",
+   "21": "HTTP 404"
+  },
+  "esri_clarity | Haouz rural (Marrakech)": {
+   "14": "ok 16k",
+   "16": "ok 12k",
+   "17": "ok 9k",
+   "18": "HTTP 404",
+   "19": "HTTP 404",
+   "20": "HTTP 404",
+   "21": "HTTP 404"
+  },
+  "esri_clarity | Oriental rural (Oujda)": {
+   "14": "ok 22k",
+   "16": "ok 16k",
+   "17": "ok 15k",
+   "18": "HTTP 404",
+   "19": "HTTP 404",
+   "20": "HTTP 404",
+   "21": "HTTP 404"
+  },
+  "esri_clarity | Dakhla": {
+   "14": "ok 32k",
+   "16": "ok 34k",
+   "17": "ok 30k",
+   "18": "HTTP 404",
+   "19": "HTTP 404",
+   "20": "HTTP 404",
+   "21": "HTTP 404"
+  },
+  "esri_services | Rabat (ville)": {
+   "14": "ok 23k",
+   "16": "ok 28k",
+   "17": "ok 27k",
+   "18": "ok 23k",
+   "19": "ok 18k",
+   "20": "vide",
+   "21": "vide"
+  },
+  "esri_services | Saïs rural (Meknès)": {
+   "14": "ok 16k",
+   "16": "ok 13k",
+   "17": "ok 6k",
+   "18": "ok 4k",
+   "19": "vide",
+   "20": "vide",
+   "21": "vide"
+  },
+  "esri_services | Souss rural (Agadir)": {
+   "14": "ok 19k",
+   "16": "ok 16k",
+   "17": "ok 14k",
+   "18": "ok 13k",
+   "19": "vide",
+   "20": "vide",
+   "21": "vide"
+  },
+  "esri_services | Haouz rural (Marrakech)": {
+   "14": "ok 12k",
+   "16": "ok 10k",
+   "17": "ok 8k",
+   "18": "ok 5k",
+   "19": "vide",
+   "20": "vide",
+   "21": "vide"
+  },
+  "esri_services | Oriental rural (Oujda)": {
+   "14": "ok 13k",
+   "16": "ok 11k",
+   "17": "ok 10k",
+   "18": "ok 10k",
+   "19": "vide",
+   "20": "vide",
+   "21": "vide"
+  },
+  "esri_services | Dakhla": {
+   "14": "ok 22k",
+   "16": "ok 27k",
+   "17": "ok 23k",
+   "18": "vide",
+   "19": "vide",
+   "20": "vide",
+   "21": "vide"
+  },
+  "eox_s2_2016 | Rabat (ville)": {
+   "14": "ok 11k",
+   "16": "ok 6k",
+   "17": "ok 3k",
+   "18": "ok 2k",
+   "19": "HTTP 404",
+   "20": "HTTP 404",
+   "21": "HTTP 404"
+  },
+  "eox_s2_2016 | Saïs rural (Meknès)": {
+   "14": "ok 9k",
+   "16": "ok 3k",
+   "17": "ok 2k",
+   "18": "ok 1k",
+   "19": "HTTP 404",
+   "20": "HTTP 404",
+   "21": "HTTP 404"
+  },
+  "eox_s2_2016 | Souss rural (Agadir)": {
+   "14": "ok 10k",
+   "16": "ok 4k",
+   "17": "ok 2k",
+   "18": "ok 2k",
+   "19": "HTTP 404",
+   "20": "HTTP 404",
+   "21": "HTTP 404"
+  },
+  "eox_s2_2016 | Haouz rural (Marrakech)": {
+   "14": "ok 7k",
+   "16": "ok 3k",
+   "17": "ok 2k",
+   "18": "ok 1k",
+   "19": "HTTP 404",
+   "20": "HTTP 404",
+   "21": "HTTP 404"
+  },
+  "eox_s2_2016 | Oriental rural (Oujda)": {
+   "14": "ok 5k",
+   "16": "ok 2k",
+   "17": "ok 2k",
+   "18": "ok 1k",
+   "19": "HTTP 404",
+   "20": "HTTP 404",
+   "21": "HTTP 404"
+  },
+  "eox_s2_2016 | Dakhla": {
+   "14": "ok 8k",
+   "16": "ok 3k",
+   "17": "ok 2k",
+   "18": "ok 1k",
+   "19": "HTTP 404",
+   "20": "HTTP 404",
+   "21": "HTTP 404"
+  },
+  "eox_s2_2023 | Rabat (ville)": {
+   "14": "ok 15k",
+   "16": "ok 10k",
+   "17": "ok 6k",
+   "18": "ok 4k",
+   "19": "HTTP 404",
+   "20": "HTTP 404",
+   "21": "HTTP 404"
+  },
+  "eox_s2_2023 | Saïs rural (Meknès)": {
+   "14": "ok 10k",
+   "16": "ok 4k",
+   "17": "ok 2k",
+   "18": "ok 1k",
+   "19": "HTTP 404",
+   "20": "HTTP 404",
+   "21": "HTTP 404"
+  },
+  "eox_s2_2023 | Souss rural (Agadir)": {
+   "14": "ok 15k",
+   "16": "ok 8k",
+   "17": "ok 5k",
+   "18": "ok 3k",
+   "19": "HTTP 404",
+   "20": "HTTP 404",
+   "21": "HTTP 404"
+  },
+  "eox_s2_2023 | Haouz rural (Marrakech)": {
+   "14": "ok 10k",
+   "16": "ok 5k",
+   "17": "ok 4k",
+   "18": "ok 2k",
+   "19": "HTTP 404",
+   "20": "HTTP 404",
+   "21": "HTTP 404"
+  },
+  "eox_s2_2023 | Oriental rural (Oujda)": {
+   "14": "ok 10k",
+   "16": "ok 5k",
+   "17": "ok 3k",
+   "18": "ok 2k",
+   "19": "HTTP 404",
+   "20": "HTTP 404",
+   "21": "HTTP 404"
+  },
+  "eox_s2_2023 | Dakhla": {
+   "14": "ok 17k",
+   "16": "ok 10k",
+   "17": "ok 6k",
+   "18": "ok 4k",
+   "19": "HTTP 404",
+   "20": "HTTP 404",
+   "21": "HTTP 404"
+  },
+  "esri_labels | Rabat (ville)": {
+   "14": "ok 6k",
+   "16": "ok 17k",
+   "17": "vide",
+   "18": "vide",
+   "19": "vide",
+   "20": "vide",
+   "21": "vide"
+  },
+  "esri_labels | Saïs rural (Meknès)": {
+   "14": "ok 2k",
+   "16": "vide",
+   "17": "vide",
+   "18": "vide",
+   "19": "vide",
+   "20": "vide",
+   "21": "vide"
+  },
+  "esri_labels | Souss rural (Agadir)": {
+   "14": "vide",
+   "16": "vide",
+   "17": "vide",
+   "18": "vide",
+   "19": "vide",
+   "20": "vide",
+   "21": "vide"
+  },
+  "esri_labels | Haouz rural (Marrakech)": {
+   "14": "vide",
+   "16": "vide",
+   "17": "vide",
+   "18": "vide",
+   "19": "vide",
+   "20": "vide",
+   "21": "vide"
+  },
+  "esri_labels | Oriental rural (Oujda)": {
+   "14": "vide",
+   "16": "vide",
+   "17": "vide",
+   "18": "vide",
+   "19": "vide",
+   "20": "vide",
+   "21": "vide"
+  },
+  "esri_labels | Dakhla": {
+   "14": "vide",
+   "16": "ok 8k",
+   "17": "vide",
+   "18": "vide",
+   "19": "vide",
+   "20": "vide",
+   "21": "vide"
+  }
+ }
+}
