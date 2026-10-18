@@ -13,6 +13,7 @@ const PROVIDERS = {
   eox_s2_2016: 'https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/{z}/{y}/{x}.jpg',
   eox_s2_2023: 'https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2023_3857/default/g/{z}/{y}/{x}.jpg',
   esri_labels: 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+  terrarium: 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png',
 };
 const tile = (lat, lon, z) => {
   const n = 2 ** z, r = lat * Math.PI / 180;
@@ -21,7 +22,7 @@ const tile = (lat, lon, z) => {
 const out = { date: new Date().toISOString(), results: [] };
 for (const [pid, tpl] of Object.entries(PROVIDERS)) {
   for (const [name, lat, lon] of PLACES) {
-    for (const z of [14, 16, 17, 18, 19, 20, 21]) {
+    for (const z of (pid === 'terrarium' ? [12, 13, 14, 15, 16] : [14, 16, 17, 18, 19, 20, 21])) {
       const { x, y } = tile(lat, lon, z);
       const url = tpl.replace('{z}', z).replace('{x}', x).replace('{y}', y);
       let status = 0, size = 0, md5 = '', type = '', cors = '';
@@ -31,6 +32,7 @@ for (const [pid, tpl] of Object.entries(PROVIDERS)) {
         const b = Buffer.from(await r.arrayBuffer()); size = b.length; md5 = crypto.createHash('md5').update(b).digest('hex');
       } catch (e) { status = -1; type = String(e.message); }
       out.results.push({ provider: pid, place: name, z, status, size, md5, type, cors });
+      if (pid === 'terrarium' && status === 200 && z === 14) out.terrariumSample = out.terrariumSample || {}, out.terrariumSample[name] = size;
     }
   }
 }
