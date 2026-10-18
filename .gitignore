@@ -4,3 +4,6 @@ node_modules/
 test-results/
 playwright-report/
 .tmp/
+tests/e2e/screenshots/
+tests/e2e/results.json
+_site/

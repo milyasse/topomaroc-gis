@@ -1,0 +1,102 @@
+name: Tests et déploiement GitHub Pages
+
+# 1. test   : tests unitaires (calculs vs références PROJ/GeographicLib) + tests navigateur
+# 2. deploy : publication du site statique sur la branche gh-pages (GitHub Pages)
+# 3. verify : attente de la mise en ligne puis tests de bout en bout sur l'URL publique
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Tests unitaires (calculs, systèmes de coordonnées, formats)
+        run: node --test --test-reporter=spec tests/unit/*.test.mjs
+      - name: Liste de pré-cache du service worker à jour
+        run: node tools/gen-precache.mjs --check
+      - name: Installation de Playwright (Chromium)
+        run: |
+          npm install --no-save --no-audit --no-fund playwright
+          npx playwright install --with-deps chromium
+      - name: Tests de bout en bout (navigateur, GPS simulé)
+        run: |
+          python3 -m http.server 8080 --bind 127.0.0.1 &
+          sleep 2
+          node tests/e2e/e2e.mjs http://127.0.0.1:8080/
+      - name: Rapport des tests
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-local
+          path: |
+            tests/e2e/results.json
+            tests/e2e/screenshots/
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assemblage du site statique
+        run: |
+          mkdir -p _site
+          cp -r index.html 404.html manifest.webmanifest sw.js sw-precache.js src styles icons vendor _site/
+          touch _site/.nojekyll
+          echo "${GITHUB_SHA}" > _site/version.txt
+      - name: Publication sur la branche gh-pages
+        run: |
+          cd _site
+          git init -q -b gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Déploiement ${GITHUB_SHA::7}"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" gh-pages
+
+  verify:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Attente de la mise en ligne de cette version
+        run: |
+          for i in $(seq 1 60); do
+            v=$(curl -s "${SITE_URL}version.txt?nocache=$RANDOM" || true)
+            if [ "$v" = "${GITHUB_SHA}" ]; then echo "Version en ligne : $v"; exit 0; fi
+            sleep 10
+          done
+          echo "::error::La version déployée n'est pas servie par ${SITE_URL} (GitHub Pages activé sur la branche gh-pages ?)"
+          exit 1
+      - name: Installation de Playwright (Chromium)
+        run: |
+          npm install --no-save --no-audit --no-fund playwright
+          npx playwright install --with-deps chromium
+      - name: Tests de bout en bout sur l'URL publique
+        run: node tests/e2e/e2e.mjs "${SITE_URL}"
+      - name: Rapport des tests (site publié)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-production
+          path: |
+            tests/e2e/results.json
+            tests/e2e/screenshots/
