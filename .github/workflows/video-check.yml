@@ -52,7 +52,9 @@ jobs:
           import os
           from faster_whisper import WhisperModel
           m = WhisperModel("small", compute_type="int8")
-          segs, info = m.transcribe("/tmp/a.wav", language="fr", vad_filter=True)
+          import wave, numpy as np
+          w = wave.open("/tmp/a.wav"); pcm = np.frombuffer(w.readframes(w.getnframes()), dtype=np.int16).astype(np.float32) / 32768.0
+          segs, info = m.transcribe(pcm, language="fr", vad_filter=True)
           out = os.environ["OUT"]
           with open(f"{out}/transcription.txt", "w") as f:
               for s in segs:
