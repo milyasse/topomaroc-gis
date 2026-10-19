@@ -32,13 +32,16 @@ jobs:
         env:
           VIDEO_URL: ${{ inputs.url }}
         run: |
+          set +e
           mkdir -p "$OUT"
-          curl -sSL -o /tmp/v.mp4 "$VIDEO_URL"
+          exec 2> >(tee -a "$OUT/journal.txt" >&2)
+          curl -sSL -w "HTTP %{http_code} · %{size_download} octets\n" -o /tmp/v.mp4 "$VIDEO_URL" | tee -a "$OUT/journal.txt"
+          file /tmp/v.mp4 | sed 's#/tmp/##' | tee -a "$OUT/journal.txt"
           ffprobe -v error -show_entries format=duration,size:stream=codec_type,codec_name,width,height,r_frame_rate,sample_rate,channels -of json /tmp/v.mp4 > "$OUT/probe.json"
           cat "$OUT/probe.json"
           D=$(ffprobe -v error -show_entries format=duration -of csv=p=0 /tmp/v.mp4)
           # une image toutes les 4 s, planche de 5 colonnes
-          ffmpeg -v error -i /tmp/v.mp4 -vf "fps=1/4,scale=480:-1,tile=5x9:padding=6:color=0x888888" -frames:v 2 "$OUT/planche-%d.jpg"
+          ffmpeg -v error -i /tmp/v.mp4 -vf "fps=1/4,scale=480:-1,tile=5x9:padding=6:color=0x888888" "$OUT/planche-%d.jpg"
           # images pleine résolution à quelques instants clés
           for t in 2 15 30 45 60 75 90 105 120 135 150 160; do
             awk "BEGIN{exit !($t < $D)}" && ffmpeg -v error -ss $t -i /tmp/v.mp4 -frames:v 1 -vf scale=1280:-1 "$OUT/image-$(printf %03d $t)s.jpg" || true
@@ -57,6 +60,7 @@ jobs:
           print(open(f"{out}/transcription.txt").read())
           EOF
       - name: Publication du contrôle
+        if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
