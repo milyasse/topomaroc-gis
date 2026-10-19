@@ -774,13 +774,15 @@ await test('Parcelles : afficher / masquer chacune, « uniquement celle-ci », l
     await st.addFeature({ type: 'parcel', name: 'Lot A', parentId: p2.id, owner: { name: 'Ahmed', percent: 100, color: '#e53935' }, crsId: 'EPSG:26191', method: 'plane', vertices: sq(400030, 380000) });
   });
   const shown = () => page.evaluate(async () => { const M = await import('./src/map/map.js'); const n = []; M.getMap().eachLayer((l) => { if (l.options?.pane === 'parcels' && l.getLatLngs) n.push(l); }); return n.length; });
+  // le rendu de la carte est différé (anti-rebond) : on attend le nombre attendu
+  const expectShown = async (k, what) => { const t0 = Date.now(); let n; while ((n = await shown()) !== k) { if (Date.now() - t0 > 5000) throw new Error(`${what} : ${n} parcelle(s) dessinée(s) au lieu de ${k}`); await page.waitForTimeout(100); } };
   await until(page, async () => document.querySelectorAll('.parcel-list .item').length === 4);
-  assert(await shown() === 4, `au départ ${await shown()} parcelles dessinées`);
+  await expectShown(4, 'au départ');
   // « Afficher uniquement celle-ci » depuis la fiche de la parcelle 1
   await page.click('.parcel-list .item-main:has-text("Parcelle 1")');
   await page.click('button:has-text("Afficher uniquement celle-ci")');
   await until(page, async () => (await import('./src/state.js')).state.features.filter((f) => f.hidden).length === 2);
-  assert(await shown() === 1, `uniquement P1 : ${await shown()} dessinée(s)`);
+  await expectShown(1, 'uniquement P1');
   await page.screenshot({ path: path.join(SHOTS, 'mobile-parcelle-seule.png') });
   // Liste : la parcelle 2 et son lot apparaissent masqués ; œil → réaffiche P2 et son lot
   await page.goto(BASE + '#/parcels');
@@ -792,10 +794,10 @@ await test('Parcelles : afficher / masquer chacune, « uniquement celle-ci », l
   await page.waitForSelector('.parcel-vis:has-text("Parcelles affichées : 3 / 4")');
   await page.locator('.parcel-vis label.switch:has-text("Parcelle 1") input').uncheck();
   await page.waitForSelector('.parcel-vis:has-text("Parcelles affichées : 2 / 4")');
-  assert(await shown() === 2, `après décochage : ${await shown()}`);
+  await expectShown(2, 'après décochage');
   await page.click('.parcel-vis button:has-text("Tout afficher")');
   await page.waitForSelector('.parcel-vis:has-text("Parcelles affichées : 4 / 4")');
-  assert(await shown() === 4, `tout afficher : ${await shown()}`);
+  await expectShown(4, 'tout afficher');
   // Persistance du masquage après rechargement
   await page.locator('.parcel-vis label.switch:has-text("Parcelle 3") input').uncheck();
   await page.waitForSelector('.parcel-vis:has-text("3 / 4")');
