@@ -97,6 +97,9 @@ Leaflet (plan OpenStreetMap, satellite Esri, relief OpenTopoMap, fond clair CART
 
 ---
 
+## Manuel d'utilisation
+[**Manuel PDF avec captures d'écran**](docs/manuel/TopoMaroc-GIS-manuel-utilisation.pdf) (24 pages, version 1.4.0) : installation, interface, carte, projection automatique, projets, navigation, levé, parcelles, partage, visibilité, outils, import/export, réglages. Les captures sont prises automatiquement sur le site publié par le workflow « Captures du manuel » (`tools/manual/captures.mjs`) ; le PDF est mis en page par `node tools/manual/build-pdf.mjs`.
+
 ## Utilisation
 
 1. Ouvrir https://milyasse.github.io/topomaroc-gis/ (HTTPS requis pour le GPS) et autoriser la localisation.
