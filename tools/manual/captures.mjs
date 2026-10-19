@@ -155,6 +155,7 @@ await step('nav', async () => {
 // ------------------------------------------------------------------ Levé
 await step('leve', async () => {
   await go(page, '#/survey', 1500); await page.waitForSelector('.gps-card.st-active', { timeout: 10000 });
+  await zoomMelk(); await tiles(page);
   await shot(page, '13-leve-gps', { wait: 500 });
   await snap(page, 'max'); await page.waitForTimeout(400);
   await ev(page, () => document.querySelector('.point-list')?.scrollIntoView());
