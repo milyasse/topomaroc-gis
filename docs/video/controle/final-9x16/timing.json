@@ -1,0 +1,126 @@
+{
+ "format": "9x16",
+ "voice": "fr-FR-DeniseNeural",
+ "total": 50.19,
+ "scenes": [
+  {
+   "id": "v01",
+   "start": 0.6,
+   "dur": 8.104,
+   "voice": 1.9,
+   "voiceDur": 5.904,
+   "cues": [
+    {
+     "t0": 2.002,
+     "t1": 4.453,
+     "text": "Sur le terrain, chaque mètre compte."
+    },
+    {
+     "t0": 5.103,
+     "t1": 7.137,
+     "text": "Voici TopoMaroc GIS."
+    }
+   ]
+  },
+  {
+   "id": "v02",
+   "start": 8.704,
+   "dur": 9.106,
+   "voice": 9.254,
+   "voiceDur": 7.656,
+   "cues": [
+    {
+     "t0": 9.356,
+     "t1": 12.005,
+     "text": "Le système Lambert est choisi automatiquement selon"
+    },
+    {
+     "t0": 12.025,
+     "t1": 16.247,
+     "text": "votre zone : Nord, Sud, Sahara Nord ou Sahara Sud."
+    }
+   ]
+  },
+  {
+   "id": "v03",
+   "start": 17.81,
+   "dur": 7.642,
+   "voice": 18.36,
+   "voiceDur": 6.192,
+   "cues": [
+    {
+     "t0": 18.462,
+     "t1": 21.447,
+     "text": "Saisissez les coordonnées d'une borne : distance,"
+    },
+    {
+     "t0": 21.483,
+     "t1": 23.894,
+     "text": "azimut, puis une alerte à l'arrivée."
+    }
+   ]
+  },
+  {
+   "id": "v04",
+   "start": 25.452,
+   "dur": 7.354,
+   "voice": 26.002,
+   "voiceDur": 5.904,
+   "cues": [
+    {
+     "t0": 26.104,
+     "t1": 28.737,
+     "text": "Sélectionnez vos bornes : superficie,"
+    },
+    {
+     "t0": 28.799,
+     "t1": 31.25,
+     "text": "périmètre et côtés sont calculés aussitôt."
+    }
+   ]
+  },
+  {
+   "id": "v05",
+   "start": 32.806,
+   "dur": 8.746,
+   "voice": 33.356,
+   "voiceDur": 7.296,
+   "cues": [
+    {
+     "t0": 33.457,
+     "t1": 35.022,
+     "text": "Indiquez les parts de chacun :"
+    },
+    {
+     "t0": 35.111,
+     "t1": 37.669,
+     "text": "l'application propose un découpage et génère des"
+    },
+    {
+     "t0": 37.689,
+     "t1": 39.996,
+     "text": "lots colorés à la superficie exacte."
+    }
+   ]
+  },
+  {
+   "id": "v06",
+   "start": 41.552,
+   "dur": 7.838,
+   "voice": 42.102,
+   "voiceDur": 5.688,
+   "cues": [
+    {
+     "t0": 42.204,
+     "t1": 46.105,
+     "text": "TopoMaroc GIS. Lancez votre premier levé dès"
+    },
+    {
+     "t0": 46.125,
+     "t1": 47.131,
+     "text": "aujourd'hui."
+    }
+   ]
+  }
+ ]
+}

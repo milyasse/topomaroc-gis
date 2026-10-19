@@ -1,0 +1,123 @@
+1
+00:00:02,002 --> 00:00:07,059
+Sur le terrain, chaque mètre compte. Voici TopoMaroc GIS :
+
+2
+00:00:07,134 --> 00:00:11,317
+la topographie de terrain au Maroc, directement dans votre téléphone.
+
+3
+00:00:13,532 --> 00:00:17,636
+Systèmes Lambert et UTM, navigation GPS, levés,
+
+4
+00:00:17,712 --> 00:00:21,312
+parcelles et partage foncier : tout est réuni dans une application qui
+
+5
+00:00:21,332 --> 00:00:24,654
+s'installe sur l'écran d'accueil et fonctionne même sans connexion.
+
+6
+00:00:26,861 --> 00:00:31,893
+Le système de projection suit votre zone. Lambert Nord, Sud,
+
+7
+00:00:32,007 --> 00:00:35,343
+Sahara Nord ou Sahara Sud est choisi selon votre position,
+
+8
+00:00:35,471 --> 00:00:38,950
+et chaque point est enregistré dans la zone de sa propre position.
+
+9
+00:00:41,152 --> 00:00:44,267
+Pour retrouver une borne, saisissez ses coordonnées.
+
+10
+00:00:44,917 --> 00:00:49,060
+L'application affiche la distance restante, l'azimut et le gisement,
+
+11
+00:00:49,110 --> 00:00:51,430
+propose un plein écran lisible en marchant,
+
+12
+00:00:51,597 --> 00:00:53,488
+et vous alerte dès que vous arrivez.
+
+13
+00:00:55,706 --> 00:01:00,201
+Levez vos points au GPS avec leur code, une description et une photo.
+
+14
+00:01:00,851 --> 00:01:03,315
+Modifiez ou déplacez un point à tout moment,
+
+15
+00:01:03,456 --> 00:01:06,713
+ou placez-en directement sur la carte, sans GPS.
+
+16
+00:01:08,916 --> 00:01:12,682
+Sélectionnez vos bornes et créez la parcelle : la superficie,
+
+17
+00:01:12,796 --> 00:01:15,403
+le périmètre et les côtés sont calculés aussitôt,
+
+18
+00:01:15,557 --> 00:01:19,387
+selon la méthode plane des plans cadastraux et la méthode géodésique.
+
+19
+00:01:20,037 --> 00:01:22,839
+La pente et l'exposition complètent l'analyse.
+
+20
+00:01:25,054 --> 00:01:28,104
+Pour un partage, indiquez les personnes et leurs parts,
+
+21
+00:01:28,179 --> 00:01:33,262
+en pourcentage ou en fraction. L'application propose plusieurs découpages,
+
+22
+00:01:33,324 --> 00:01:37,429
+puis génère un lot coloré par personne, à la superficie exacte.
+
+23
+00:01:38,077 --> 00:01:41,569
+Une proposition technique, à valider par un géomètre.
+
+24
+00:01:43,784 --> 00:01:46,534
+Affichez uniquement la parcelle qui vous intéresse,
+
+25
+00:01:46,701 --> 00:01:49,321
+et superposez plusieurs projets comme des couches.
+
+26
+00:01:51,522 --> 00:01:55,001
+Convertissez des coordonnées, tracez un profil de pente,
+
+27
+00:01:55,155 --> 00:01:59,845
+exportez vers vos logiciels SIG et DAO, et éditez un rapport PDF complet.
+
+28
+00:02:02,044 --> 00:02:06,448
+Sur téléphone, tablette ou ordinateur, en mode clair ou sombre,
+
+29
+00:02:06,549 --> 00:02:08,674
+vos données restent sur votre appareil.
+
+30
+00:02:10,886 --> 00:02:16,036
+TopoMaroc GIS. Installez l'application et lancez votre premier levé dès
+
+31
+00:02:16,056 --> 00:02:17,049
+aujourd'hui.
