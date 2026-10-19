@@ -1,0 +1,66 @@
+name: Contrôle vidéo
+
+# Contrôle d'une vidéo rendue (HeyGen) : métadonnées, planche d'images, transcription de la voix off.
+# La vidéo elle-même n'est pas publiée dans le dépôt.
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: URL directe du MP4
+        required: true
+      name:
+        description: Nom court (ex. 16x9)
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      OUT: docs/video/controle/${{ inputs.name }}
+    steps:
+      - name: Masquage de l'URL dans les journaux
+        run: echo "::add-mask::${{ inputs.url }}"
+      - uses: actions/checkout@v4
+      - name: Outils
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg > /dev/null
+          pip install -q faster-whisper
+      - name: Téléchargement et analyse
+        env:
+          VIDEO_URL: ${{ inputs.url }}
+        run: |
+          mkdir -p "$OUT"
+          curl -sSL -o /tmp/v.mp4 "$VIDEO_URL"
+          ffprobe -v error -show_entries format=duration,size:stream=codec_type,codec_name,width,height,r_frame_rate,sample_rate,channels -of json /tmp/v.mp4 > "$OUT/probe.json"
+          cat "$OUT/probe.json"
+          D=$(ffprobe -v error -show_entries format=duration -of csv=p=0 /tmp/v.mp4)
+          # une image toutes les 4 s, planche de 5 colonnes
+          ffmpeg -v error -i /tmp/v.mp4 -vf "fps=1/4,scale=480:-1,tile=5x9:padding=6:color=0x888888" -frames:v 2 "$OUT/planche-%d.jpg"
+          # images pleine résolution à quelques instants clés
+          for t in 2 15 30 45 60 75 90 105 120 135 150 160; do
+            awk "BEGIN{exit !($t < $D)}" && ffmpeg -v error -ss $t -i /tmp/v.mp4 -frames:v 1 -vf scale=1280:-1 "$OUT/image-$(printf %03d $t)s.jpg" || true
+          done
+          ffmpeg -v error -i /tmp/v.mp4 -af volumedetect -f null - 2> "$OUT/volume.txt" || true
+          ffmpeg -v error -i /tmp/v.mp4 -ac 1 -ar 16000 /tmp/a.wav
+          python3 - <<'EOF'
+          import os
+          from faster_whisper import WhisperModel
+          m = WhisperModel("small", compute_type="int8")
+          segs, info = m.transcribe("/tmp/a.wav", language="fr", vad_filter=True)
+          out = os.environ["OUT"]
+          with open(f"{out}/transcription.txt", "w") as f:
+              for s in segs:
+                  f.write(f"[{s.start:6.1f} → {s.end:6.1f}] {s.text.strip()}\n")
+          print(open(f"{out}/transcription.txt").read())
+          EOF
+      - name: Publication du contrôle
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/video/controle
+          git diff --cached --quiet && exit 0
+          git commit -q -m "docs(video): contrôle ${{ inputs.name }} [skip ci]"
+          git pull -q --rebase origin main && git push -q origin HEAD:main
