@@ -1,6 +1,6 @@
 {
   "base": "http://127.0.0.1:8080/",
-  "date": "2026-10-19T01:45:23.851Z",
+  "date": "2026-10-19T01:52:10.229Z",
   "passed": 35,
   "failed": 0,
   "skipped": 2,
@@ -8,211 +8,211 @@
     {
       "name": "Chargement de l’application sans erreur JavaScript",
       "status": "réussi",
-      "ms": 640,
+      "ms": 721,
       "detail": "8 actions sur l’écran d’accueil"
     },
     {
       "name": "Lien direct et rechargement d’une route profonde (#/parcels)",
       "status": "réussi",
-      "ms": 462,
+      "ms": 432,
       "detail": ""
     },
     {
       "name": "PWA : manifeste valide et service worker actif",
       "status": "réussi",
-      "ms": 440,
+      "ms": 424,
       "detail": "manifeste + service worker « activated »"
     },
     {
       "name": "Hors connexion : l’application redémarre depuis le cache (service worker)",
       "status": "réussi",
-      "ms": 2335,
+      "ms": 2420,
       "detail": "interface et modules servis hors ligne"
     },
     {
       "name": "Navigation : saisie Lambert Nord, distance et azimut cohérents",
       "status": "réussi",
-      "ms": 1547,
+      "ms": 1531,
       "detail": "distance 120 m, 45.0° NE · azimut vrai"
     },
     {
       "name": "Navigation : arrivée dans le rayon (10 m) → alerte visuelle",
       "status": "réussi",
-      "ms": 1594,
+      "ms": 1595,
       "detail": "arrivée détectée à 4 m, point atteint enregistré"
     },
     {
       "name": "Navigation : précision GPS insuffisante signalée",
       "status": "réussi",
-      "ms": 689,
+      "ms": 706,
       "detail": ""
     },
     {
       "name": "GPS : autorisation refusée",
       "status": "réussi",
-      "ms": 285,
+      "ms": 274,
       "detail": "—"
     },
     {
       "name": "GPS : position indisponible (erreur du capteur)",
       "status": "réussi",
-      "ms": 509,
+      "ms": 504,
       "detail": ""
     },
     {
       "name": "GPS : perte du signal (aucune mesure depuis 15 s) → état « signal perdu »",
       "status": "réussi",
-      "ms": 16664,
+      "ms": 16669,
       "detail": "état stale détecté après ~15 s sans nouvelle position"
     },
     {
       "name": "Levé : enregistrement GPS, persistance après rechargement",
       "status": "réussi",
-      "ms": 1659,
+      "ms": 1529,
       "detail": "2 points, annuler/rétablir, persistance IndexedDB"
     },
     {
       "name": "Levé : moyenne « attendre une meilleure précision »",
       "status": "réussi",
-      "ms": 3904,
+      "ms": 3911,
       "detail": ""
     },
     {
       "name": "Parcelle : carré 10 m × 10 m saisi en Lambert Nord → 100,00 m²",
       "status": "réussi",
-      "ms": 3180,
+      "ms": 3213,
       "detail": "superficie 100,00 m², périmètre 40,00 m"
     },
     {
       "name": "Parcelle : polygone auto-intersecté et sommets en double détectés",
       "status": "réussi",
-      "ms": 3095,
+      "ms": 3063,
       "detail": ""
     },
     {
       "name": "Parcelle : mode dessin sur la carte puis rapport PDF",
       "status": "réussi",
-      "ms": 3078,
+      "ms": 3480,
       "detail": "4 sommets dessinés, 2 930,61 m², PDF 24309 octets"
     },
     {
       "name": "Import CSV (séparateur ;) avec choix du système puis export GeoJSON/DXF/CSV/XLSX",
       "status": "réussi",
-      "ms": 7368,
-      "detail": "Leve_du_19_10_2026-20261019-0144.geojson, Leve_du_19_10_2026-20261019-0144-26191.dxf, Leve_du_19_10_2026-20261019-0144-26191.csv, Leve_du_19_10_2026-20261019-0144.xlsx"
+      "ms": 7332,
+      "detail": "Leve_du_19_10_2026-20261019-0151.geojson, Leve_du_19_10_2026-20261019-0151-26191.dxf, Leve_du_19_10_2026-20261019-0151-26191.csv, Leve_du_19_10_2026-20261019-0151.xlsx"
     },
     {
       "name": "Sauvegarde complète puis restauration",
       "status": "réussi",
-      "ms": 2626,
+      "ms": 2609,
       "detail": "1 projet(s), 1 entité(s) restaurés"
     },
     {
       "name": "Outils : convertisseur (Lambert Nord → tous systèmes) et mesure de distance",
       "status": "réussi",
-      "ms": 408,
+      "ms": 393,
       "detail": "origine (500 000 ; 300 000) → φ 33,3° λ −5,4° ; distance mesurée 148,64 m"
     },
     {
       "name": "Interface tablette et ordinateur (captures)",
       "status": "réussi",
-      "ms": 2350,
+      "ms": 2341,
       "detail": ""
     },
     {
       "name": "Mode sombre et thème clair",
       "status": "réussi",
-      "ms": 309,
+      "ms": 291,
       "detail": ""
     },
     {
       "name": "« + Point » : placement au réticule sans GPS (2 points)",
       "status": "réussi",
-      "ms": 990,
+      "ms": 996,
       "detail": "2 points placés, position exacte du réticule"
     },
     {
       "name": "Sélection de 4 points sur la carte → parcelle (contour automatique)",
       "status": "réussi",
-      "ms": 1832,
+      "ms": 1850,
       "detail": "S =\n100,00 m²\n· P = 40,00 m · 4 sommets"
     },
     {
       "name": "Dessin : accrochage aux points et fermeture en touchant le 1er sommet",
       "status": "réussi",
-      "ms": 2352,
+      "ms": 2346,
       "detail": "1er sommet accroché exactement au point 77, parcelle fermée au toucher du 1er sommet"
     },
     {
       "name": "Partage : 3 personnes (1/8, 7/16, 7/16), propositions, lots colorés, rapport PDF",
       "status": "réussi",
-      "ms": 2430,
+      "ms": 2455,
       "detail": "4 propositions ; lots Fatima 4210.53 m², Ahmed 14736.85 m², Khadija 14736.85 m² ; PDF 32031 octets"
     },
     {
       "name": "Fiche projet : statistiques et superficie par personne",
       "status": "réussi",
-      "ms": 579,
+      "ms": 572,
       "detail": ""
     },
     {
       "name": "Satellite : au-delà de l’imagerie disponible, image agrandie au lieu d’une zone vide",
       "status": "réussi",
-      "ms": 618,
+      "ms": 603,
       "detail": "8 tuiles affichées au zoom 21, Imagerie max. ici : zoom 18 — image agrandie"
     },
     {
       "name": "Déplacer un point en édition (glisser sur la carte) + sommet de parcelle lié",
       "status": "réussi",
-      "ms": 1502,
+      "ms": 1507,
       "detail": "point déplacé à X=400003.00 ; sommet lié suivi ; nouvelle superficie 85.00 m²"
     },
     {
       "name": "Couches par projet : superposition d’un 2e projet, activation/désactivation",
       "status": "réussi",
-      "ms": 1816,
+      "ms": 1849,
       "detail": "projet Nord superposé au projet Sud ouvert, puis masqué"
     },
     {
       "name": "Pente d’une parcelle (MNT) : plan incliné de 10 % → 10 %, exposition ouest",
       "status": "réussi",
-      "ms": 1527,
+      "ms": 1632,
       "detail": "RELIEF ET PENTE Recalculer la pente 10,0 % pente moyenne (5,7°) · forte 10,0 % pente maximale 11,4 m dénivelé (494 à 506 m) ouest exposition (270°) · pente géné"
     },
     {
       "name": "Outil « Pente entre deux points » : profil et pente",
       "status": "réussi",
-      "ms": 829,
+      "ms": 869,
       "detail": "PENTE A → B 10,0 % 5,71° · forte DÉNIVELÉ +15,2 m sur 151,95 m A : 492,4 m (MNT) · B : 507,6 m (MNT) · pente max. du profil 10,0 % 508 m 492"
     },
     {
       "name": "Projection automatique : Rabat (Lambert Nord) → Agadir (Lambert Sud), points enregistrés dans leur zone",
       "status": "réussi",
-      "ms": 1442,
+      "ms": 1372,
       "detail": "point 1 en EPSG:26191 (Rabat), point 2 en EPSG:26192 (Agadir), réglages basculés"
     },
     {
       "name": "Projection automatique sans GPS : « + Point » à Laâyoune → Lambert Sahara Nord ; choix manuel désactive l’automatique",
       "status": "réussi",
-      "ms": 2460,
+      "ms": 2413,
       "detail": "point carte en EPSG:26194 ; vue pays ignorée ; choix manuel respecté"
     },
     {
       "name": "Réglages : recalcul des points anciens dans leur zone",
       "status": "réussi",
-      "ms": 861,
+      "ms": 864,
       "detail": "E 96534.94 N 387379.32 (Lambert Sud), ancienne valeur conservée"
     },
     {
       "name": "Parcelles : afficher / masquer chacune, « uniquement celle-ci », lots masqués avec leur parcelle",
       "status": "réussi",
-      "ms": 2252,
+      "ms": 2170,
       "detail": "seule P1 → 1 tracé ; P2 + lot réaffichés ; couches 2/4 → 4/4 ; masquage conservé après rechargement"
     },
     {
       "name": "Page « Version de l’application » (accueil, réglages, aide)",
       "status": "réussi",
-      "ms": 1319,
+      "ms": 1330,
       "detail": "TopoMaroc GIS v1.4.0 · version et nouveautés · 5 versions · « Version publiée introuvable (exécution locale). »"
     },
     {
