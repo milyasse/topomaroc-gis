@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>TopoMaroc GIS — Manuel d’utilisation</title>
+<style>
+  @page { size: A4; margin: 17mm 16mm 18mm 16mm; }
+  @page :first { margin: 0; }
+  :root {
+    --brand: #0f3d5e; --brand-2: #14527c; --accent: #d6602a; --ink: #14212d; --ink-2: #4b5b6b;
+    --line: #d7dee6; --soft: #eef2f6; --ok: #1e8e5a; --warn: #b26a00;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { margin: 0; font: 10pt/1.5 Inter, "DejaVu Sans", sans-serif; color: var(--ink); font-feature-settings: "cv11", "ss01"; }
+  h1, h2, h3 { font-family: "Inter Display", Inter, sans-serif; color: var(--brand); line-height: 1.2; }
+  h1 { font-size: 22pt; margin: 0 0 4mm; letter-spacing: -.01em; }
+  h2 { font-size: 13.5pt; margin: 6mm 0 2.5mm; break-after: avoid; }
+  h2 + *, h3 + * { break-before: avoid; }
+  h3 { font-size: 11pt; margin: 5mm 0 1.5mm; color: var(--ink); }
+  p { margin: 0 0 2.6mm; }
+  ul, ol { margin: 0 0 3mm; padding-left: 5.5mm; }
+  li { margin: 0 0 1.2mm; }
+  b, strong { font-weight: 650; }
+  .muted { color: var(--ink-2); }
+  .small { font-size: 8.6pt; }
+  kbd, .ui { font: 600 8.8pt Inter, sans-serif; background: var(--soft); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; white-space: nowrap; }
+  code { font: 8.6pt "DejaVu Sans Mono", monospace; background: var(--soft); padding: 0 3px; border-radius: 3px; }
+
+  /* Couverture */
+  .cover { height: 296mm; width: 210mm; background: var(--brand); color: #fff; overflow: hidden; page-break-after: always; padding: 24mm 18mm 0; display: flex; flex-direction: column; }
+  .cover .logo { display: flex; align-items: center; gap: 5mm; }
+  .cover .logo img { width: 20mm; height: 20mm; border-radius: 5mm; background: #fff; padding: 1.5mm; }
+  .cover .kicker { font: 600 10pt Inter; letter-spacing: .14em; text-transform: uppercase; color: #f3a679; }
+  .cover h1 { color: #fff; font-size: 38pt; margin: 14mm 0 3mm; line-height: 1.02; }
+  .cover h1 span { color: #f3a679; }
+  .cover .sub { font-size: 14pt; max-width: 135mm; color: #d5e2ec; line-height: 1.4; }
+  .cover .meta { margin-top: 9mm; display: flex; gap: 8mm; font-size: 10pt; color: #d5e2ec; }
+  .cover .meta b { display: block; color: #fff; font-size: 12pt; }
+  .cover .phones { margin-top: auto; display: flex; gap: 7mm; align-items: flex-start; height: 112mm; overflow: hidden; padding-top: 2mm; }
+  .cover .phones img { width: 56mm; border-radius: 6mm; border: 2mm solid #0a2a41; box-shadow: 0 6mm 14mm rgba(0,0,0,.35); }
+  .cover .phones img:nth-child(2) { margin-top: 12mm; }
+  .cover .phones img:nth-child(3) { margin-top: 24mm; }
+
+  /* Sommaire */
+  .toc { page-break-after: always; }
+  .toc ol { list-style: none; padding: 0; counter-reset: none; }
+  .toc li { display: flex; align-items: baseline; gap: 3mm; padding: 1.5mm 0; border-bottom: 1px solid var(--line); font-size: 10.5pt; }
+  .toc li .n { width: 8mm; color: var(--accent); font-weight: 700; }
+  .toc li .t { flex: 1; }
+  .toc li .p { color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .toc .sub { display: block; font-size: 8.2pt; color: var(--ink-2); line-height: 1.3; }
+
+  /* Chapitres */
+  section.chap { page-break-before: always; }
+  .chap-head { display: flex; align-items: center; gap: 4mm; margin-bottom: 5mm; padding-bottom: 3mm; border-bottom: 2px solid var(--brand); }
+  .chap-head .num { flex: none; width: 11mm; height: 11mm; border-radius: 3mm; background: var(--accent); color: #fff; font: 800 15pt "Inter Display"; display: grid; place-items: center; }
+  .chap-head h1 { margin: 0; font-size: 19pt; }
+  .lead { font-size: 10.8pt; color: var(--ink-2); margin-bottom: 4mm; }
+
+  /* Figures */
+  .split { display: grid; grid-template-columns: 1fr 50mm; gap: 7mm; align-items: start; margin: 2mm 0 4mm; break-inside: avoid; }
+  .split.left { grid-template-columns: 50mm 1fr; }
+  .figs { display: grid; grid-template-columns: repeat(3, 47mm); justify-content: space-evenly; gap: 5mm; margin: 3mm 0 4mm; break-inside: avoid; }
+  .figs.two { grid-template-columns: repeat(2, 50mm); justify-content: center; gap: 12mm; }
+  figure { margin: 0; break-inside: avoid; }
+  figure img.phone { display: block; width: 100%; border-radius: 3.5mm; border: 1.2mm solid #18222c; box-shadow: 0 1.5mm 4mm rgba(15,61,94,.18); }
+  figure img.wide { display: block; width: 100%; border-radius: 2mm; border: 1px solid var(--line); box-shadow: 0 1.5mm 4mm rgba(15,61,94,.14); }
+  figure img.doc { display: block; width: 100%; border: 1px solid var(--line); box-shadow: 0 1.5mm 4mm rgba(15,61,94,.14); }
+  figcaption { font-size: 8.2pt; color: var(--ink-2); margin-top: 1.8mm; line-height: 1.35; }
+  figcaption b { color: var(--ink); }
+  .fignum { color: var(--accent); font-weight: 700; }
+
+  .note, .warn, .tip { border-radius: 2.5mm; padding: 3mm 4mm; margin: 3mm 0; font-size: 9.2pt; break-inside: avoid; }
+  .note { background: #eaf2f8; border-left: 1.2mm solid var(--brand-2); }
+  .tip { background: #edf7f1; border-left: 1.2mm solid var(--ok); }
+  .warn { background: #fdf3e6; border-left: 1.2mm solid var(--warn); }
+  .note b:first-child, .tip b:first-child, .warn b:first-child { display: block; margin-bottom: .8mm; }
+
+  table { border-collapse: collapse; width: 100%; font-size: 8.8pt; margin: 2mm 0 4mm; break-inside: avoid; }
+  th, td { text-align: left; padding: 1.3mm 2mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--soft); font-weight: 650; color: var(--brand); }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+  ol.steps { counter-reset: s; list-style: none; padding: 0; }
+  ol.steps > li { counter-increment: s; position: relative; padding-left: 8mm; margin-bottom: 2mm; }
+  ol.steps > li::before { content: counter(s); position: absolute; left: 0; top: .2mm; width: 5.4mm; height: 5.4mm; border-radius: 50%; background: var(--brand); color: #fff; font: 700 8pt Inter; display: grid; place-items: center; }
+  .avoid { break-inside: avoid; }
+  .pb { page-break-before: always; }
+</style>
+</head>
+<body>
+
+<!-- ====================================================================== Couverture -->
+<div class="cover">
+  <div class="logo"><img src="../../icons/icon.svg" alt=""><div><div class="kicker">Manuel d’utilisation</div><div style="font-size:11pt;color:#d5e2ec">Application web progressive (PWA)</div></div></div>
+  <h1>TopoMaroc <span>GIS</span></h1>
+  <div class="sub">Topographie de terrain au Maroc : systèmes Lambert (Merchich) et UTM, navigation GPS, levés, parcelles et superficies, partage foncier, exports.</div>
+  <div class="meta">
+    <div>Version<b>1.4.0</b></div>
+    <div>Date<b>19 octobre 2026</b></div>
+    <div>Adresse<b>milyasse.github.io/topomaroc-gis</b></div>
+  </div>
+  <div class="phones">
+    <img src="captures/01-accueil.png" alt="">
+    <img src="captures/29-partage-lots-carte.png" alt="">
+    <img src="captures/10-navigation-en-cours.png" alt="">
+  </div>
+</div>
+
+<!-- ====================================================================== Sommaire -->
+<div class="toc">
+  <h1>Sommaire</h1>
+  <ol id="toc"></ol>
+  <div class="note"><b>À propos des captures d’écran</b>Toutes les captures de ce manuel ont été prises automatiquement dans l’application publiée (version 1.4.0), sur un téléphone simulé de 390 × 844 points, avec un projet de démonstration fictif (« Lotissement Ouled Ali ») et une position GPS simulée près de Rabat. Les noms de personnes et de parcelles sont inventés.</div>
+</div>
+
+<!-- ====================================================================== 1 -->
+<section class="chap" data-toc="Présentation et installation" data-sub="Ce que fait l’application, installation, données, précision">
+  <div class="chap-head"><div class="num">1</div><h1>Présentation et installation</h1></div>
+  <p class="lead">TopoMaroc GIS est une application de topographie de terrain pour le Maroc. Elle fonctionne dans le navigateur d’un téléphone, d’une tablette ou d’un ordinateur, s’installe sur l’écran d’accueil et continue de fonctionner sans connexion.</p>
+  <h2>Ce que permet l’application</h2>
+  <table>
+    <tr><th style="width:34%">Fonction</th><th>En bref</th></tr>
+    <tr><td><b>Systèmes de coordonnées</b></td><td>WGS 84, Lambert Nord / Sud / Sahara Nord / Sahara Sud (Merchich), Merchich géographique, UTM 28N / 29N / 30N. Choix <b>automatique</b> selon la zone où vous êtes.</td></tr>
+    <tr><td><b>Aller à un point</b></td><td>Navigation GPS vers des coordonnées : distance restante, azimut, gisement, cap magnétique, alerte d’arrivée.</td></tr>
+    <tr><td><b>Levé topographique</b></td><td>Points GPS, saisis ou placés sur la carte, avec code, description, photo, précision et altitude.</td></tr>
+    <tr><td><b>Parcelles et superficies</b></td><td>Par GPS, saisie, import ou dessin ; superficie plane (Gauss) et géodésique, périmètre, côtés, rapport PDF.</td></tr>
+    <tr><td><b>Partage entre personnes</b></td><td>Parts en % ou en fractions, propositions de découpage, lots colorés à superficie exacte, rapport de partage.</td></tr>
+    <tr><td><b>Relief et pente</b></td><td>Altitudes, dénivelé, pente moyenne et maximale, exposition, profil entre deux points (MNT ouvert).</td></tr>
+    <tr><td><b>Projets et couches</b></td><td>Plusieurs projets superposables, chaque parcelle affichable ou masquable.</td></tr>
+    <tr><td><b>Échanges</b></td><td>Import CSV, GeoJSON, KML, GPX ; export CSV, GeoJSON, KML, GPX, XLSX, DXF, PDF ; sauvegarde complète.</td></tr>
+  </table>
+  <h2>Ouvrir et installer l’application</h2>
+  <ol class="steps">
+    <li>Ouvrez <b>https://milyasse.github.io/topomaroc-gis/</b> dans Chrome (Android) ou Safari (iPhone). L’adresse sécurisée (HTTPS) est indispensable : sans elle, le navigateur bloque le GPS.</li>
+    <li><b>Android</b> : menu ⋮ → <span class="ui">Installer l’application</span> (ou <span class="ui">Ajouter à l’écran d’accueil</span>). <b>iPhone</b> : bouton Partager → <span class="ui">Sur l’écran d’accueil</span>.</li>
+    <li>Au premier usage du GPS, acceptez la demande de localisation. Pour une meilleure précision, activez la « position exacte » du téléphone.</li>
+    <li>Ouvrez l’application une fois avec une connexion : elle est ensuite disponible <b>hors connexion</b> (saisie, GPS, calculs, sauvegarde locale). Les fonds de carte et le MNT nécessitent une connexion.</li>
+  </ol>
+  <div class="note"><b>Où sont mes données ?</b>Projets, points, parcelles et photos sont enregistrés <b>uniquement sur l’appareil</b> (stockage du navigateur, IndexedDB). Rien n’est envoyé sur un serveur. Le navigateur peut effacer ces données s’il manque d’espace ou si vous videz les données du site : faites régulièrement une <b>sauvegarde</b> (chapitre 12).</div>
+  <div class="warn"><b>Précision</b>Un GPS de téléphone donne une position à quelques mètres près (typiquement 3 à 10 m à ciel ouvert). La valeur « ±x m » est celle annoncée par l’appareil. L’application ne remplace pas un levé GNSS professionnel ni un document cadastral officiel. Les calculs (transformations, superficies), eux, sont exacts et vérifiés par des tests automatisés.</div>
+</section>
+
+<!-- ====================================================================== 2 -->
+<section class="chap" data-toc="Prise en main de l’interface" data-sub="Accueil, barre du haut, carte, panneau, barre de navigation">
+  <div class="chap-head"><div class="num">2</div><h1>Prise en main de l’interface</h1></div>
+  <div class="split">
+    <div>
+      <h2 style="margin-top:0">L’écran d’accueil</h2>
+      <p>L’accueil donne accès aux actions principales :</p>
+      <ul>
+        <li><b>Projet en cours</b> : touchez la carte bleue pour ouvrir la fiche du projet (statistiques, parcelles, personnes).</li>
+        <li><b>Aller à un point</b> (bouton orange) : navigation GPS vers des coordonnées.</li>
+        <li><b>Collecter des points</b>, <b>Calculer une superficie</b>, <b>Ouvrir la carte</b>, <b>Créer un projet</b>, <b>Reprendre un projet</b>, <b>Importer des données</b>, <b>Outils</b>.</li>
+        <li>En bas : liens vers les <b>Réglages</b>, l’<b>Aide</b> et la page <b>Version</b>.</li>
+      </ul>
+      <h2>La barre du haut</h2>
+      <table>
+        <tr><th>Élément</th><th>Rôle</th></tr>
+        <tr><td>Logo</td><td>Retour à l’accueil.</td></tr>
+        <tr><td>Puce du projet</td><td>Nom du projet ouvert ; touchez-la pour voir sa fiche.</td></tr>
+        <tr><td>Puce du système</td><td>Système de coordonnées affiché (ex. « Lambert Nord »). Le badge <b>AUTO</b> indique le choix automatique selon votre zone (chapitre 4).</td></tr>
+        <tr><td>Pastille GPS</td><td>Précision actuelle (vert : bonne, orange : moyenne, rouge : insuffisante ou refusée).</td></tr>
+        <tr><td>?</td><td>Aide.</td></tr>
+      </table>
+    </div>
+    <figure><img class="phone" src="captures/01-accueil.png" alt=""><figcaption><span class="fignum">Fig. 1</span> — Écran d’accueil avec le projet de démonstration ouvert.</figcaption></figure>
+  </div>
+  <h2>Carte, panneau et barre de navigation</h2>
+  <div class="split left">
+    <figure><img class="phone" src="captures/21-parcelle-carte.png" alt=""><figcaption><span class="fignum">Fig. 2</span> — La carte en haut, le panneau d’un module en bas.</figcaption></figure>
+    <div>
+      <p>La <b>carte</b> occupe tout l’écran. Chaque module (Parcelles, Levé, Aller à…) s’ouvre dans un <b>panneau</b> en bas de l’écran :</p>
+      <ul>
+        <li>faites glisser la <b>poignée</b> grise (ou touchez-la) pour réduire, ouvrir à moitié ou agrandir le panneau ;</li>
+        <li>la croix ✕ ferme le panneau et rend toute la carte visible.</li>
+      </ul>
+      <p>La <b>barre de navigation</b> du bas donne accès en un geste à : <span class="ui">Accueil</span>, <span class="ui">Carte</span>, <span class="ui">Aller à</span> (bouton central), <span class="ui">Levé</span>, <span class="ui">Parcelles</span>, <span class="ui">Outils</span>.</p>
+      <p>Les <b>boutons de carte</b> (à droite) : zoom +/−, <b>+ Point</b> (orange), <b>sélection multiple</b>, <b>ma position</b> (suivi GPS), <b>emprise</b> du projet, <b>couches</b> et <b>plein écran</b>.</p>
+      <p>En bas de la carte, la <b>barre de coordonnées</b> affiche la position du centre (ou du doigt) dans le système choisi, avec l’équivalent WGS 84 ; touchez-la pour copier.</p>
+      <div class="tip"><b>Sur ordinateur</b>Le panneau s’affiche à gauche et la carte à droite (chapitre 14). Raccourcis : <kbd>Ctrl</kbd>+<kbd>Z</kbd> annuler, <kbd>Ctrl</kbd>+<kbd>Y</kbd> rétablir.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================================================================== 3 -->
+<section class="chap" data-toc="La carte" data-sub="Fonds de carte, coordonnées d’un lieu, échelle">
+  <div class="chap-head"><div class="num">3</div><h1>La carte</h1></div>
+  <p class="lead">La carte affiche vos points, parcelles et lignes sur un fond au choix. Elle reste en WGS 84 / Web Mercator ; les coordonnées sont converties à l’affichage dans le système choisi.</p>
+  <div class="figs">
+    <figure><img class="phone" src="captures/02-carte-satellite.png" alt=""><figcaption><span class="fignum">Fig. 3</span> — Fond <b>satellite</b> : bornes (losanges rouges), autres points, parcelles avec nom et superficie.</figcaption></figure>
+    <figure><img class="phone" src="captures/03-carte-plan.png" alt=""><figcaption><span class="fignum">Fig. 4</span> — Fond <b>plan</b> (OpenStreetMap).</figcaption></figure>
+    <figure><img class="phone" src="captures/04-carte-coordonnees.png" alt=""><figcaption><span class="fignum">Fig. 5</span> — Toucher la carte : coordonnées du lieu dans tous les systèmes, avec <b>Aller à</b>, <b>Ajouter un point</b> et <b>Copier</b>.</figcaption></figure>
+  </div>
+  <h2>Fonds de carte</h2>
+  <p>Outils → <span class="ui">Couches et fonds</span> (ou bouton couches de la carte) : plan OpenStreetMap, satellite (Esri, Esri Clarity, Sentinel-2), relief, fond clair, <b>sans fond</b> (utile hors connexion), et <b>fond personnalisé</b> (adresse XYZ d’une orthophoto dont vous avez les droits).</p>
+  <div class="note"><b>Satellite à fort zoom</b>L’imagerie satellite n’existe que jusqu’au zoom 18 environ en zone rurale (19 en ville). Au-delà, l’application agrandit automatiquement la meilleure image disponible au lieu d’afficher une zone grise, et un badge l’indique (« Imagerie max. ici : zoom 18 »).</div>
+  <h2>Lire la carte</h2>
+  <ul>
+    <li><b>Points</b> : couleur selon le code (borne en rouge, puits en bleu, arbre en vert…), numéro à côté ; la légende est dans Outils → <span class="ui">Légende</span>.</li>
+    <li><b>Parcelles</b> : contour bleu, étiquette nom + superficie (masquée automatiquement si la parcelle est trop petite à l’écran) ; parcelle partagée en pointillés, lots colorés par personne.</li>
+    <li><b>Échelle</b> en bas à gauche, <b>nord</b> en haut à gauche, attribution des fonds en bas à droite.</li>
+  </ul>
+</section>
+
+<!-- ====================================================================== 4 -->
+<section class="chap" data-toc="Systèmes de coordonnées et projection automatique" data-sub="Zones Lambert, UTM, choix automatique, choix manuel">
+  <div class="chap-head"><div class="num">4</div><h1>Systèmes de coordonnées et projection automatique</h1></div>
+  <div class="split">
+    <div>
+      <p class="lead" style="margin-top:0">Depuis la version 1.3, le système de projection suit automatiquement la zone où vous travaillez.</p>
+      <h2 style="margin-top:2mm">Fonctionnement</h2>
+      <ul>
+        <li>La zone est déterminée par votre <b>position GPS</b> ; si le GPS est éteint, par le <b>centre de la carte</b> (à partir du zoom 9, la vue du pays entier est ignorée).</li>
+        <li>Quand vous changez de zone, le système d’affichage et le système de saisie basculent et un message l’indique.</li>
+        <li><b>Chaque point collecté</b> (GPS, « + Point », point atteint, déplacement) est enregistré dans la zone de <b>sa propre position</b>.</li>
+        <li>Une marge d’environ 2 km évite les basculements répétés le long d’une limite.</li>
+      </ul>
+      <h2>Régler le choix</h2>
+      <p>Touchez la puce du système (barre du haut) : cochez ou décochez <span class="ui">Automatique selon ma zone de navigation</span> et choisissez la famille <b>Lambert Maroc</b> ou <b>UTM</b>. Choisir un système à la main désactive le mode automatique. Les mêmes réglages sont dans Réglages → <span class="ui">Systèmes de coordonnées</span>, avec le bouton <span class="ui">Recalculer dans leur zone</span> pour les points anciens.</p>
+    </div>
+    <figure><img class="phone" src="captures/05-projection-auto.png" alt=""><figcaption><span class="fignum">Fig. 6</span> — Choix du système de projection depuis la puce de la barre du haut.</figcaption></figure>
+  </div>
+  <h2>Zones et systèmes</h2>
+  <table>
+    <tr><th>Système</th><th>EPSG</th><th>Zone d’usage</th><th>Ordre de saisie</th></tr>
+    <tr><td>Lambert Nord Maroc (zone 1)</td><td class="num">26191</td><td>au nord de 31,5° N</td><td>X (Est) puis Y (Nord), m</td></tr>
+    <tr><td>Lambert Sud Maroc (zone 2)</td><td class="num">26192</td><td>de 27,66° N à 31,5° N</td><td>X puis Y, m</td></tr>
+    <tr><td>Lambert Sahara Nord (zone 3)</td><td class="num">26194</td><td>de 24,3° N à 27,66° N</td><td>X puis Y, m</td></tr>
+    <tr><td>Lambert Sahara Sud (zone 4)</td><td class="num">26195</td><td>au sud de 24,3° N</td><td>X puis Y, m</td></tr>
+    <tr><td>UTM 28N / 29N / 30N (WGS 84)</td><td class="num">32628–32630</td><td>fuseaux de 6° de longitude</td><td>E puis N, m</td></tr>
+    <tr><td>WGS 84</td><td class="num">4326</td><td>GPS, monde</td><td>latitude puis longitude, degrés</td></tr>
+    <tr><td>Merchich géographique</td><td class="num">4261</td><td>historique</td><td>latitude puis longitude, degrés</td></tr>
+  </table>
+  <p class="small muted">Limites tirées des domaines d’usage du registre EPSG. Paramètres des projections (registre EPSG, vérifiés avec PROJ 9.8) : Lambert conique conforme, ellipsoïde Clarke 1880 (IGN), méridien central −5,4°.</p>
+  <div class="warn"><b>Saisie de coordonnées issues d’un document</b>Les valeurs X/Y des quatre zones Lambert se ressemblent : une erreur de zone ne se voit pas dans les chiffres. Lorsque vous tapez des coordonnées, vérifiez la zone proposée dans le formulaire ; l’application avertit si le point tombe à plus de 150 km de votre position GPS.</div>
+  <div class="note"><b>Transformation Merchich → WGS 84</b>L’application utilise EPSG:1166 (exactitude ≈ 7 m), seule transformation publiée dans le registre EPSG pour le Maroc. Elle n’est pas définie pour les zones Sahara : l’application le signale. Des paramètres locaux officiels peuvent être saisis dans les Réglages, avec leur source.</div>
+</section>
+
+<!-- ====================================================================== 5 -->
+<section class="chap" data-toc="Projets" data-sub="Créer, ouvrir, fiche projet, superposition de projets">
+  <div class="chap-head"><div class="num">5</div><h1>Projets</h1></div>
+  <p class="lead">Un projet regroupe les points, parcelles et lignes d’un chantier. Sans projet ouvert, un projet daté est créé automatiquement au premier enregistrement.</p>
+  <div class="figs">
+    <figure><img class="phone" src="captures/06-projets.png" alt=""><figcaption><span class="fignum">Fig. 7</span> — Liste des projets : créer, importer, sauvegarder, ouvrir, exporter, supprimer.</figcaption></figure>
+    <figure><img class="phone" src="captures/08-nouveau-projet.png" alt=""><figcaption><span class="fignum">Fig. 8</span> — Création : nom, date du levé, système de travail, observations.</figcaption></figure>
+    <figure><img class="phone" src="captures/07-fiche-projet.png" alt=""><figcaption><span class="fignum">Fig. 9</span> — Fiche projet : nombre de points et de parcelles, superficie totale, personnes, origine des points.</figcaption></figure>
+  </div>
+  <ol class="steps">
+    <li><b>Créer</b> : Accueil → <span class="ui">Créer un projet</span> (ou Projets → <span class="ui">Créer un projet</span>), renseignez le nom, la date et le système de travail, puis <span class="ui">Créer</span>. Le projet est ouvert aussitôt.</li>
+    <li><b>Reprendre</b> : Projets → touchez le nom d’un projet. Le projet ouvert porte l’étiquette « ouvert ».</li>
+    <li><b>Voir la fiche</b> : touchez la puce du projet (barre du haut) ou la carte « Projet en cours » de l’accueil. La fiche liste les parcelles et la superficie par personne lorsque des parcelles sont partagées.</li>
+    <li><b>Sauvegarder</b> : <span class="ui">Sauvegarder tout</span> enregistre un fichier JSON avec tous les projets et les photos (restauration sans écrasement via <span class="ui">Importer des données</span>).</li>
+  </ol>
+  <h2>Superposer plusieurs projets</h2>
+  <div class="figs two">
+    <figure><img class="phone" src="captures/37-couches-projets.png" alt=""><figcaption><span class="fignum">Fig. 10</span> — Outils → Couches : chaque projet a sa case, sa couleur et ses couches Points / Parcelles / Lignes.</figcaption></figure>
+    <figure><img class="phone" src="captures/38-superposition-projets.png" alt=""><figcaption><span class="fignum">Fig. 11</span> — Le projet voisin (vert, pointillés) affiché en lecture seule sous le projet ouvert.</figcaption></figure>
+  </div>
+  <p>Cochez un autre projet pour l’afficher par-dessus le projet ouvert. Les projets non ouverts sont en <b>lecture seule</b> ; touchez une de leurs entités pour ouvrir le projet correspondant. Le bouton ⤢ cadre la carte sur le projet.</p>
+</section>
+
+<!-- ====================================================================== 6 -->
+<section class="chap" data-toc="Aller à un point (navigation GPS)" data-sub="Saisie de la cible, navigation, plein écran, arrivée">
+  <div class="chap-head"><div class="num">6</div><h1>Aller à un point (navigation GPS)</h1></div>
+  <p class="lead">Retrouvez sur le terrain un point dont vous connaissez les coordonnées (borne, sommet d’un plan) : l’application vous guide avec la distance et la direction.</p>
+  <div class="split">
+    <div>
+      <h2 style="margin-top:0">Définir la cible</h2>
+      <ol class="steps">
+        <li>Touchez <span class="ui">Aller à</span> (bouton central de la barre du bas).</li>
+        <li>Choisissez le <b>système</b> de vos coordonnées, puis saisissez X (Est) et Y (Nord) — ou latitude et longitude en WGS 84. La virgule décimale est acceptée. L’équivalent WGS 84 s’affiche aussitôt pour contrôle.</li>
+        <li>Ou bien choisissez un <b>point existant du projet</b>, ou <span class="ui">Pointer sur la carte</span>.</li>
+        <li>Donnez un nom (facultatif) et choisissez le <b>rayon d’alerte</b> : 50, 20, 10, 5 m ou autre.</li>
+        <li>Touchez <span class="ui">Démarrer la navigation</span>.</li>
+      </ol>
+      <div class="warn"><b>Rayon et précision</b>Si la précision GPS est moins bonne que le rayon d’alerte, l’application le signale : l’alerte d’arrivée n’est alors pas fiable.</div>
+    </div>
+    <figure><img class="phone" src="captures/09-navigation-saisie.png" alt=""><figcaption><span class="fignum">Fig. 12</span> — Saisie de la cible « Borne B4 » en Lambert Nord.</figcaption></figure>
+  </div>
+  <div class="figs">
+    <figure><img class="phone" src="captures/10-navigation-en-cours.png" alt=""><figcaption><span class="fignum">Fig. 13</span> — Navigation : distance restante, azimut vrai, gisement Lambert, flèche ; ligne vers la cible sur la carte.</figcaption></figure>
+    <figure><img class="phone" src="captures/11-navigation-plein-ecran.png" alt=""><figcaption><span class="fignum">Fig. 14</span> — <b>Plein écran simplifié</b> : grande flèche et distance, lisibles en marchant.</figcaption></figure>
+    <figure><img class="phone" src="captures/12-navigation-arrivee.png" alt=""><figcaption><span class="fignum">Fig. 15</span> — <b>Arrivée</b> dans le rayon : écran vert, son et vibration ; <span class="ui">Enregistrer</span> le point atteint.</figcaption></figure>
+  </div>
+  <h2>Pendant la navigation</h2>
+  <ul>
+    <li><b>Distance restante</b> (géodésique), <b>azimut vrai</b>, <b>gisement</b> dans le système de la cible et <b>cap magnétique</b> (déclinaison du modèle WMM 2025).</li>
+    <li>La <b>flèche</b> s’oriente avec la boussole du téléphone lorsqu’elle est disponible (marquée « indicative » si sa calibration est inconnue) ; sinon elle indique la direction par rapport au nord.</li>
+    <li>La précision GPS et l’heure de la dernière mesure sont rappelées ; l’écran reste allumé.</li>
+    <li><span class="ui">Enregistrer le point atteint</span> ajoute au projet votre position à l’arrivée, avec l’écart restant ; <span class="ui">Arrêter la navigation</span> ou <span class="ui">Quitter</span> pour terminer.</li>
+  </ul>
+</section>
+
+<!-- ====================================================================== 7 -->
+<section class="chap" data-toc="Levé topographique" data-sub="Points GPS, saisie manuelle, + Point sur la carte, modification et déplacement">
+  <div class="chap-head"><div class="num">7</div><h1>Levé topographique</h1></div>
+  <p class="lead">Collectez des points sur le terrain avec le GPS, en les saisissant ou en les plaçant sur la carte.</p>
+  <div class="figs">
+    <figure><img class="phone" src="captures/13-leve-gps.png" alt=""><figcaption><span class="fignum">Fig. 16</span> — Carte GPS : précision, état, coordonnées dans le système actif et en WGS 84 ; numéro et code du prochain point.</figcaption></figure>
+    <figure><img class="phone" src="captures/14-leve-liste.png" alt=""><figcaption><span class="fignum">Fig. 17</span> — Liste des points : code, coordonnées, précision, date ; aller vers, modifier, supprimer.</figcaption></figure>
+    <figure><img class="phone" src="captures/15-saisie-manuelle.png" alt=""><figcaption><span class="fignum">Fig. 18</span> — <b>Saisie manuelle</b> d’un point à partir de coordonnées connues.</figcaption></figure>
+  </div>
+  <h2>Enregistrer un point GPS</h2>
+  <ol class="steps">
+    <li>Ouvrez <span class="ui">Levé</span> ; le GPS démarre. Attendez une précision correcte (pastille verte).</li>
+    <li>Placez-vous sur le point, vérifiez le <b>numéro</b> (incrémenté automatiquement), choisissez le <b>code</b> (borne, angle de parcelle, point de référence, bâtiment, arbre, route, limite, puits, poteau, clôture, divers) et ajoutez au besoin un nom, une description et une <b>photo</b>.</li>
+    <li>Touchez <span class="ui">Enregistrer le point GPS</span>. Le message confirme la précision et le système d’enregistrement.</li>
+  </ol>
+  <div class="tip"><b>Attendre une meilleure précision</b>Cochez cette option pour moyenner les positions pendant une durée choisie (20 s par défaut) en ne retenant que celles dont la précision respecte le seuil. Cela réduit le bruit, pas les erreurs systématiques (arbres, murs, multitrajets).</div>
+  <div class="split left">
+    <figure><img class="phone" src="captures/16-modifier-point.png" alt=""><figcaption><span class="fignum">Fig. 19</span> — Fiche d’un point : identité, code, description, <b>position</b> et altitude.</figcaption></figure>
+    <div>
+      <h2 style="margin-top:0">Modifier ou déplacer un point</h2>
+      <p>Touchez le crayon d’un point (dans la liste ou sur la carte). Vous pouvez changer son numéro, son nom, son code et sa description, ainsi que sa <b>position</b> :</p>
+      <ul>
+        <li><span class="ui">Nouvelles coordonnées</span> : saisie dans le système de votre choix ;</li>
+        <li><span class="ui">Déplacer sur la carte</span> : faites glisser le point ou placez-le au réticule, puis <span class="ui">Valider</span> ;</li>
+        <li><span class="ui">Ma position GPS actuelle</span>.</li>
+      </ul>
+      <p>L’historique des positions est conservé. Si le point sert de sommet à une parcelle, l’application propose de <b>déplacer aussi ce sommet</b>, ce qui garde les limites communes exactes.</p>
+      <p><b>Altitude</b> : saisie, GPS (indicative) ou <span class="ui">Altitude MNT</span> (modèle numérique de terrain, nécessite une connexion).</p>
+      <p><b>Annuler / rétablir</b> : les flèches ↶ ↷ du module annulent la dernière opération (ajout, modification, suppression).</p>
+    </div>
+  </div>
+  <h2>Ajouter des points sur la carte, sans GPS</h2>
+  <div class="split">
+    <div>
+      <ol class="steps">
+        <li>Touchez le bouton orange <b>+ Point</b> de la carte.</li>
+        <li>Choisissez le code, puis déplacez la carte sous le <b>réticule</b> et touchez <span class="ui">Placer ici</span> — ou touchez directement la carte à l’endroit voulu.</li>
+        <li>Enchaînez autant de points que nécessaire, puis <span class="ui">Terminer</span>.</li>
+      </ol>
+      <p>La précision d’un point placé est celle de votre pointé sur l’image ; ces points sont marqués « placé sur la carte » dans la fiche projet.</p>
+    </div>
+    <figure><img class="phone" src="captures/17-ajout-point-carte.png" alt=""><figcaption><span class="fignum">Fig. 20</span> — Mode « + Point » : réticule au centre et barre d’action.</figcaption></figure>
+  </div>
+</section>
+
+<!-- ====================================================================== 8 -->
+<section class="chap" data-toc="Parcelles et superficies" data-sub="Liste, quatre modes de création, résultats, sommets et côtés, dessin, sélection de points">
+  <div class="chap-head"><div class="num">8</div><h1>Parcelles et superficies</h1></div>
+  <div class="figs">
+    <figure><img class="phone" src="captures/19-parcelles-liste.png" alt=""><figcaption><span class="fignum">Fig. 21</span> — Liste des parcelles : superficie, périmètre, système ; total des parcelles cochées.</figcaption></figure>
+    <figure><img class="phone" src="captures/20-nouvelle-parcelle.png" alt=""><figcaption><span class="fignum">Fig. 22</span> — Nouvelle parcelle : nom, système des sommets et quatre modes de création.</figcaption></figure>
+    <figure><img class="phone" src="captures/22-parcelle-resultats.png" alt=""><figcaption><span class="fignum">Fig. 23</span> — Résultats : superficie (m² et ha a ca), périmètre, méthode et contrôle.</figcaption></figure>
+  </div>
+  <h2>Créer une parcelle</h2>
+  <table>
+    <tr><th style="width:30%">Mode</th><th>Comment</th></tr>
+    <tr><td><b>A — Levé GPS</b></td><td>Placez-vous sur chaque sommet et touchez <span class="ui">Ajouter le sommet à ma position</span> (moyenne possible). Les sommets sont enregistrés en WGS 84 ; les coordonnées Lambert sont calculées à l’affichage.</td></tr>
+    <tr><td><b>B — Saisie</b></td><td>Tableau des sommets : numéro, X, Y, description ; ajout, modification, suppression et réordonnancement.</td></tr>
+    <tr><td><b>C — Import</b></td><td>Fichier CSV, GeoJSON, KML ou GPX : choix des colonnes et du système (chapitre 12).</td></tr>
+    <tr><td><b>D — Dessin</b></td><td>Touchez la carte pour placer les sommets ; accrochage aux points et sommets existants ; fermeture en touchant le 1<sup>er</sup> sommet.</td></tr>
+  </table>
+  <p>Une parcelle peut aussi être créée <b>à partir de points déjà levés</b> : bouton <b>sélection</b> de la carte, touchez les points (ou <span class="ui">Visibles</span>), puis <span class="ui">Créer une parcelle</span> — le contour est ordonné automatiquement, sans croisement. <span class="ui">Ajouter à…</span> insère les points sélectionnés dans une parcelle existante.</p>
+  <div class="figs">
+    <figure><img class="phone" src="captures/18-selection-multiple.png" alt=""><figcaption><span class="fignum">Fig. 24</span> — Sélection de 6 bornes (contour bleu) avant « Créer une parcelle ».</figcaption></figure>
+    <figure><img class="phone" src="captures/25-parcelle-dessin.png" alt=""><figcaption><span class="fignum">Fig. 25</span> — Onglet <b>Dessin</b> : barre flottante « Retirer le dernier » / « Fermer la parcelle ».</figcaption></figure>
+    <figure><img class="phone" src="captures/23-parcelle-sommets.png" alt=""><figcaption><span class="fignum">Fig. 26</span> — Tableau des sommets et des <b>côtés</b> : longueur, gisement, azimut vrai.</figcaption></figure>
+  </div>
+  <h2>Résultats et méthode de calcul</h2>
+  <ul>
+    <li><b>Superficie</b> en m², ares, hectares, km² ou format cadastral « ha a ca » (unité au choix), <b>périmètre</b>, nombre de sommets.</li>
+    <li>Coordonnées projetées (Lambert, UTM) : superficie <b>plane</b> par la formule de Gauss dans la projection — convention des plans topographiques et cadastraux.</li>
+    <li>Levé GPS (WGS 84) : superficie <b>géodésique</b> exacte sur l’ellipsoïde, avec contrôle plan dans la zone Lambert. Les deux valeurs et leur écart sont toujours affichés.</li>
+    <li><b>Contrôles</b> : moins de 3 sommets, sommets en double, côtés qui se croisent, sommets alignés, précision GPS insuffisante pour un usage foncier, transformation extrapolée (zones Sahara).</li>
+  </ul>
+  <p>Boutons de la fiche : <span class="ui">Rapport PDF</span>, <span class="ui">Partager entre personnes</span>, <span class="ui">Exporter</span>, <span class="ui">Voir sur la carte</span>, <span class="ui">Afficher uniquement celle-ci</span>, <span class="ui">Masquer sur la carte</span>, <span class="ui">Supprimer</span>. Le crayon à côté du nom renomme la parcelle ; ↶ ↷ annulent ou rétablissent.</p>
+  <h2>Relief et pente</h2>
+  <div class="split">
+    <div>
+      <p>Dans la fiche d’une parcelle, la section <b>Relief et pente</b> calcule, à partir d’un modèle numérique de terrain ouvert (SRTM ~30 m, connexion nécessaire) :</p>
+      <ul>
+        <li>altitudes minimale, maximale et moyenne, <b>dénivelé</b> ;</li>
+        <li><b>pente moyenne et maximale</b> (en % et en degrés) et classe de pente ;</li>
+        <li><b>exposition</b> (direction vers laquelle descend le terrain) et altitude de chaque sommet.</li>
+      </ul>
+      <div class="note"><b>Précision du MNT</b>Altitudes à ± 5 à 10 m environ : les pentes sont des tendances à l’échelle de la parcelle, pas des mesures topographiques.</div>
+    </div>
+    <figure><img class="phone" src="captures/24-parcelle-pente.png" alt=""><figcaption><span class="fignum">Fig. 27</span> — Relief et pente d’une parcelle.</figcaption></figure>
+  </div>
+</section>
+
+<!-- ====================================================================== 9 -->
+<section class="chap" data-toc="Partage d’une parcelle entre personnes" data-sub="Parts, propositions de découpage, génération des lots, rapport">
+  <div class="chap-head"><div class="num">9</div><h1>Partage d’une parcelle entre personnes</h1></div>
+  <p class="lead">Partagez une parcelle entre plusieurs personnes selon leurs parts : l’application propose des découpages et génère un lot par personne, avec sa superficie exacte et sa couleur.</p>
+  <ol class="steps">
+    <li>Dans la fiche de la parcelle, touchez <span class="ui">Partager entre personnes</span>.</li>
+    <li>Saisissez le <b>nom</b> et la <b>part</b> de chaque personne : en pourcentage (25, 12,5) ou en fraction (1/8, 7/16). <span class="ui">Parts égales</span> répartit également. Le total doit faire 100 % (indicateur vert).</li>
+    <li>Facultatif : indiquez le <b>côté d’accès</b> (route, piste, canal) ; les propositions privilégient alors une façade pour chaque personne sur ce côté.</li>
+    <li>Touchez <span class="ui">Proposer des découpages</span>, choisissez une proposition (la meilleure est marquée ★) et ajustez au besoin l’orientation des limites avec le curseur.</li>
+    <li>Touchez <span class="ui">Générer les parcelles</span> : un lot est créé pour chaque personne. <span class="ui">Rapport de partage (PDF)</span> édite le document récapitulatif.</li>
+  </ol>
+  <div class="figs">
+    <figure><img class="phone" src="captures/26-partage-personnes.png" alt=""><figcaption><span class="fignum">Fig. 28</span> — Personnes et parts (1/8, 7/16, 7/16) : superficie de chacune, total 100 %.</figcaption></figure>
+    <figure><img class="phone" src="captures/27-partage-propositions.png" alt=""><figcaption><span class="fignum">Fig. 29</span> — Propositions : bandes perpendiculaires ou parallèles à un côté, avec leurs caractéristiques.</figcaption></figure>
+    <figure><img class="phone" src="captures/29-partage-lots-carte.png" alt=""><figcaption><span class="fignum">Fig. 30</span> — Lots générés sur la carte : couleur, nom, superficie et pourcentage de chaque personne.</figcaption></figure>
+  </div>
+  <div class="warn"><b>Valeur du partage</b>Il s’agit d’une proposition technique de découpage à superficie exacte (écart inférieur à 1 mm²). Un partage foncier ou successoral doit être validé par les intéressés et établi par un ingénieur géomètre-topographe ; il n’a pas de valeur juridique.</div>
+</section>
+
+<!-- ====================================================================== 10 -->
+<section class="chap" data-toc="Afficher ou masquer des parcelles" data-sub="Œil, « uniquement celle-ci », couches par parcelle">
+  <div class="chap-head"><div class="num">10</div><h1>Afficher ou masquer des parcelles</h1></div>
+  <p class="lead">Depuis la version 1.4, chaque parcelle s’affiche ou se masque sur la carte, comme une couche — par exemple pour ne montrer que la parcelle 1 d’un projet.</p>
+  <div class="figs two">
+    <figure><img class="phone" src="captures/30-parcelles-visibilite.png" alt=""><figcaption><span class="fignum">Fig. 31</span> — Après « Afficher uniquement celle-ci » : les autres parcelles sont barrées et masquées ; bandeau « Tout afficher ».</figcaption></figure>
+    <figure><img class="phone" src="captures/36-couches-fonds.png" alt=""><figcaption><span class="fignum">Fig. 32</span> — Outils → Couches : une case par parcelle et par lot, « Tout afficher » / « Tout masquer ».</figcaption></figure>
+  </div>
+  <table>
+    <tr><th style="width:32%">Où</th><th>Action</th></tr>
+    <tr><td>Liste des parcelles</td><td>Bouton <b>œil</b> de chaque ligne ; bandeau « N parcelle(s) masquée(s) » avec <span class="ui">Tout afficher</span> ; avec des parcelles cochées : <span class="ui">N’afficher que la sélection</span>.</td></tr>
+    <tr><td>Fiche d’une parcelle</td><td><span class="ui">Afficher uniquement celle-ci</span>, <span class="ui">Masquer / Afficher sur la carte</span>.</td></tr>
+    <tr><td>Bulle sur la carte</td><td><span class="ui">Seule</span> et œil barré (masquer).</td></tr>
+    <tr><td>Outils → Couches</td><td>Cases à cocher sous le projet ouvert, <span class="ui">Tout afficher</span>, <span class="ui">Tout masquer</span>.</td></tr>
+  </table>
+  <ul>
+    <li>Masquer une parcelle partagée masque aussi ses <b>lots</b>.</li>
+    <li>Le choix est <b>mémorisé</b> et s’applique aussi quand le projet est superposé à un autre.</li>
+    <li>Le masquage ne concerne que la carte : listes, totaux, rapports et exports gardent toutes les parcelles.</li>
+  </ul>
+</section>
+
+<!-- ====================================================================== 11 -->
+<section class="chap" data-toc="Boîte à outils" data-sub="Mesures, pente entre deux points, convertisseur, recherche, déclinaison">
+  <div class="chap-head"><div class="num">11</div><h1>Boîte à outils</h1></div>
+  <div class="split">
+    <div>
+      <table>
+        <tr><th>Outil</th><th>Usage</th></tr>
+        <tr><td><b>Mesurer une distance</b></td><td>Touchez des points sur la carte : longueur géodésique de chaque segment et totale, azimut.</td></tr>
+        <tr><td><b>Mesurer une superficie</b></td><td>Polygone touché sur la carte : superficie et périmètre géodésiques ; <span class="ui">Créer une parcelle</span> à partir de la mesure.</td></tr>
+        <tr><td><b>Pente entre deux points</b></td><td>Deux points sur la carte : dénivelé, pente en % et en °, profil en long (MNT).</td></tr>
+        <tr><td><b>Convertir des coordonnées</b></td><td>Une coordonnée saisie convertie dans tous les systèmes.</td></tr>
+        <tr><td><b>Rechercher</b></td><td>Coordonnées ou nom de lieu (OpenStreetMap Nominatim).</td></tr>
+        <tr><td><b>Couches et fonds</b></td><td>Fonds de carte, couches, projets, parcelles (chapitres 3, 5 et 10).</td></tr>
+        <tr><td><b>Légende</b></td><td>Codes des points et symboles.</td></tr>
+        <tr><td><b>Historique des mesures</b></td><td>Mesures enregistrées.</td></tr>
+        <tr><td><b>Déclinaison magnétique</b></td><td>Déclinaison (WMM 2025) et convergence des méridiens en un lieu.</td></tr>
+      </table>
+    </div>
+    <figure><img class="phone" src="captures/31-outils.png" alt=""><figcaption><span class="fignum">Fig. 33</span> — Menu de la boîte à outils.</figcaption></figure>
+  </div>
+  <div class="figs">
+    <figure><img class="phone" src="captures/32-convertisseur.png" alt=""><figcaption><span class="fignum">Fig. 34</span> — Convertisseur : une borne en Lambert Nord exprimée dans tous les systèmes.</figcaption></figure>
+    <figure><img class="phone" src="captures/33-mesure-superficie.png" alt=""><figcaption><span class="fignum">Fig. 35</span> — Mesure d’une superficie sur la carte.</figcaption></figure>
+    <figure><img class="phone" src="captures/34-pente-profil.png" alt=""><figcaption><span class="fignum">Fig. 36</span> — Pente entre deux points et profil en long.</figcaption></figure>
+  </div>
+</section>
+
+<!-- ====================================================================== 12 -->
+<section class="chap" data-toc="Import, export et rapports PDF" data-sub="Formats, import CSV, export, rapport de parcelle et de partage">
+  <div class="chap-head"><div class="num">12</div><h1>Import, export et rapports PDF</h1></div>
+  <table>
+    <tr><th>Format</th><th>Import</th><th>Export</th><th>Remarques</th></tr>
+    <tr><td>CSV</td><td>oui</td><td>oui</td><td>séparateur ; , ou tabulation, virgule décimale, DMS ; système demandé à l’import ; fichier <code>-SRC.txt</code> joint à l’export</td></tr>
+    <tr><td>GeoJSON</td><td>oui</td><td>oui</td><td>WGS 84 (norme) ou variante projetée</td></tr>
+    <tr><td>KML / GPX</td><td>oui</td><td>oui</td><td>WGS 84 par définition</td></tr>
+    <tr><td>XLSX (Excel)</td><td>—</td><td>oui</td><td>feuilles Points, Parcelles, Sommets, Côtés, Métadonnées</td></tr>
+    <tr><td>DXF (AutoCAD R12)</td><td>—</td><td>oui</td><td>coordonnées projetées, calques POINTS, PARCELLES, LIGNES, NUMEROS, SURFACES</td></tr>
+    <tr><td>PDF</td><td>—</td><td>oui</td><td>rapport de superficie, rapport de partage, fiche de levé</td></tr>
+    <tr><td>Sauvegarde JSON</td><td>oui</td><td>oui</td><td>un projet ou tous, photos incluses ; restauration sans écrasement</td></tr>
+  </table>
+  <div class="figs two">
+    <figure><img class="phone" src="captures/40-import.png" alt=""><figcaption><span class="fignum">Fig. 37</span> — Import d’un CSV : colonnes X / Y / nom / code, système du fichier, analyse des valeurs et aperçu.</figcaption></figure>
+    <figure><img class="phone" src="captures/39-export.png" alt=""><figcaption><span class="fignum">Fig. 38</span> — Export : choix du format et fichier décrivant le système de coordonnées.</figcaption></figure>
+  </div>
+  <div class="warn"><b>Système d’un fichier importé</b>Un fichier CSV ne dit pas dans quel système sont ses coordonnées. L’application analyse les valeurs et propose les systèmes compatibles, mais c’est à vous de confirmer la bonne zone Lambert.</div>
+  <h2>Rapports PDF</h2>
+  <p>Le <b>rapport de parcelle</b> (fiche de la parcelle → <span class="ui">Rapport PDF</span>) contient le projet, la date, un plan coté avec échelle graphique et nord, le tableau des sommets (Lambert et WGS 84), le tableau des côtés, la superficie et le périmètre, le système, la méthode, la qualité estimée, le relief si calculé, et la mention « ne constitue pas un document cadastral officiel ». Le <b>rapport de partage</b> ajoute les personnes, leurs parts, leurs lots et leurs superficies.</p>
+  <div class="figs two" id="rapports">
+    <figure><img class="doc" src="captures/44-rapport-parcelle-p1.png" alt=""><figcaption><span class="fignum">Fig. 39</span> — Rapport de parcelle (1<sup>re</sup> page), projet de démonstration.</figcaption></figure>
+    <figure><img class="doc" src="captures/45-rapport-partage-p1.png" alt=""><figcaption><span class="fignum">Fig. 40</span> — Rapport de partage (1<sup>re</sup> page).</figcaption></figure>
+  </div>
+</section>
+
+<!-- ====================================================================== 13 -->
+<section class="chap" data-toc="Réglages, aide et version" data-sub="Thème, systèmes, unités, transformation Merchich, stockage ; version et mises à jour">
+  <div class="chap-head"><div class="num">13</div><h1>Réglages, aide et version</h1></div>
+  <div class="figs">
+    <figure><img class="phone" src="captures/41-reglages.png" alt=""><figcaption><span class="fignum">Fig. 41</span> — Réglages : thème, contraste, langue, systèmes de coordonnées.</figcaption></figure>
+    <figure><img class="phone" src="captures/42-aide.png" alt=""><figcaption><span class="fignum">Fig. 42</span> — Aide : démarrage rapide, nouveautés, précision, sources.</figcaption></figure>
+    <figure><img class="phone" src="captures/43-version.png" alt=""><figcaption><span class="fignum">Fig. 43</span> — Page <b>Version de l’application</b>.</figcaption></figure>
+  </div>
+  <h2>Réglages</h2>
+  <ul>
+    <li><b>Affichage</b> : thème automatique, clair ou sombre ; <b>contraste renforcé</b> pour le plein soleil ; langue (français ; l’arabe est prévu).</li>
+    <li><b>Systèmes de coordonnées</b> : projection automatique, famille Lambert ou UTM, système de saisie et d’affichage, recalcul des points anciens dans leur zone.</li>
+    <li><b>Unités</b> : angles en degrés décimaux, grades (usage topographique) ou degrés-minutes-secondes ; superficies en m², a, ha, km² ou ha a ca.</li>
+    <li><b>Transformation Merchich → WGS 84</b> : EPSG:1166 par défaut ; paramètres locaux à 3 ou 7 paramètres si vous disposez de valeurs officielles (avec leur source).</li>
+    <li><b>Stockage</b> : espace utilisé, demande de stockage persistant, version de l’application.</li>
+  </ul>
+  <h2>Connaître la version et mettre à jour</h2>
+  <p>La page <b>Version de l’application</b> s’ouvre depuis le lien « Version 1.4.0 » en bas de l’accueil, depuis les Réglages ou depuis l’Aide. Elle indique le numéro et la date de la version, le numéro de publication (code source sur GitHub), le mode (application installée ou navigateur), l’état du fonctionnement hors connexion, l’espace utilisé et l’historique complet des versions. Le bouton <span class="ui">Rechercher une mise à jour</span> compare avec la version en ligne ; lorsqu’une nouvelle version est prête, une bande « Une nouvelle version est disponible » propose <span class="ui">Mettre à jour</span>. La mise à jour n’interrompt jamais une saisie en cours sans votre accord.</p>
+</section>
+
+<!-- ====================================================================== 14 -->
+<section class="chap" data-toc="Tablette, ordinateur et mode sombre" data-sub="Mise en page large, thème sombre">
+  <div class="chap-head"><div class="num">14</div><h1>Tablette, ordinateur et mode sombre</h1></div>
+  <p class="lead">Sur un écran large, le panneau des modules s’affiche à gauche et la carte occupe le reste de l’écran ; toutes les fonctions sont identiques.</p>
+  <figure><img class="wide" src="captures/46-ordinateur-parcelle.png" alt=""><figcaption><span class="fignum">Fig. 44</span> — Fiche d’une parcelle sur un ordinateur (1440 × 900).</figcaption></figure>
+  <h2>Mode sombre</h2>
+  <div class="split">
+    <div>
+      <p>Le thème suit par défaut celui du téléphone (Réglages → <span class="ui">Thème</span> pour le forcer). Le mode sombre économise la batterie des écrans OLED et reste lisible la nuit ; en plein soleil, préférez le thème clair avec le <b>contraste renforcé</b>.</p>
+      <p>Les animations de l’interface sont désactivées automatiquement si le téléphone demande de « réduire les animations ».</p>
+    </div>
+    <div class="figs two" style="margin:0;grid-template-columns:repeat(2,1fr);gap:5mm">
+      <figure><img class="phone" src="captures/47-mode-sombre-accueil.png" alt=""><figcaption><span class="fignum">Fig. 45</span> — Accueil, thème sombre.</figcaption></figure>
+      <figure><img class="phone" src="captures/48-mode-sombre-parcelles.png" alt=""><figcaption><span class="fignum">Fig. 46</span> — Parcelles, thème sombre.</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<!-- ====================================================================== 15 -->
+<section class="chap" data-toc="Bonnes pratiques et limites" data-sub="Sur le terrain, données, précision, questions fréquentes">
+  <div class="chap-head"><div class="num">15</div><h1>Bonnes pratiques et limites</h1></div>
+  <h2>Sur le terrain</h2>
+  <ul>
+    <li>Ouvrez l’application avec une connexion avant de partir, et affichez une fois la zone de travail : l’application et les fonds consultés restent disponibles hors connexion.</li>
+    <li>Attendez une pastille GPS verte ; restez à ciel ouvert, loin des murs et des arbres ; utilisez « Attendre une meilleure précision » pour les bornes.</li>
+    <li>Vérifiez la zone de projection affichée (puce de la barre du haut) avant de saisir des coordonnées d’un document.</li>
+    <li>Prenez une photo des bornes et notez une description : elles figurent dans les exports.</li>
+  </ul>
+  <h2>Données</h2>
+  <ul>
+    <li>Les données restent sur l’appareil : sauvegardez régulièrement (Projets → <span class="ui">Sauvegarder tout</span>) et conservez le fichier ailleurs.</li>
+    <li>Pour passer d’un appareil à un autre : sauvegarde sur le premier, <span class="ui">Importer des données</span> → restauration sur le second.</li>
+  </ul>
+  <h2>Limites connues</h2>
+  <ul>
+    <li>Précision GPS de téléphone : métrique, non cadastrale. Pas de correction RTK.</li>
+    <li>Transformation Merchich → WGS 84 publique à ≈ 7 m près et non définie dans les zones Sahara.</li>
+    <li>Fonds de carte, recherche de lieux et MNT nécessitent une connexion ; l’imagerie satellite s’arrête vers le zoom 18 en zone rurale.</li>
+    <li>MNT ~30 m : altitudes et pentes indicatives.</li>
+    <li>Partage de parcelles : proposition technique sans valeur juridique.</li>
+  </ul>
+  <h2>Questions fréquentes</h2>
+  <table>
+    <tr><th style="width:40%">Question</th><th>Réponse</th></tr>
+    <tr><td>Le GPS reste sur « … » ou « ! »</td><td>Vérifiez que la localisation est autorisée pour le navigateur et que l’adresse commence par https. À l’intérieur d’un bâtiment, sortez à découvert.</td></tr>
+    <tr><td>Le système affiché a changé tout seul</td><td>C’est la projection automatique (chapitre 4) : vous êtes entré dans une autre zone. Touchez la puce pour la désactiver si besoin.</td></tr>
+    <tr><td>La carte est grise à fort zoom</td><td>Imagerie absente à ce niveau : l’application agrandit la meilleure image ; sinon changez de fond ou dézoomez.</td></tr>
+    <tr><td>Une parcelle a disparu de la carte</td><td>Elle est peut-être masquée : Parcelles → <span class="ui">Tout afficher</span>.</td></tr>
+    <tr><td>Quelle version ai-je ?</td><td>Lien « Version » en bas de l’accueil (chapitre 13).</td></tr>
+  </table>
+  <p class="small muted" style="margin-top:4mm">TopoMaroc GIS — code source : github.com/milyasse/topomaroc-gis. Bibliothèques libres utilisées : Leaflet, proj4js, GeographicLib, jsPDF, PapaParse, togeojson, write-excel-file, GSAP ; fonds © contributeurs OpenStreetMap, Esri et fournisseurs, EOX (Sentinel-2) ; MNT Terrarium (AWS Open Data / Mapzen, SRTM).</p>
+</section>
+
+<script>
+  // Sommaire construit à partir des chapitres ; les numéros de page sont injectés au 2e passage.
+  const pages = window.__TOC_PAGES || {};
+  const toc = document.getElementById('toc');
+  document.querySelectorAll('section.chap').forEach((s, i) => {
+    const li = document.createElement('li');
+    li.innerHTML = `<span class="n">${i + 1}</span><span class="t">${s.dataset.toc}<span class="sub">${s.dataset.sub || ''}</span></span><span class="p">${pages[i + 1] ?? ''}</span>`;
+    toc.append(li);
+  });
+</script>
+</body>
+</html>
