@@ -1,6 +1,6 @@
 # Résultats des tests — TopoMaroc GIS
 
-Généré le 2026-10-18 22:49 UTC par `tools/tests-report.mjs` à partir d'exécutions réelles. Aucun test n'est déclaré réussi sans avoir été exécuté.
+Généré le 2026-10-19 00:18 UTC par `tools/tests-report.mjs` à partir d'exécutions réelles. Aucun test n'est déclaré réussi sans avoir été exécuté.
 
 ## 1. Tests unitaires (Node v22.23.3, `node --test`)
 
@@ -102,9 +102,9 @@ Constat documenté : PROJ n'applique pas EPSG:1166 dans les zones Sahara Nord/Su
 
 ## 2. Tests navigateur — http://127.0.0.1:8080/
 
-Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ordinateur 1440×900 ; GPS simulé. Exécution du 2026-10-18 22:46 UTC.
+Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ordinateur 1440×900 ; GPS simulé. Exécution du 2026-10-19 00:16 UTC.
 
-**34 réussi(s), 0 échoué(s), 2 non exécuté(s).**
+**35 réussi(s), 0 échoué(s), 2 non exécuté(s).**
 
 | Résultat | Scénario | Détail |
 |---|---|---|
@@ -123,7 +123,7 @@ Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ord
 | ✅ réussi | Parcelle : carré 10 m × 10 m saisi en Lambert Nord → 100,00 m² | superficie 100,00 m², périmètre 40,00 m |
 | ✅ réussi | Parcelle : polygone auto-intersecté et sommets en double détectés |  |
 | ✅ réussi | Parcelle : mode dessin sur la carte puis rapport PDF | 4 sommets dessinés, 2 930,61 m², PDF 24309 octets |
-| ✅ réussi | Import CSV (séparateur ;) avec choix du système puis export GeoJSON/DXF/CSV/XLSX | Leve_du_18_10_2026-20261018-2246.geojson, Leve_du_18_10_2026-20261018-2246-26191.dxf, Leve_du_18_10_2026-20261018-2246-26191.csv, Leve_du_18_10_2026-20261018-2246.xlsx |
+| ✅ réussi | Import CSV (séparateur ;) avec choix du système puis export GeoJSON/DXF/CSV/XLSX | Leve_du_19_10_2026-20261019-0015.geojson, Leve_du_19_10_2026-20261019-0015-26191.dxf, Leve_du_19_10_2026-20261019-0015-26191.csv, Leve_du_19_10_2026-20261019-0015.xlsx |
 | ✅ réussi | Sauvegarde complète puis restauration | 1 projet(s), 1 entité(s) restaurés |
 | ✅ réussi | Outils : convertisseur (Lambert Nord → tous systèmes) et mesure de distance | origine (500 000 ; 300 000) → φ 33,3° λ −5,4° ; distance mesurée 148,64 m |
 | ✅ réussi | Interface tablette et ordinateur (captures) |  |
@@ -141,15 +141,16 @@ Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ord
 | ✅ réussi | Projection automatique : Rabat (Lambert Nord) → Agadir (Lambert Sud), points enregistrés dans leur zone | point 1 en EPSG:26191 (Rabat), point 2 en EPSG:26192 (Agadir), réglages basculés |
 | ✅ réussi | Projection automatique sans GPS : « + Point » à Laâyoune → Lambert Sahara Nord ; choix manuel désactive l’automatique | point carte en EPSG:26194 ; vue pays ignorée ; choix manuel respecté |
 | ✅ réussi | Réglages : recalcul des points anciens dans leur zone | E 96534.94 N 387379.32 (Lambert Sud), ancienne valeur conservée |
-| ✅ réussi | Version de l’application affichée (accueil et aide) | TopoMaroc GIS v1.3.0 · nouveautés |
+| ✅ réussi | Parcelles : afficher / masquer chacune, « uniquement celle-ci », lots masqués avec leur parcelle | seule P1 → 1 tracé ; P2 + lot réaffichés ; couches 2/4 → 4/4 ; masquage conservé après rechargement |
+| ✅ réussi | Page « Version de l’application » (accueil, réglages, aide) | TopoMaroc GIS v1.4.0 · version et nouveautés · 5 versions · « Version publiée introuvable (exécution locale). » |
 | ⏸ non exécuté | Smartphone iOS / Android réels | aucun appareil physique disponible dans l’environnement de test : à valider sur le terrain (Safari iOS, Chrome Android) |
 | ⏸ non exécuté | Installation PWA sur l’écran d’accueil | nécessite une interaction utilisateur sur un appareil réel ; critères vérifiés automatiquement (manifeste, icônes, service worker, HTTPS) |
 
 ## 3. Tests navigateur — https://milyasse.github.io/topomaroc-gis/
 
-Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ordinateur 1440×900 ; GPS simulé. Exécution du 2026-10-18 22:49 UTC.
+Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ordinateur 1440×900 ; GPS simulé. Exécution du 2026-10-19 00:18 UTC.
 
-**34 réussi(s), 0 échoué(s), 2 non exécuté(s).**
+**35 réussi(s), 0 échoué(s), 2 non exécuté(s).**
 
 | Résultat | Scénario | Détail |
 |---|---|---|
@@ -168,7 +169,7 @@ Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ord
 | ✅ réussi | Parcelle : carré 10 m × 10 m saisi en Lambert Nord → 100,00 m² | superficie 100,00 m², périmètre 40,00 m |
 | ✅ réussi | Parcelle : polygone auto-intersecté et sommets en double détectés |  |
 | ✅ réussi | Parcelle : mode dessin sur la carte puis rapport PDF | 4 sommets dessinés, 2 930,61 m², PDF 24309 octets |
-| ✅ réussi | Import CSV (séparateur ;) avec choix du système puis export GeoJSON/DXF/CSV/XLSX | Leve_du_18_10_2026-20261018-2248.geojson, Leve_du_18_10_2026-20261018-2248-26191.dxf, Leve_du_18_10_2026-20261018-2248-26191.csv, Leve_du_18_10_2026-20261018-2248.xlsx |
+| ✅ réussi | Import CSV (séparateur ;) avec choix du système puis export GeoJSON/DXF/CSV/XLSX | Leve_du_19_10_2026-20261019-0017.geojson, Leve_du_19_10_2026-20261019-0017-26191.dxf, Leve_du_19_10_2026-20261019-0017-26191.csv, Leve_du_19_10_2026-20261019-0018.xlsx |
 | ✅ réussi | Sauvegarde complète puis restauration | 1 projet(s), 1 entité(s) restaurés |
 | ✅ réussi | Outils : convertisseur (Lambert Nord → tous systèmes) et mesure de distance | origine (500 000 ; 300 000) → φ 33,3° λ −5,4° ; distance mesurée 148,64 m |
 | ✅ réussi | Interface tablette et ordinateur (captures) |  |
@@ -186,7 +187,8 @@ Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ord
 | ✅ réussi | Projection automatique : Rabat (Lambert Nord) → Agadir (Lambert Sud), points enregistrés dans leur zone | point 1 en EPSG:26191 (Rabat), point 2 en EPSG:26192 (Agadir), réglages basculés |
 | ✅ réussi | Projection automatique sans GPS : « + Point » à Laâyoune → Lambert Sahara Nord ; choix manuel désactive l’automatique | point carte en EPSG:26194 ; vue pays ignorée ; choix manuel respecté |
 | ✅ réussi | Réglages : recalcul des points anciens dans leur zone | E 96534.94 N 387379.32 (Lambert Sud), ancienne valeur conservée |
-| ✅ réussi | Version de l’application affichée (accueil et aide) | TopoMaroc GIS v1.3.0 |
+| ✅ réussi | Parcelles : afficher / masquer chacune, « uniquement celle-ci », lots masqués avec leur parcelle | seule P1 → 1 tracé ; P2 + lot réaffichés ; couches 2/4 → 4/4 ; masquage conservé après rechargement |
+| ✅ réussi | Page « Version de l’application » (accueil, réglages, aide) | TopoMaroc GIS v1.4.0 · 5 versions · « Vous utilisez la dernière version (v1.4.0, publication 07489e6). » |
 | ⏸ non exécuté | Smartphone iOS / Android réels | aucun appareil physique disponible dans l’environnement de test : à valider sur le terrain (Safari iOS, Chrome Android) |
 | ⏸ non exécuté | Installation PWA sur l’écran d’accueil | nécessite une interaction utilisateur sur un appareil réel ; critères vérifiés automatiquement (manifeste, icônes, service worker, HTTPS) |
 
