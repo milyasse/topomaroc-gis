@@ -1,258 +1,258 @@
 {
  "format": "16x9",
  "voice": "fr-FR-DeniseNeural",
- "total": 140.096,
+ "total": 141.464,
  "scenes": [
   {
    "id": "s01",
    "start": 0.6,
-   "dur": 12.28,
+   "dur": 12.952,
    "voice": 1.9,
-   "voiceDur": 10.08,
+   "voiceDur": 10.752,
    "cues": [
     {
      "t0": 2.002,
-     "t1": 7.059,
+     "t1": 7.254,
      "text": "Sur le terrain, chaque mètre compte. Voici TopoMaroc GIS :"
     },
     {
-     "t0": 7.134,
-     "t1": 11.317,
+     "t0": 7.759,
+     "t1": 11.994,
      "text": "la topographie de terrain au Maroc, directement dans votre téléphone."
     }
    ]
   },
   {
    "id": "s02",
-   "start": 12.88,
+   "start": 13.552,
    "dur": 13.33,
-   "voice": 13.43,
+   "voice": 14.102,
    "voiceDur": 11.88,
    "cues": [
     {
-     "t0": 13.532,
-     "t1": 17.636,
+     "t0": 14.204,
+     "t1": 18.308,
      "text": "Systèmes Lambert et UTM, navigation GPS, levés,"
     },
     {
-     "t0": 17.712,
-     "t1": 21.312,
+     "t0": 18.384,
+     "t1": 21.984,
      "text": "parcelles et partage foncier : tout est réuni dans une application qui"
     },
     {
-     "t0": 21.332,
-     "t1": 24.654,
+     "t0": 22.004,
+     "t1": 25.326,
      "text": "s'installe sur l'écran d'accueil et fonctionne même sans connexion."
     }
    ]
   },
   {
    "id": "s03",
-   "start": 26.21,
+   "start": 26.882,
    "dur": 14.29,
-   "voice": 26.76,
+   "voice": 27.432,
    "voiceDur": 12.84,
    "cues": [
     {
-     "t0": 26.861,
-     "t1": 31.893,
+     "t0": 27.533,
+     "t1": 32.565,
      "text": "Le système de projection suit votre zone. Lambert Nord, Sud,"
     },
     {
-     "t0": 32.007,
-     "t1": 35.343,
+     "t0": 32.679,
+     "t1": 36.015,
      "text": "Sahara Nord ou Sahara Sud est choisi selon votre position,"
     },
     {
-     "t0": 35.471,
-     "t1": 38.95,
+     "t0": 36.143,
+     "t1": 39.622,
      "text": "et chaque point est enregistré dans la zone de sa propre position."
     }
    ]
   },
   {
    "id": "s04",
-   "start": 40.5,
+   "start": 41.172,
    "dur": 14.554,
-   "voice": 41.05,
+   "voice": 41.722,
    "voiceDur": 13.104,
    "cues": [
     {
-     "t0": 41.152,
-     "t1": 44.267,
+     "t0": 41.824,
+     "t1": 44.939,
      "text": "Pour retrouver une borne, saisissez ses coordonnées."
     },
     {
-     "t0": 44.917,
-     "t1": 49.06,
+     "t0": 45.589,
+     "t1": 49.732,
      "text": "L'application affiche la distance restante, l'azimut et le gisement,"
     },
     {
-     "t0": 49.11,
-     "t1": 51.43,
+     "t0": 49.782,
+     "t1": 52.102,
      "text": "propose un plein écran lisible en marchant,"
     },
     {
-     "t0": 51.597,
-     "t1": 53.488,
+     "t0": 52.269,
+     "t1": 54.16,
      "text": "et vous alerte dès que vous arrivez."
     }
    ]
   },
   {
    "id": "s05",
-   "start": 55.054,
+   "start": 55.726,
    "dur": 13.21,
-   "voice": 55.604,
+   "voice": 56.276,
    "voiceDur": 11.76,
    "cues": [
     {
-     "t0": 55.706,
-     "t1": 60.201,
+     "t0": 56.378,
+     "t1": 60.873,
      "text": "Levez vos points au GPS avec leur code, une description et une photo."
     },
     {
-     "t0": 60.851,
-     "t1": 63.315,
+     "t0": 61.523,
+     "t1": 63.987,
      "text": "Modifiez ou déplacez un point à tout moment,"
     },
     {
-     "t0": 63.456,
-     "t1": 66.713,
+     "t0": 64.128,
+     "t1": 67.385,
      "text": "ou placez-en directement sur la carte, sans GPS."
     }
    ]
   },
   {
    "id": "s06",
-   "start": 68.264,
+   "start": 68.936,
    "dur": 16.138,
-   "voice": 68.814,
+   "voice": 69.486,
    "voiceDur": 14.688,
    "cues": [
     {
-     "t0": 68.916,
-     "t1": 72.682,
+     "t0": 69.588,
+     "t1": 73.354,
      "text": "Sélectionnez vos bornes et créez la parcelle : la superficie,"
     },
     {
-     "t0": 72.796,
-     "t1": 75.403,
+     "t0": 73.468,
+     "t1": 76.075,
      "text": "le périmètre et les côtés sont calculés aussitôt,"
     },
     {
-     "t0": 75.557,
-     "t1": 79.387,
+     "t0": 76.229,
+     "t1": 80.059,
      "text": "selon la méthode plane des plans cadastraux et la méthode géodésique."
     },
     {
-     "t0": 80.037,
-     "t1": 82.839,
+     "t0": 80.709,
+     "t1": 83.511,
      "text": "La pente et l'exposition complètent l'analyse."
     }
    ]
   },
   {
    "id": "s07",
-   "start": 84.402,
+   "start": 85.074,
    "dur": 18.73,
-   "voice": 84.952,
+   "voice": 85.624,
    "voiceDur": 17.28,
    "cues": [
     {
-     "t0": 85.054,
-     "t1": 88.104,
+     "t0": 85.726,
+     "t1": 88.776,
      "text": "Pour un partage, indiquez les personnes et leurs parts,"
     },
     {
-     "t0": 88.179,
-     "t1": 93.262,
+     "t0": 88.851,
+     "t1": 93.934,
      "text": "en pourcentage ou en fraction. L'application propose plusieurs découpages,"
     },
     {
-     "t0": 93.324,
-     "t1": 97.429,
+     "t0": 93.996,
+     "t1": 98.101,
      "text": "puis génère un lot coloré par personne, à la superficie exacte."
     },
     {
-     "t0": 98.077,
-     "t1": 101.569,
+     "t0": 98.749,
+     "t1": 102.241,
      "text": "Une proposition technique, à valider par un géomètre."
     }
    ]
   },
   {
    "id": "s08",
-   "start": 103.132,
+   "start": 103.804,
    "dur": 7.738,
-   "voice": 103.682,
+   "voice": 104.354,
    "voiceDur": 6.288,
    "cues": [
     {
-     "t0": 103.784,
-     "t1": 106.534,
+     "t0": 104.456,
+     "t1": 107.206,
      "text": "Affichez uniquement la parcelle qui vous intéresse,"
     },
     {
-     "t0": 106.701,
-     "t1": 109.321,
+     "t0": 107.373,
+     "t1": 109.993,
      "text": "et superposez plusieurs projets comme des couches."
     }
    ]
   },
   {
    "id": "s09",
-   "start": 110.87,
+   "start": 111.542,
    "dur": 10.522,
-   "voice": 111.42,
+   "voice": 112.092,
    "voiceDur": 9.072,
    "cues": [
     {
-     "t0": 111.522,
-     "t1": 115.001,
+     "t0": 112.194,
+     "t1": 115.673,
      "text": "Convertissez des coordonnées, tracez un profil de pente,"
     },
     {
-     "t0": 115.155,
-     "t1": 119.845,
+     "t0": 115.827,
+     "t1": 120.517,
      "text": "exportez vers vos logiciels SIG et DAO, et éditez un rapport PDF complet."
     }
    ]
   },
   {
    "id": "s10",
-   "start": 121.392,
+   "start": 122.064,
    "dur": 8.842,
-   "voice": 121.942,
+   "voice": 122.614,
    "voiceDur": 7.392,
    "cues": [
     {
-     "t0": 122.044,
-     "t1": 126.448,
+     "t0": 122.716,
+     "t1": 127.12,
      "text": "Sur téléphone, tablette ou ordinateur, en mode clair ou sombre,"
     },
     {
-     "t0": 126.549,
-     "t1": 128.674,
+     "t0": 127.221,
+     "t1": 129.346,
      "text": "vos données restent sur votre appareil."
     }
    ]
   },
   {
    "id": "s11",
-   "start": 130.234,
-   "dur": 9.062,
-   "voice": 130.784,
-   "voiceDur": 6.912,
+   "start": 130.906,
+   "dur": 9.758,
+   "voice": 131.456,
+   "voiceDur": 7.608,
    "cues": [
     {
-     "t0": 130.886,
-     "t1": 136.036,
+     "t0": 132.639,
+     "t1": 137.399,
      "text": "TopoMaroc GIS. Installez l'application et lancez votre premier levé dès"
     },
     {
-     "t0": 136.056,
-     "t1": 137.049,
+     "t0": 137.419,
+     "t1": 138.411,
      "text": "aujourd'hui."
     }
    ]

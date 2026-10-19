@@ -1,14 +1,14 @@
 {
  "format": "9x16",
  "voice": "fr-FR-DeniseNeural",
- "total": 50.19,
+ "total": 51.558,
  "scenes": [
   {
    "id": "v01",
    "start": 0.6,
-   "dur": 8.104,
+   "dur": 8.776,
    "voice": 1.9,
-   "voiceDur": 5.904,
+   "voiceDur": 6.576,
    "cues": [
     {
      "t0": 2.002,
@@ -17,107 +17,107 @@
     },
     {
      "t0": 5.103,
-     "t1": 7.137,
+     "t1": 7.814,
      "text": "Voici TopoMaroc GIS."
     }
    ]
   },
   {
    "id": "v02",
-   "start": 8.704,
+   "start": 9.376,
    "dur": 9.106,
-   "voice": 9.254,
+   "voice": 9.926,
    "voiceDur": 7.656,
    "cues": [
     {
-     "t0": 9.356,
-     "t1": 12.005,
+     "t0": 10.028,
+     "t1": 12.677,
      "text": "Le système Lambert est choisi automatiquement selon"
     },
     {
-     "t0": 12.025,
-     "t1": 16.247,
+     "t0": 12.697,
+     "t1": 16.919,
      "text": "votre zone : Nord, Sud, Sahara Nord ou Sahara Sud."
     }
    ]
   },
   {
    "id": "v03",
-   "start": 17.81,
+   "start": 18.482,
    "dur": 7.642,
-   "voice": 18.36,
+   "voice": 19.032,
    "voiceDur": 6.192,
    "cues": [
     {
-     "t0": 18.462,
-     "t1": 21.447,
+     "t0": 19.134,
+     "t1": 22.119,
      "text": "Saisissez les coordonnées d'une borne : distance,"
     },
     {
-     "t0": 21.483,
-     "t1": 23.894,
+     "t0": 22.155,
+     "t1": 24.566,
      "text": "azimut, puis une alerte à l'arrivée."
     }
    ]
   },
   {
    "id": "v04",
-   "start": 25.452,
+   "start": 26.124,
    "dur": 7.354,
-   "voice": 26.002,
+   "voice": 26.674,
    "voiceDur": 5.904,
    "cues": [
     {
-     "t0": 26.104,
-     "t1": 28.737,
+     "t0": 26.776,
+     "t1": 29.409,
      "text": "Sélectionnez vos bornes : superficie,"
     },
     {
-     "t0": 28.799,
-     "t1": 31.25,
+     "t0": 29.471,
+     "t1": 31.922,
      "text": "périmètre et côtés sont calculés aussitôt."
     }
    ]
   },
   {
    "id": "v05",
-   "start": 32.806,
+   "start": 33.478,
    "dur": 8.746,
-   "voice": 33.356,
+   "voice": 34.028,
    "voiceDur": 7.296,
    "cues": [
     {
-     "t0": 33.457,
-     "t1": 35.022,
+     "t0": 34.129,
+     "t1": 35.694,
      "text": "Indiquez les parts de chacun :"
     },
     {
-     "t0": 35.111,
-     "t1": 37.669,
+     "t0": 35.783,
+     "t1": 38.340999999999994,
      "text": "l'application propose un découpage et génère des"
     },
     {
-     "t0": 37.689,
-     "t1": 39.996,
+     "t0": 38.361,
+     "t1": 40.668,
      "text": "lots colorés à la superficie exacte."
     }
    ]
   },
   {
    "id": "v06",
-   "start": 41.552,
-   "dur": 7.838,
-   "voice": 42.102,
-   "voiceDur": 5.688,
+   "start": 42.224,
+   "dur": 8.534,
+   "voice": 42.774,
+   "voiceDur": 6.384,
    "cues": [
     {
-     "t0": 42.204,
-     "t1": 46.105,
+     "t0": 43.957,
+     "t1": 47.467999999999996,
      "text": "TopoMaroc GIS. Lancez votre premier levé dès"
     },
     {
-     "t0": 46.125,
-     "t1": 47.131,
+     "t0": 47.488,
+     "t1": 48.493,
      "text": "aujourd'hui."
     }
    ]

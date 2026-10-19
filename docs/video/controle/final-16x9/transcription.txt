@@ -1,26 +1,24 @@
-[   1.8 →    4.8] Sur le terrain, chaque mètre compte.
-[   4.8 →   13.6] Voici Topo Maroc JIS, la topographie de terrain au Maroc, directement dans votre téléphone.
-[  13.6 →   19.6] Système Lambert et UTM, navigation GPS, le V, parcelles et partages fonciers,
-[  19.6 →   24.6] tout est réuni dans une application qui s'installe sur l'écran d'accueil et fonctionne même sans connexion.
-[  24.6 →   29.4] Le système de projection suit votre zone.
+[   1.8 →    4.8] Sur le terrain, chaque maître compte.
+[   4.8 →   11.8] Voici Topo Maroc, G-I-S, la topographie de terrain au Maroc directement dans votre téléphone.
+[  11.8 →   19.6] Système Lambert et UTM, navigation GPS, lever, parcelles et partages fonciers,
+[  19.6 →   27.4] tout est réuni dans une application qui s'installe sur l'écran d'accueil et fonctionne même sans connexion.
+[  27.4 →   30.4] Le système de projection suit votre zone.
 [  30.4 →   35.4] Lambert Nord, Sud, Sahara Nord ou Sahara Sud est choisi selon votre position
-[  35.4 →   41.2] et chaque point est enregistré dans la zone de sa propre position.
-[  41.2 →   45.2] Pour retrouver une borne, saisissez ses coordonnées.
-[  45.2 →   49.2] L'application affiche la distance restante, l'asimute et le gisement,
-[  49.2 →   56.0] propose un plein écran lisible en marchant et vous alerte dès que vous arrivez.
-[  56.0 →   61.0] Levez vos points au GPS avec leurs codes, une description et une photo.
-[  61.0 →   68.9] Modifiez ou déplacer un point à tout moment ou placez-en directement sur la carte, sans GPS.
-[  68.9 →   71.9] Sélectionnez vos bornes et créez la parcelle.
-[  71.9 →   75.9] La superficie, le périmètre et les côtés sont calculés aussitôt,
-[  75.9 →   79.9] selon la méthode plan des plans cadastraux et la méthode géodésique.
-[  79.9 →   82.9] La pente et l'exposition complètent l'analyse.
-[  82.9 →   90.7] Pour un partage, indiquez les personnes et leurs parts, en pourcentage ou en fraction.
-[  90.7 →   97.7] L'application propose plusieurs découpages puis génère un eau coloré par personne à la superficie exacte.
-[  97.7 →  101.7] Une proposition technique a validé par un géomètre.
-[ 101.7 →  111.3] Affichez uniquement la parcelle qui vous intéresse et superposez plusieurs projets comme des couches.
-[ 111.3 →  117.3] Convertissez des coordonnées, tracez un profil de pente, exportez vers vos logiciels CIG et DAO
-[ 117.3 →  122.2] et éditez un rapport PDF complet.
-[ 122.2 →  126.2] Sur téléphone, tablette ou ordinateur, en mode clair ou sombre,
-[ 126.2 →  131.0] vos données restent sur votre appareil.
-[ 131.0 →  133.0] TopoMarocJS
-[ 133.0 →  137.0] Installez l'application et lancez votre premier lever des aujourd'hui.
+[  35.4 →   39.4] et chaque point est enregistré dans la zone de sa propre position.
+[  39.4 →   45.3] Pour retrouver une borne, saisissez ses coordonnées.
+[  45.3 →   49.3] L'application affiche la distance restante, l'asimute et le gisement
+[  49.3 →   56.2] propose un plein écran lisible en marchant et vous alerte dès que vous arrivez.
+[  56.2 →   61.2] Levez vos points au GPS avec leurs codes, une description et une photo.
+[  61.2 →   67.2] Modifiez ou déplacer un point à tout moment ou placez-en directement sur la carte, sans GPS.
+[  67.2 →   76.0] Sélectionnez vos bornes et créez la parcelle, la superficie, le périmètre et les côtés sont calculés aussitôt
+[  76.0 →   80.0] selon la méthode plan des plans cadastros et la méthode géodésique.
+[  80.0 →   85.8] La pente et l'exposition complètent l'analyse.
+[  85.8 →   90.8] Pour un partage, indiquez les personnes et leurs parts en pourcentage ou en fraction.
+[  90.8 →   97.8] L'application propose plusieurs découpages puis génère un eau coloré par personne à la superficie exacte.
+[  97.8 →  101.8] Une proposition technique a validé par un géomètre.
+[ 101.8 →  109.6] Affichez uniquement la parcelle qui vous intéresse et superposez plusieurs projets comme des couches.
+[ 109.6 →  117.4] Convertissez des coordonnées, tracez un profil de pente, exportez vers vos logiciels SIG et DAO
+[ 117.4 →  120.4] et éditez un rapport PDF complet.
+[ 120.4 →  129.2] Sur téléphone, tablette ou ordinateur, en mode clair ou sombre, vos données restent sur votre appareil.
+[ 129.2 →  134.1] Topo Maroc G-I-S
+[ 134.1 →  138.1] Installez l'application et lancez votre premier lever dès aujourd'hui.

@@ -3,49 +3,49 @@
 Sur le terrain, chaque mètre compte.
 
 2
-00:00:05,103 --> 00:00:07,137
+00:00:05,103 --> 00:00:07,814
 Voici TopoMaroc GIS.
 
 3
-00:00:09,356 --> 00:00:12,005
+00:00:10,028 --> 00:00:12,677
 Le système Lambert est choisi automatiquement selon
 
 4
-00:00:12,025 --> 00:00:16,247
+00:00:12,697 --> 00:00:16,919
 votre zone : Nord, Sud, Sahara Nord ou Sahara Sud.
 
 5
-00:00:18,462 --> 00:00:21,447
+00:00:19,134 --> 00:00:22,119
 Saisissez les coordonnées d'une borne : distance,
 
 6
-00:00:21,483 --> 00:00:23,894
+00:00:22,155 --> 00:00:24,566
 azimut, puis une alerte à l'arrivée.
 
 7
-00:00:26,104 --> 00:00:28,737
+00:00:26,776 --> 00:00:29,409
 Sélectionnez vos bornes : superficie,
 
 8
-00:00:28,799 --> 00:00:31,250
+00:00:29,471 --> 00:00:31,922
 périmètre et côtés sont calculés aussitôt.
 
 9
-00:00:33,457 --> 00:00:35,022
+00:00:34,129 --> 00:00:35,694
 Indiquez les parts de chacun :
 
 10
-00:00:35,111 --> 00:00:37,669
+00:00:35,783 --> 00:00:38,341
 l'application propose un découpage et génère des
 
 11
-00:00:37,689 --> 00:00:39,996
+00:00:38,361 --> 00:00:40,668
 lots colorés à la superficie exacte.
 
 12
-00:00:42,204 --> 00:00:46,105
+00:00:43,957 --> 00:00:47,468
 TopoMaroc GIS. Lancez votre premier levé dès
 
 13
-00:00:46,125 --> 00:00:47,131
+00:00:47,488 --> 00:00:48,493
 aujourd'hui.

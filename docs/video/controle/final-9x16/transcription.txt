@@ -1,10 +1,10 @@
 [   1.8 →    4.8] Sur le terrain, chaque maître compte.
-[   4.8 →    6.8] Voici topo Maroc J.S.
-[   6.8 →   12.5] Le système Lambert est choisi automatiquement selon votre zone.
-[  12.5 →   18.4] Nord, Sud, Sahara Nord ou Sahara Sud.
-[  18.4 →   23.4] Saisissez les coordonnées d'une borne, distance, azimuth, puis une alerte à l'arrivée.
-[  23.4 →   31.2] Sélectionnez vos bornes, superficies, périmètres et côtés sont calculées aussitôt.
-[  31.2 →   37.1] Indiquez les parts de chacun, l'application propose un découpage
-[  37.1 →   42.1] et génère des lots colorés à la superficie exacte.
-[  42.1 →   44.1] Topo Maroc J.S.
-[  44.1 →   47.1] Lancez votre premier lever dès aujourd'hui.
+[   4.8 →    7.8] Voici Topo Maroc, G-I-S.
+[   7.8 →   13.5] Le système Lambert est choisi automatiquement selon votre zone.
+[  13.5 →   16.5] Nord, Sud, Sahara Nord ou Sahara Sud.
+[  16.5 →   24.3] Saisissez les coordonnées d'une borne, distance, azimuth, puis une alerte à l'arrivée.
+[  24.3 →   31.2] Sélectionnez vos borne, superficie, périmètre et côté sont calculés aussitôt.
+[  31.2 →   37.0] Indiquez les parts de chacun, l'application propose un découpage
+[  37.0 →   40.0] et génère des lots colorés à la superficie exacte.
+[  40.0 →   44.9] Topo Maroc, G-I-S.
+[  44.9 →   47.9] Lancez votre premier lever dès aujourd'hui.
