@@ -597,3 +597,14 @@ label.switch.sm input { width: 18px; height: 18px; }
 .about-kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; font-size: .9rem; margin: 10px 0; }
 .about-kv dt { color: var(--ink-2); } .about-kv dd { margin: 0; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .changelog.current { border-left: 3px solid var(--accent); padding-left: 10px; }
+
+/* Puce du système toujours lisible sur téléphone : nom court prioritaire sur le nom du projet */
+.chip-crs { max-width: none; flex-shrink: 0; }
+.chip-crs span { overflow: visible; }
+@media (max-width: 520px) {
+  .chip-crs .ic, #chip-project .ic { display: none; }
+  .chip-crs { padding: 4px 6px 4px 8px; gap: 3px; }
+  .chip-auto { margin-left: 2px; padding: 1px 3px; font-size: .56rem; }
+  #chip-project { flex: 1 1 auto; max-width: none; }
+}
+@media (max-width: 360px) { .chip-auto { display: none; } }
