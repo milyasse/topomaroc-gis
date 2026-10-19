@@ -67,7 +67,9 @@ async def main():
     n = 0
     for k, s in enumerate(CFG["scenes"]):
         mp3, wav = os.path.join(OUT, f"voix-{s['id']}.mp3"), os.path.join(OUT, f"voix-{s['id']}.wav")
-        words = await synth(s["text"], mp3)
+        # prononciation : « GIS » épelé (sinon lu « jisse ») ; le texte des sous-titres reste inchangé
+        spoken = s["text"].replace("TopoMaroc GIS", "Topo-Maroc, G. I. S.")
+        words = await synth(spoken, mp3)
         subprocess.run(["ffmpeg", "-y", "-v", "error", "-i", mp3, "-ar", "48000", "-ac", "1", wav], check=True)
         vd = wav_duration(wav)
         lead = 1.3 if s["layout"] == "hero" else 0.55
