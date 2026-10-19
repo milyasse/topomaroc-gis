@@ -45,8 +45,9 @@ const n = Number(/Pages:\s+(\d+)/.exec(execFileSync('pdfinfo', [tmp]).toString()
 const pages = {};
 const norm = (s) => s.replace(/[’']/g, "'").replace(/\s+/g, ' ').trim();
 for (let p = 3; p <= n; p++) {
-  const txt = norm(execFileSync('pdftotext', ['-f', String(p), '-l', String(p), '-layout', tmp, '-']).toString()).slice(0, 220);
-  titles.forEach((t, i) => { if (!pages[i + 1] && txt.includes(norm(t))) pages[i + 1] = p; });
+  // en-tête de chapitre : « N   Titre » sur une des premières lignes de la page
+  const lines = execFileSync('pdftotext', ['-f', String(p), '-l', String(p), '-layout', tmp, '-']).toString().split('\n').filter((l) => l.trim()).slice(0, 4).map(norm);
+  titles.forEach((t, i) => { if (!pages[i + 1] && lines.some((l) => l.startsWith(`${i + 1} ${norm(t)}`))) pages[i + 1] = p; });
 }
 fs.unlinkSync(tmp);
 await render(OUT, pages);

@@ -71,14 +71,14 @@
   figcaption b { color: var(--ink); }
   .fignum { color: var(--accent); font-weight: 700; }
 
-  .note, .warn, .tip { border-radius: 2.5mm; padding: 3mm 4mm; margin: 3mm 0; font-size: 9.2pt; break-inside: avoid; }
+  .note, .warn, .tip { border-radius: 2.5mm; padding: 2.6mm 3.6mm; margin: 3mm 0; font-size: 8.9pt; line-height: 1.42; break-inside: avoid; }
   .note { background: #eaf2f8; border-left: 1.2mm solid var(--brand-2); }
   .tip { background: #edf7f1; border-left: 1.2mm solid var(--ok); }
   .warn { background: #fdf3e6; border-left: 1.2mm solid var(--warn); }
   .note b:first-child, .tip b:first-child, .warn b:first-child { display: block; margin-bottom: .8mm; }
 
-  table { border-collapse: collapse; width: 100%; font-size: 8.8pt; margin: 2mm 0 4mm; break-inside: avoid; }
-  th, td { text-align: left; padding: 1.3mm 2mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+  table { border-collapse: collapse; width: 100%; font-size: 8.4pt; line-height: 1.38; margin: 2mm 0 4mm; break-inside: avoid; }
+  th, td { text-align: left; padding: 1mm 2mm; border-bottom: 1px solid var(--line); vertical-align: top; }
   th { background: var(--soft); font-weight: 650; color: var(--brand); }
   td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 
@@ -86,6 +86,8 @@
   ol.steps > li { counter-increment: s; position: relative; padding-left: 8mm; margin-bottom: 2mm; }
   ol.steps > li::before { content: counter(s); position: absolute; left: 0; top: .2mm; width: 5.4mm; height: 5.4mm; border-radius: 50%; background: var(--brand); color: #fff; font: 700 8pt Inter; display: grid; place-items: center; }
   .avoid { break-inside: avoid; }
+  .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; break-inside: avoid; }
+  .duo > div { margin: 0; }
   .pb { page-break-before: always; }
 </style>
 </head>
@@ -138,8 +140,10 @@
     <li>Au premier usage du GPS, acceptez la demande de localisation. Pour une meilleure précision, activez la « position exacte » du téléphone.</li>
     <li>Ouvrez l’application une fois avec une connexion : elle est ensuite disponible <b>hors connexion</b> (saisie, GPS, calculs, sauvegarde locale). Les fonds de carte et le MNT nécessitent une connexion.</li>
   </ol>
+  <div class="duo">
   <div class="note"><b>Où sont mes données ?</b>Projets, points, parcelles et photos sont enregistrés <b>uniquement sur l’appareil</b> (stockage du navigateur, IndexedDB). Rien n’est envoyé sur un serveur. Le navigateur peut effacer ces données s’il manque d’espace ou si vous videz les données du site : faites régulièrement une <b>sauvegarde</b> (chapitre 12).</div>
   <div class="warn"><b>Précision</b>Un GPS de téléphone donne une position à quelques mètres près (typiquement 3 à 10 m à ciel ouvert). La valeur « ±x m » est celle annoncée par l’appareil. L’application ne remplace pas un levé GNSS professionnel ni un document cadastral officiel. Les calculs (transformations, superficies), eux, sont exacts et vérifiés par des tests automatisés.</div>
+  </div>
 </section>
 
 <!-- ====================================================================== 2 -->
@@ -234,8 +238,10 @@
     <tr><td>Merchich géographique</td><td class="num">4261</td><td>historique</td><td>latitude puis longitude, degrés</td></tr>
   </table>
   <p class="small muted">Limites tirées des domaines d’usage du registre EPSG. Paramètres des projections (registre EPSG, vérifiés avec PROJ 9.8) : Lambert conique conforme, ellipsoïde Clarke 1880 (IGN), méridien central −5,4°.</p>
+  <div class="duo">
   <div class="warn"><b>Saisie de coordonnées issues d’un document</b>Les valeurs X/Y des quatre zones Lambert se ressemblent : une erreur de zone ne se voit pas dans les chiffres. Lorsque vous tapez des coordonnées, vérifiez la zone proposée dans le formulaire ; l’application avertit si le point tombe à plus de 150 km de votre position GPS.</div>
   <div class="note"><b>Transformation Merchich → WGS 84</b>L’application utilise EPSG:1166 (exactitude ≈ 7 m), seule transformation publiée dans le registre EPSG pour le Maroc. Elle n’est pas définie pour les zones Sahara : l’application le signale. Des paramètres locaux officiels peuvent être saisis dans les Réglages, avec leur source.</div>
+  </div>
 </section>
 
 <!-- ====================================================================== 5 -->
