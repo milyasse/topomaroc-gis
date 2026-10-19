@@ -1,0 +1,77 @@
+name: Vidéo de présentation
+
+# Montage de la vidéo de présentation à partir des captures du manuel :
+# voix off neuronale française (Edge TTS), animation HTML/GSAP rendue image par image (Chromium),
+# musique et effets synthétisés, sous-titres incrustés + fichier SRT. Formats 16:9 et 9:16.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: video-build
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Outils
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg fonts-inter > /dev/null
+          fc-list | grep -ci inter
+          pip install -q edge-tts numpy faster-whisper
+          npm install --no-save --no-audit --no-fund playwright
+          npx playwright install --with-deps chromium
+      - name: Voix off et minutage
+        run: |
+          python3 tools/video/tts.py 16x9
+          python3 tools/video/tts.py 9x16
+      - name: Rendu des images
+        run: |
+          python3 -m http.server 8080 --bind 127.0.0.1 > /dev/null 2>&1 &
+          sleep 2
+          node tools/video/render.mjs --fmt=16x9
+          node tools/video/render.mjs --fmt=9x16
+      - name: Bande son et assemblage
+        run: |
+          python3 tools/video/mix.py 16x9
+          python3 tools/video/mix.py 9x16
+      - name: Contrôle (images, transcription de la voix off)
+        run: |
+          for F in 16x9 9x16; do
+            D=docs/video/controle/final-$F; mkdir -p $D
+            V=tools/video/build/$F/TopoMaroc-GIS-$F.mp4
+            ffprobe -v error -show_entries format=duration,size:stream=codec_type,codec_name,width,height,r_frame_rate -of json $V > $D/probe.json
+            ffmpeg -v error -i $V -vf "fps=1/5,scale=480:-1,tile=6x6:padding=6:color=0x888888" $D/planche-%d.jpg
+            ffmpeg -v error -i $V -af ebur128 -f null - 2>&1 | tail -12 > $D/sonie.txt
+            ffmpeg -v error -i $V -ac 1 -ar 16000 /tmp/a-$F.wav
+            python3 - "$F" "$D" <<'PY'
+          import sys, wave, numpy as np
+          from faster_whisper import WhisperModel
+          f, d = sys.argv[1], sys.argv[2]
+          w = wave.open(f"/tmp/a-{f}.wav"); pcm = np.frombuffer(w.readframes(w.getnframes()), dtype=np.int16).astype(np.float32) / 32768
+          segs, _ = WhisperModel("small", compute_type="int8").transcribe(pcm, language="fr", vad_filter=True)
+          open(f"{d}/transcription.txt", "w").write("".join(f"[{s.start:6.1f} → {s.end:6.1f}] {s.text.strip()}\n" for s in segs))
+          PY
+            cp tools/video/build/$F/timing.json $D/timing.json
+          done
+      - name: Publication
+        run: |
+          mkdir -p docs/video
+          for F in 16x9 9x16; do
+            cp tools/video/build/$F/TopoMaroc-GIS-$F.mp4 docs/video/
+            cp tools/video/build/$F/sous-titres.srt docs/video/TopoMaroc-GIS-$F.srt
+          done
+          ls -la docs/video
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/video
+          git commit -q -m "docs(video): vidéo de présentation 16:9 et 9:16 ${GITHUB_SHA::7} [skip ci]"
+          git pull -q --rebase origin main && git push -q origin HEAD:main

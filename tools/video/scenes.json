@@ -1,0 +1,67 @@
+{
+  "voice": "fr-FR-DeniseNeural",
+  "rate": "-4%",
+  "formats": {
+    "16x9": {
+      "width": 1920, "height": 1080,
+      "scenes": [
+        { "id": "s01", "layout": "hero", "num": "", "title": "TopoMaroc GIS", "sub": "La topographie de terrain dans votre poche",
+          "shots": [{ "img": "01-accueil" }, { "img": "02-carte-satellite" }, { "img": "29-partage-lots-carte" }],
+          "text": "Sur le terrain, chaque mètre compte. Voici TopoMaroc GIS : la topographie de terrain au Maroc, directement dans votre téléphone." },
+        { "id": "s02", "layout": "phone", "num": "01", "title": "Tout le terrain, une seule application", "chips": ["Lambert", "UTM", "GPS", "Parcelles", "Hors connexion"],
+          "shots": [{ "img": "01-accueil", "hl": [30, 640, 720, 180] }],
+          "text": "Systèmes Lambert et UTM, navigation GPS, levés, parcelles et partage foncier : tout est réuni dans une application qui s'installe sur l'écran d'accueil et fonctionne même sans connexion." },
+        { "id": "s03", "layout": "phone", "num": "02", "title": "Projection automatique", "chips": ["Nord", "Sud", "Sahara Nord", "Sahara Sud"],
+          "shots": [{ "img": "05-projection-auto", "hl": [250, 24, 290, 60] }, { "img": "05-projection-auto", "hl": [40, 540, 700, 90] }, { "img": "13-leve-gps", "hl": [30, 1060, 720, 140] }],
+          "text": "Le système de projection suit votre zone. Lambert Nord, Sud, Sahara Nord ou Sahara Sud est choisi selon votre position, et chaque point est enregistré dans la zone de sa propre position." },
+        { "id": "s04", "layout": "phone", "num": "03", "title": "Aller à un point", "chips": ["Distance", "Azimut", "Alerte d'arrivée"],
+          "shots": [{ "img": "09-navigation-saisie" }, { "img": "10-navigation-en-cours", "hl": [330, 1170, 420, 140] }, { "img": "11-navigation-plein-ecran" }, { "img": "12-navigation-arrivee", "hl": [210, 1290, 370, 150], "chime": true }],
+          "text": "Pour retrouver une borne, saisissez ses coordonnées. L'application affiche la distance restante, l'azimut et le gisement, propose un plein écran lisible en marchant, et vous alerte dès que vous arrivez." },
+        { "id": "s05", "layout": "phone", "num": "04", "title": "Levé topographique", "chips": ["Code", "Photo", "Précision"],
+          "shots": [{ "img": "13-leve-gps", "hl": [30, 1060, 720, 140] }, { "img": "14-leve-liste", "pan": true }, { "img": "16-modifier-point" }, { "img": "17-ajout-point-carte" }],
+          "text": "Levez vos points au GPS avec leur code, une description et une photo. Modifiez ou déplacez un point à tout moment, ou placez-en directement sur la carte, sans GPS." },
+        { "id": "s06", "layout": "phone", "num": "05", "title": "Parcelles et superficies", "chips": ["Méthode plane", "Géodésique", "Pente"],
+          "shots": [{ "img": "18-selection-multiple", "hl": [10, 1270, 760, 250] }, { "img": "20-nouvelle-parcelle" }, { "img": "22-parcelle-resultats", "hl": [30, 630, 350, 230] }, { "img": "23-parcelle-sommets", "pan": true }, { "img": "24-parcelle-pente" }],
+          "text": "Sélectionnez vos bornes et créez la parcelle : la superficie, le périmètre et les côtés sont calculés aussitôt, selon la méthode plane des plans cadastraux et la méthode géodésique. La pente et l'exposition complètent l'analyse." },
+        { "id": "s07", "layout": "phone", "num": "06", "title": "Partage entre personnes", "chips": ["1/8", "7/16", "7/16"], "note": "Proposition technique, sans valeur juridique",
+          "shots": [{ "img": "26-partage-personnes", "hl": [60, 300, 700, 330] }, { "img": "27-partage-propositions" }, { "img": "29-partage-lots-carte", "hl": [10, 280, 580, 450], "focus": [0, 120, 780, 760] }],
+          "text": "Pour un partage, indiquez les personnes et leurs parts, en pourcentage ou en fraction. L'application propose plusieurs découpages, puis génère un lot coloré par personne, à la superficie exacte. Une proposition technique, à valider par un géomètre." },
+        { "id": "s08", "layout": "phone", "num": "07", "title": "Couches et visibilité", "chips": ["Afficher", "Masquer", "Superposer"],
+          "shots": [{ "img": "30-parcelles-visibilite", "hl": [480, 690, 100, 760] }, { "img": "37-couches-projets" }, { "img": "38-superposition-projets" }],
+          "text": "Affichez uniquement la parcelle qui vous intéresse, et superposez plusieurs projets comme des couches." },
+        { "id": "s09", "layout": "grid", "num": "08", "title": "Outils, exports et rapports", "chips": ["CSV", "GeoJSON", "KML", "GPX", "XLSX", "DXF", "PDF"],
+          "shots": [{ "img": "32-convertisseur" }, { "img": "34-pente-profil" }, { "img": "39-export" }, { "img": "44-rapport-parcelle-p1", "doc": true }],
+          "text": "Convertissez des coordonnées, tracez un profil de pente, exportez vers vos logiciels SIG et DAO, et éditez un rapport PDF complet." },
+        { "id": "s10", "layout": "desk", "num": "09", "title": "Partout, à votre façon", "chips": ["Téléphone", "Tablette", "Ordinateur"],
+          "shots": [{ "img": "46-ordinateur-parcelle", "wide": true }, { "img": "47-mode-sombre-accueil" }],
+          "text": "Sur téléphone, tablette ou ordinateur, en mode clair ou sombre, vos données restent sur votre appareil." },
+        { "id": "s11", "layout": "outro", "num": "", "title": "Installez TopoMaroc GIS et lancez votre premier levé.", "note": "Précision GPS de téléphone : métrique, non cadastrale.",
+          "shots": [{ "img": "01-accueil" }],
+          "text": "TopoMaroc GIS. Installez l'application et lancez votre premier levé dès aujourd'hui." }
+      ]
+    },
+    "9x16": {
+      "width": 1080, "height": 1920,
+      "scenes": [
+        { "id": "v01", "layout": "hero", "num": "", "title": "TopoMaroc GIS", "sub": "La topographie de terrain dans votre poche",
+          "shots": [{ "img": "01-accueil" }],
+          "text": "Sur le terrain, chaque mètre compte. Voici TopoMaroc GIS." },
+        { "id": "v02", "layout": "phone", "num": "01", "title": "Projection automatique", "chips": ["Nord", "Sud", "Sahara"],
+          "shots": [{ "img": "05-projection-auto", "hl": [250, 24, 290, 60] }, { "img": "05-projection-auto", "hl": [40, 540, 700, 90] }],
+          "text": "Le système Lambert est choisi automatiquement selon votre zone : Nord, Sud, Sahara Nord ou Sahara Sud." },
+        { "id": "v03", "layout": "phone", "num": "02", "title": "Aller à un point", "chips": ["Distance", "Azimut", "Arrivée"],
+          "shots": [{ "img": "10-navigation-en-cours", "hl": [330, 1170, 420, 140] }, { "img": "12-navigation-arrivee", "hl": [210, 1290, 370, 150], "chime": true }],
+          "text": "Saisissez les coordonnées d'une borne : distance, azimut, puis une alerte à l'arrivée." },
+        { "id": "v04", "layout": "phone", "num": "03", "title": "Parcelles et superficies", "chips": ["Superficie", "Périmètre", "Côtés"],
+          "shots": [{ "img": "18-selection-multiple", "hl": [10, 1270, 760, 250] }, { "img": "22-parcelle-resultats", "hl": [30, 630, 350, 230] }],
+          "text": "Sélectionnez vos bornes : superficie, périmètre et côtés sont calculés aussitôt." },
+        { "id": "v05", "layout": "phone", "num": "04", "title": "Partage entre personnes", "chips": ["1/8", "7/16", "7/16"], "note": "Proposition technique, sans valeur juridique",
+          "shots": [{ "img": "26-partage-personnes", "hl": [60, 300, 700, 330] }, { "img": "29-partage-lots-carte", "hl": [10, 280, 580, 450], "focus": [0, 120, 780, 760] }],
+          "text": "Indiquez les parts de chacun : l'application propose un découpage et génère des lots colorés à la superficie exacte." },
+        { "id": "v06", "layout": "outro", "num": "", "title": "Installez TopoMaroc GIS et lancez votre premier levé.", "note": "Précision GPS de téléphone : métrique, non cadastrale.",
+          "shots": [{ "img": "01-accueil" }],
+          "text": "TopoMaroc GIS. Lancez votre premier levé dès aujourd'hui." }
+      ]
+    }
+  }
+}

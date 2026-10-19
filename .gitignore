@@ -8,3 +8,4 @@ tests/e2e/screenshots/
 tests/e2e/results.json
 _site/
 e2e-local/
+tools/video/build/
