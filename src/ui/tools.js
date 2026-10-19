@@ -6,7 +6,7 @@ import { formatArea, formatLength, formatCoord, fmtNum } from '../core/units.js'
 import { formatBearing, toDMS } from '../core/angles.js';
 import * as db from '../services/storage.js';
 import { declination } from '../services/compass.js';
-import { state, on, updateSettings, POINT_CODES, addFeature, nextPointNumber, openProject } from '../state.js';
+import { state, on, updateSettings, POINT_CODES, addFeature, nextPointNumber, openProject, setHidden } from '../state.js';
 import { BASEMAPS } from '../map/basemaps.js';
 import * as M from '../map/map.js';
 import { h, icon, btn, mount, toast, field, select } from './dom.js';
@@ -326,11 +326,31 @@ async function projectLayersBox(repaint) {
         const cb = /** @type {HTMLInputElement} */ (h('input', { type: 'checkbox', checked: isCur ? lay[key] : cfg[key] }));
         cb.addEventListener('change', async () => { if (isCur) await updateSettings({ layers: { ...state.settings.layers, [key]: cb.checked } }); else await setCfg(p.id, { [key]: cb.checked, on: true, color }); });
         return h('label.switch.sm', null, cb, h('span', null, label));
-      })) : null));
+      })) : null,
+      isCur && visible && lay.parcels ? parcelVisList(repaint) : null));
   }
   return h('fieldset.group', null, h('legend', null, 'Projets (couches par projet)'),
     projects.length ? rows : h('p.small.muted', null, 'Aucun projet.'),
     h('p.small.muted', null, 'Cochez plusieurs projets pour les superposer. Les projets non ouverts sont affichés en lecture seule, avec leur couleur ; touchez une entité pour ouvrir son projet.'));
+}
+
+/** Liste des parcelles du projet ouvert, chacune affichable / masquable (comme une couche). @param {()=>void} repaint */
+function parcelVisList(repaint) {
+  const all = state.features.filter((f) => f.type === 'parcel');
+  if (!all.length) return null;
+  const tops = all.filter((f) => !f.parentId || !all.some((q) => q.id === f.parentId));
+  const row = (/** @type {any} */ f, /** @type {boolean} */ child) => {
+    const cb = /** @type {HTMLInputElement} */ (h('input', { type: 'checkbox', checked: !f.hidden, 'aria-label': `Afficher ${f.owner?.name || f.name || 'parcelle'}` }));
+    cb.addEventListener('change', async () => { await setHidden([f.id], !cb.checked); repaint(); });
+    return h(`label.switch.sm${child ? '.child' : ''}`, null, cb, f.owner ? h('span.swatch', { style: { background: f.owner.color } }) : null, h('span', null, f.owner?.name ? `${f.owner.name}${child ? '' : ` — ${f.name || ''}`}` : (f.name || 'Parcelle sans nom')));
+  };
+  const nHid = all.filter((f) => f.hidden).length;
+  return h('div.parcel-vis', { 'aria-label': 'Parcelles affichées' },
+    h('small.muted', null, `Parcelles affichées : ${all.length - nHid} / ${all.length}`),
+    tops.flatMap((f) => [row(f, false), ...(f.hidden ? [] : all.filter((c) => c.parentId === f.id).map((c) => row(c, true)))]),
+    h('div.pv-tools', null,
+      h('button.link-btn', { type: 'button', onclick: async () => { await setHidden(all.map((f) => f.id), false); repaint(); } }, icon('eye'), 'Tout afficher'),
+      h('button.link-btn', { type: 'button', onclick: async () => { await setHidden(all.map((f) => f.id), true); repaint(); } }, icon('eye-off'), 'Tout masquer')));
 }
 
 /** Formulaire du fond personnalisé (URL XYZ fournie par l'utilisateur). */

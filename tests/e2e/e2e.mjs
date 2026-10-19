@@ -762,15 +762,70 @@ await test('Réglages : recalcul des points anciens dans leur zone', async () =>
   return `E ${f.input.x.toFixed(2)} N ${f.input.y.toFixed(2)} (Lambert Sud), ancienne valeur conservée`;
 });
 
-await test('Version de l’application affichée (accueil et aide)', async () => {
-  const { page, ctx } = await newPage({ hash: '#/home' });
+await test('Parcelles : afficher / masquer chacune, « uniquement celle-ci », lots masqués avec leur parcelle', async () => {
+  const { page, ctx, errors } = await newPage({ hash: '#/parcels' });
+  await seed(page, async () => {
+    const st = await import('./src/state.js');
+    const sq = (x0, y0) => [[x0, y0], [x0 + 20, y0], [x0 + 20, y0 + 20], [x0, y0 + 20]].map(([x, y]) => ({ x, y }));
+    await st.addFeature({ type: 'parcel', name: 'Parcelle 1', crsId: 'EPSG:26191', method: 'plane', vertices: sq(400000, 380000) });
+    const p2 = await st.addFeature({ type: 'parcel', name: 'Parcelle 2', crsId: 'EPSG:26191', method: 'plane', vertices: sq(400030, 380000) });
+    await st.addFeature({ type: 'parcel', name: 'Parcelle 3', crsId: 'EPSG:26191', method: 'plane', vertices: sq(400060, 380000) });
+    // lot de la parcelle 2
+    await st.addFeature({ type: 'parcel', name: 'Lot A', parentId: p2.id, owner: { name: 'Ahmed', percent: 100, color: '#e53935' }, crsId: 'EPSG:26191', method: 'plane', vertices: sq(400030, 380000) });
+  });
+  const shown = () => page.evaluate(async () => { const M = await import('./src/map/map.js'); const n = []; M.getMap().eachLayer((l) => { if (l.options?.pane === 'parcels' && l.getLatLngs) n.push(l); }); return n.length; });
+  await until(page, async () => document.querySelectorAll('.parcel-list .item').length === 4);
+  assert(await shown() === 4, `au départ ${await shown()} parcelles dessinées`);
+  // « Afficher uniquement celle-ci » depuis la fiche de la parcelle 1
+  await page.click('.parcel-list .item-main:has-text("Parcelle 1")');
+  await page.click('button:has-text("Afficher uniquement celle-ci")');
+  await until(page, async () => (await import('./src/state.js')).state.features.filter((f) => f.hidden).length === 2);
+  assert(await shown() === 1, `uniquement P1 : ${await shown()} dessinée(s)`);
+  await page.screenshot({ path: path.join(SHOTS, 'mobile-parcelle-seule.png') });
+  // Liste : la parcelle 2 et son lot apparaissent masqués ; œil → réaffiche P2 et son lot
+  await page.goto(BASE + '#/parcels');
+  await page.waitForSelector('.vis-bar:has-text("3 parcelle(s) masquée(s)")');
+  await page.click('.parcel-list .item:has-text("Parcelle 2") .vis-btn');
+  await until(page, async () => { const M = await import('./src/map/map.js'); let n = 0; M.getMap().eachLayer((l) => { if (l.options?.pane === 'parcels' && l.getLatLngs) n++; }); return n === 3; });
+  // Outils → Couches : case de la parcelle 1 décochée
+  await page.goto(BASE + '#/tools/layers');
+  await page.waitForSelector('.parcel-vis:has-text("Parcelles affichées : 3 / 4")');
+  await page.locator('.parcel-vis label.switch:has-text("Parcelle 1") input').uncheck();
+  await page.waitForSelector('.parcel-vis:has-text("Parcelles affichées : 2 / 4")');
+  assert(await shown() === 2, `après décochage : ${await shown()}`);
+  await page.click('.parcel-vis button:has-text("Tout afficher")');
+  await page.waitForSelector('.parcel-vis:has-text("Parcelles affichées : 4 / 4")');
+  assert(await shown() === 4, `tout afficher : ${await shown()}`);
+  // Persistance du masquage après rechargement
+  await page.locator('.parcel-vis label.switch:has-text("Parcelle 3") input').uncheck();
+  await page.waitForSelector('.parcel-vis:has-text("3 / 4")');
+  await page.reload(); await page.waitForSelector('body:not(.booting)');
+  await until(page, async () => (await import('./src/state.js')).state.features.some((f) => f.name === 'Parcelle 3' && f.hidden));
+  assert(errors.length === 0, errors.join(' | '));
+  await ctx.close();
+  return 'seule P1 → 1 tracé ; P2 + lot réaffichés ; couches 2/4 → 4/4 ; masquage conservé après rechargement';
+});
+
+await test('Page « Version de l’application » (accueil, réglages, aide)', async () => {
+  const { page, ctx, errors } = await newPage({ hash: '#/home' });
   await page.waitForSelector('.version-tag');
   const v = await text(page, '.version-tag');
-  assert(/v1\.3\.0/.test(v), v);
-  await page.goto(BASE + '#/help');
-  await page.waitForSelector('summary:has-text("Version v1.3.0")');
+  assert(/v1\.4\.0/.test(v), v);
+  await page.click('.version-tag');
+  await page.waitForSelector('#about-version:has-text("Version 1.4.0")');
+  await page.waitForSelector('.about-kv dt:has-text("Publication")');
+  await page.waitForSelector('.changelog.current:has-text("v1.4.0")');
+  const n = await page.locator('.changelog').count();
+  assert(n >= 5, `${n} versions dans l’historique`);
+  await page.click('button:has-text("Rechercher une mise à jour")');
+  await page.waitForFunction(() => !/Vérification/.test(document.querySelector('[aria-live=polite]')?.textContent ?? 'Vérification'));
+  const st = await text(page, '[aria-live=polite]');
+  await page.screenshot({ path: path.join(SHOTS, 'mobile-version.png') });
+  await page.goto(BASE + '#/settings'); await page.waitForSelector('a[href="#/about"]');
+  await page.goto(BASE + '#/help'); await page.waitForSelector('summary:has-text("Version v1.4.0")');
+  assert(errors.length === 0, errors.join(' | '));
   await ctx.close();
-  return v;
+  return `${v} · ${n} versions · « ${st} »`;
 });
 
 await test('Smartphone iOS / Android réels', null, { skip: 'aucun appareil physique disponible dans l’environnement de test : à valider sur le terrain (Safari iOS, Chrome Android)' });

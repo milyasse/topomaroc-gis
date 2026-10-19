@@ -8,7 +8,7 @@ import { formatBearing } from '../core/angles.js';
 import { inverse } from '../core/geodesy.js';
 import { dist2D } from '../core/geometry.js';
 import { averagePosition, accuracyQuality } from '../services/gps.js';
-import { state, on, emit, addFeature, updateFeature, removeFeature, updateSettings, ensureProject } from '../state.js';
+import { state, on, emit, addFeature, updateFeature, removeFeature, updateSettings, ensureProject, isHidden, setHidden, showOnlyParcels } from '../state.js';
 import * as M from '../map/map.js';
 import { h, icon, btn, mount, toast, field, select, modal, confirmDialog, promptDialog, shareOrSave } from './dom.js';
 import { crsSelect } from './coordinput.js';
@@ -36,6 +36,7 @@ export function render(root, id) {
   if (id) return renderEditor(root, id);
   const list = h('div.parcel-list');
   const total = h('div.total-bar');
+  const visBar = h('div.vis-bar');
   const unit = areaUnitSelect();
 
   const paint = () => {
@@ -43,23 +44,30 @@ export function render(root, id) {
     // parcelles d'origine suivies de leurs lots
     const parcels = all.filter((f) => !f.parentId || !all.some((q) => q.id === f.parentId)).flatMap((f) => [f, ...all.filter((c) => c.parentId === f.id)]);
     for (const s of [...selected]) if (!parcels.some((p) => p.id === s)) selected.delete(s);
-    if (!parcels.length) { mount(list, h('p.empty', null, 'Aucune parcelle. Créez-en une par levé GPS, saisie de coordonnées, import de fichier ou dessin sur la carte.')); total.hidden = true; return; }
+    if (!parcels.length) { mount(visBar); mount(list, h('p.empty', null, 'Aucune parcelle. Créez-en une par levé GPS, saisie de coordonnées, import de fichier ou dessin sur la carte.')); total.hidden = true; return; }
     const res = new Map(parcels.map((p) => [p.id, safeAnalyze(p)]));
     mount(list, parcels.map((p) => {
       const a = res.get(p.id);
       const cb = /** @type {HTMLInputElement} */ (h('input', { type: 'checkbox', checked: selected.has(p.id), 'aria-label': `Sélectionner ${p.name}` }));
-      cb.addEventListener('change', () => { if (cb.checked) selected.add(p.id); else selected.delete(p.id); paintTotal(); });
+      cb.addEventListener('change', () => { if (cb.checked) selected.add(p.id); else selected.delete(p.id); paint(); });
       const lots = all.filter((c) => c.parentId === p.id).length;
-      return h(`div.item${p.parentId ? '.child' : ''}`, null, cb,
+      const hid = isHidden(p);
+      return h(`div.item${p.parentId ? '.child' : ''}${hid ? '.is-hidden' : ''}`, null, cb,
         p.owner ? h('span.swatch', { style: { background: p.owner.color } }) : null,
         h('div.item-main', { role: 'button', tabindex: 0, onclick: () => { location.hash = `#/parcels/${p.id}`; } },
           h('div.item-title', null, h('b', null, p.parentId && p.owner ? p.owner.name : (p.name || 'Parcelle sans nom')), a?.valid ? null : h('span.badge.q-poor', null, 'à corriger'), lots ? h('span.badge', null, `${lots} lots`) : null, !p.parentId && p.owner ? h('span.badge', null, p.owner.name) : null),
           h('div.item-sub', null, a?.valid ? `${formatArea(a.area, /** @type {any} */ (state.settings.areaUnit))} · périmètre ${formatLength(a.perimeter)}` : `${p.vertices.length} sommet(s)`),
           h('div.item-sub.muted', null, `${crs.getCrs(p.crsId).label} · ${p.vertices.length} sommets`)),
         h('div.item-actions', null,
-          h('button.icon-btn', { type: 'button', title: 'Voir sur la carte', 'aria-label': 'Voir sur la carte', onclick: () => p.vertices.length && M.zoomToFeature(p) }, icon('map')),
+          h('button.icon-btn.vis-btn', { type: 'button', title: hid ? 'Afficher sur la carte' : 'Masquer sur la carte', 'aria-label': `${hid ? 'Afficher' : 'Masquer'} ${p.name || 'la parcelle'}`, 'aria-pressed': String(!hid), disabled: !p.hidden && hid, onclick: () => setHidden([p.id], !p.hidden) }, icon(hid ? 'eye-off' : 'eye')),
+          h('button.icon-btn', { type: 'button', title: 'Voir sur la carte', 'aria-label': 'Voir sur la carte', onclick: async () => { if (isHidden(p)) await setHidden([p.id, ...(p.parentId ? [p.parentId] : [])], false); if (p.vertices.length) M.zoomToFeature(p); } }, icon('map')),
           h('button.icon-btn.danger', { type: 'button', title: 'Supprimer', 'aria-label': 'Supprimer', onclick: () => deleteParcel(p) }, icon('trash'))));
     }));
+    const nHidden = parcels.filter((p) => isHidden(p)).length;
+    mount(visBar, nHidden
+      ? [icon('eye-off'), h('span', null, `${nHidden} parcelle(s) masquée(s) sur la carte`), h('span.spacer'), h('button.link-btn', { type: 'button', onclick: () => setHidden(parcels.map((p) => p.id), false) }, icon('eye'), 'Tout afficher')]
+      : [icon('eye'), h('span', null, 'Toutes les parcelles sont affichées'), h('span.spacer'),
+        selected.size ? h('button.link-btn', { type: 'button', onclick: () => showOnlyParcels([...selected]) }, icon('eye'), 'N’afficher que la sélection') : h('small.muted', null, 'œil = afficher / masquer')]);
     paintTotal();
     function paintTotal() {
       const sel = parcels.filter((p) => selected.has(p.id)).map((p) => res.get(p.id));
@@ -77,7 +85,7 @@ export function render(root, id) {
 
   mount(root,
     h('div.row', null, btn('Nouvelle parcelle', { variant: 'primary', onclick: () => newParcel() }, 'plus'), h('span.spacer'), field('Unité', unit)),
-    list, total,
+    visBar, list, total,
     h('details.help', null, h('summary', null, icon('info'), 'Méthode de calcul'),
       h('p', null, 'Coordonnées projetées (Lambert, UTM) : superficie plane par la formule de Gauss, comme sur les plans topographiques et cadastraux. Levés GPS (WGS 84) : superficie géodésique exacte sur l’ellipsoïde (GeographicLib). Au-delà de 10 km d’emprise, la méthode géodésique est retenue. Les deux valeurs sont toujours affichées pour contrôle.')),
   );
@@ -269,6 +277,14 @@ function renderEditor(root, id) {
     const n = await promptDialog('Renommer la parcelle', 'Nom', get().name || '');
     if (n) { await updateFeature({ ...get(), name: n }, 'Renommage'); title.textContent = n; }
   } }, icon('edit'));
+  const visBtn = h('span.vis-slot');
+  const paintVis = () => {
+    const p = get(); if (!p) return;
+    const hid = !!p.hidden;
+    mount(visBtn, btn(hid ? 'Afficher sur la carte' : 'Masquer sur la carte', { variant: 'ghost', onclick: () => setHidden([pid], !hid) }, hid ? 'eye' : 'eye-off'));
+  };
+  const offVis = on('visibility', paintVis);
+  paintVis();
   const actions = h('div.btn-grid', null,
     btn('Rapport PDF', { variant: 'primary', onclick: async () => {
       try {
@@ -280,7 +296,9 @@ function renderEditor(root, id) {
     } }, 'file'),
     get().parentId ? null : btn('Partager entre personnes', { variant: 'primary', onclick: () => { location.hash = `#/parcels/${pid}/share`; } }, 'users'),
     btn('Exporter', { variant: 'ghost', onclick: () => exportDialog([get()], 'dxf', get().name) }, 'download'),
-    btn('Voir sur la carte', { variant: 'ghost', onclick: () => get().vertices.length && M.zoomToFeature(get()) }, 'map'),
+    btn('Voir sur la carte', { variant: 'ghost', onclick: async () => { const p = get(); if (isHidden(p)) await setHidden([p.id, ...(p.parentId ? [p.parentId] : [])], false); if (p.vertices.length) M.zoomToFeature(p); } }, 'map'),
+    btn('Afficher uniquement celle-ci', { variant: 'ghost', title: 'Masque les autres parcelles du projet sur la carte', onclick: async () => { await showOnlyParcels([pid]); toast('Seule cette parcelle est affichée sur la carte.', 'ok'); if (get().vertices.length) M.zoomToFeature(get()); } }, 'eye'),
+    visBtn,
     btn('Supprimer', { variant: 'ghost-danger', onclick: () => deleteParcel(get()) }, 'trash'),
   );
   const undo = h('button.icon-btn', { type: 'button', title: 'Annuler', 'aria-label': 'Annuler', onclick: async () => { const l = await state.history.undo(); if (l) toast(`Annulé : ${l}`); } }, icon('undo'));
@@ -365,7 +383,7 @@ function renderEditor(root, id) {
   const off = on('features', () => { if (!get()) { location.hash = '#/parcels'; return; } paintResults(); paintMap(); paintOwner(); paintTerrain(); if (tab === 'manual') tabManual(body, get, saveVertices, true); });
   const off2 = on('settings', (s) => { if (s.areaUnit || s.angleUnit) paintResults(); });
   const offDatum = on('datum', () => { paintResults(); paintMap(); });
-  return () => { off(); off2(); offDatum(); tabCleanup?.(); M.setClickHandler(null); draft.clearLayers(); };
+  return () => { off(); off2(); offDatum(); offVis(); tabCleanup?.(); M.setClickHandler(null); draft.clearLayers(); };
 }
 
 // ---------------- Onglet A : GPS

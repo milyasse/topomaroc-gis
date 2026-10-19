@@ -83,7 +83,7 @@ export function render(root) {
       h('label.switch', null, useCustom, h('span', null, 'Utiliser des paramètres personnalisés')), box,
       h('details.help', null, h('summary', null, icon('info'), 'Paramètres actifs'), crsInfo('EPSG:26191'))),
     h('fieldset.group', null, h('legend', null, 'Stockage'),
-      (() => { const v = h('p.small.muted', null, ''); versionLabel().then((l) => { v.textContent = `Application : TopoMaroc GIS ${l}`; }); return v; })(),
+      (() => { const v = h('a.small', { href: '#/about' }, ''); versionLabel().then((l) => { v.textContent = `Application : TopoMaroc GIS ${l} — détails de la version`; }); return h('p', null, v); })(),
       btn('Demander un stockage persistant', { variant: 'ghost', onclick: async () => toast(await requestPersistence() ? 'Stockage persistant accordé.' : 'Le navigateur n’a pas accordé le stockage persistant : exportez régulièrement des sauvegardes.', 'info', 5000) }, 'folder')),
   );
 }

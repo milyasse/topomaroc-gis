@@ -578,3 +578,22 @@ label.switch.sm input { width: 18px; height: 18px; }
 /* v1.3 — projection automatique */
 .chip-auto { font-size: .62rem; letter-spacing: .04em; padding: 1px 4px; border-radius: 4px; background: var(--accent); color: var(--accent-ink); margin-left: 4px; font-weight: 700; }
 .zone-box { display: grid; gap: 6px; }
+
+/* v1.4 — visibilité des parcelles */
+.vis-slot { display: contents; }
+.vis-bar { display: flex; align-items: center; gap: 8px; padding: 8px 10px; margin: 6px 0; border-radius: 10px; background: var(--surface-2); font-size: .85rem; }
+.vis-bar .ic { width: 18px; height: 18px; flex: none; }
+.vis-bar .spacer { flex: 1; }
+.item.is-hidden .item-main { opacity: .5; }
+.item.is-hidden .item-title b { text-decoration: line-through; text-decoration-thickness: 1px; }
+.vis-btn[aria-pressed="false"] { color: var(--ink-2); }
+.parcel-vis { display: grid; gap: 4px; margin: 6px 0 2px 28px; }
+.parcel-vis .pv-tools { display: flex; gap: 10px; flex-wrap: wrap; }
+.parcel-vis label.switch.child { margin-left: 18px; }
+/* Page « Version » */
+.about-hero { display: flex; align-items: center; gap: 14px; padding: 14px; border-radius: 14px; background: var(--surface-2); }
+.about-hero .v-big { font-size: 1.6rem; font-weight: 800; letter-spacing: -.01em; }
+.about-hero img { width: 54px; height: 54px; border-radius: 12px; }
+.about-kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; font-size: .9rem; margin: 10px 0; }
+.about-kv dt { color: var(--ink-2); } .about-kv dd { margin: 0; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.changelog.current { border-left: 3px solid var(--accent); padding-left: 10px; }

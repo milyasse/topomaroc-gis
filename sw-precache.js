@@ -1,6 +1,6 @@
 // Fichier généré par tools/gen-precache.mjs — ne pas modifier à la main.
 self.PRECACHE = {
- "version": "3f552f9029bf",
+ "version": "ec85f8e30b19",
  "files": [
   "./",
   "./index.html",
@@ -34,6 +34,7 @@ self.PRECACHE = {
   "./src/services/nmea.js",
   "./src/services/storage.js",
   "./src/state.js",
+  "./src/ui/about.js",
   "./src/ui/anim.js",
   "./src/ui/coordinput.js",
   "./src/ui/dom.js",

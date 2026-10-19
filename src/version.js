@@ -1,9 +1,16 @@
 // @ts-check
 /** Version de l'application (numérotation sémantique) et historique des nouveautés. */
-export const APP_VERSION = '1.3.0';
-export const APP_DATE = '2026-10-18';
+export const APP_VERSION = '1.4.0';
+export const APP_DATE = '2026-10-19';
 
 export const CHANGELOG = [
+  {
+    version: '1.4.0', date: '2026-10-19', items: [
+      'Afficher / masquer chaque parcelle sur la carte (œil dans la liste, Outils → Couches, fiche et bulle de la parcelle), « Afficher uniquement celle-ci », « Tout afficher ».',
+      'Masquer une parcelle partagée masque aussi ses lots ; les parcelles masquées restent dans les listes, les calculs, les rapports et les exports.',
+      'Page « Version de l’application » : numéro, publication, mode installé, recherche de mise à jour et historique complet.',
+    ],
+  },
   {
     version: '1.3.0', date: '2026-10-18', items: [
       'Système de projection automatique selon la zone de navigation (position GPS, sinon centre de la carte) : Lambert Nord / Sud / Sahara Nord / Sahara Sud, ou UTM 28 / 29 / 30.',

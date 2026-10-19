@@ -1,6 +1,6 @@
 {
   "name": "topomaroc-gis",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Application SIG topographique PWA pour le Maroc : Lambert Maroc (Merchich), UTM, WGS 84, navigation GPS, levés, superficies.",
   "private": true,
   "type": "module",

@@ -156,6 +156,49 @@ export async function removeFeature(id, label = 'Suppression') {
   return before;
 }
 
+// ------------------------------------------------------------- Visibilité des entités (affichage seul)
+/**
+ * Une entité est masquée si elle l'est elle-même ou si sa parcelle d'origine l'est (lots).
+ * Le masquage ne concerne que la carte : listes, calculs, rapports et exports gardent tout.
+ * @param {any} f @param {any[]} [features]
+ */
+export function isHidden(f, features = state.features) {
+  if (f.hidden) return true;
+  if (f.parentId) { const p = features.find((x) => x.id === f.parentId); return !!p?.hidden; }
+  return false;
+}
+
+/**
+ * Affiche ou masque des entités du projet ouvert (sans entrée d'historique : c'est un réglage d'affichage).
+ * @param {string[]} ids @param {boolean} hidden
+ */
+export async function setHidden(ids, hidden) {
+  const set = new Set(ids);
+  for (const f of state.features) {
+    if (!set.has(f.id) || !!f.hidden === hidden) continue;
+    const rec = { ...f }; if (hidden) rec.hidden = true; else delete rec.hidden;
+    await db.saveFeature(rec);
+  }
+  await reload();
+  emit('visibility', { ids, hidden });
+}
+
+/**
+ * N'affiche que les parcelles indiquées (et leurs lots / leur parcelle d'origine) ; masque les autres parcelles.
+ * @param {string[]} ids
+ */
+export async function showOnlyParcels(ids) {
+  const keep = new Set(ids);
+  for (const f of state.features) if (f.type === 'parcel' && keep.has(f.id) && f.parentId) keep.add(f.parentId);
+  const parcels = state.features.filter((f) => f.type === 'parcel');
+  const show = parcels.filter((f) => keep.has(f.id) || (f.parentId && keep.has(f.parentId))).map((f) => f.id);
+  // un lot dont la parcelle d'origine est masquée l'est déjà par elle : on ne le marque pas
+  const toHide = parcels.filter((f) => !show.includes(f.id));
+  const hideIds = new Set(toHide.map((f) => f.id));
+  await setHidden(toHide.filter((f) => !(f.parentId && hideIds.has(f.parentId))).map((f) => f.id), true);
+  await setHidden(show, false);
+}
+
 /** Prochain numéro de point du projet. */
 export function nextPointNumber() {
   let max = 0;

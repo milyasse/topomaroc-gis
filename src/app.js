@@ -25,6 +25,7 @@ const ROUTES = /** @type {Record<string, { title: string, load: () => Promise<an
   projects: { title: 'Projets', ic: 'folder', load: () => import('./ui/projects.js') },
   settings: { title: 'Réglages', ic: 'settings', load: () => import('./ui/settings.js') },
   help: { title: 'Aide', ic: 'help', load: () => import('./ui/help.js') },
+  about: { title: 'Version de l’application', ic: 'tag', load: () => import('./ui/about.js') },
 });
 
 /** @type {(() => void)|null} */ let cleanup = null;
@@ -138,10 +139,10 @@ function renderHome(el) {
         tile('#/import', 'upload', 'Importer des données', 'CSV, GeoJSON, KML, GPX, sauvegarde'),
         tile('#/tools', 'ruler', 'Outils', 'Mesures, conversion, couches'),
       ),
-      h('div.home-links', { 'data-stagger': '' }, h('a', { href: '#/settings' }, icon('settings'), 'Réglages'), h('a', { href: '#/help' }, icon('help'), 'Aide et limites')),
+      h('div.home-links', { 'data-stagger': '' }, h('a', { href: '#/settings' }, icon('settings'), 'Réglages'), h('a', { href: '#/help' }, icon('help'), 'Aide et limites'), h('a', { href: '#/about' }, icon('tag'), `Version ${APP_VERSION}`)),
       !window.isSecureContext ? h('p.warn', null, icon('alert'), 'Connexion non sécurisée : la géolocalisation est désactivée par le navigateur. Utilisez l’adresse HTTPS.') : null,
       h('p.small.muted.center', null, 'Positions GPS de smartphone : précision métrique, non cadastrale.'),
-      (() => { const v = h('a.version-tag', { href: '#/help' }, `TopoMaroc GIS v${APP_VERSION}`); versionLabel().then((l) => { v.textContent = `TopoMaroc GIS ${l} · nouveautés`; }); return h('p.small.center', null, v); })(),
+      (() => { const v = h('a.version-tag', { href: '#/about' }, `TopoMaroc GIS v${APP_VERSION}`); versionLabel().then((l) => { v.textContent = `TopoMaroc GIS ${l} · version et nouveautés`; }); return h('p.small.center', null, v); })(),
     ));
 }
 
@@ -309,7 +310,9 @@ function wireChrome() {
         a?.valid ? h('div', null, `${formatArea(a.area, /** @type {any} */ (state.settings.areaUnit))} · ${formatLength(a.perimeter)}`) : h('div.small', null, `${f.vertices.length} sommets`),
         f.type === 'parcel' ? h('div.pi-actions', null,
           btn('Ouvrir', { variant: 'primary', onclick: () => { location.hash = `#/parcels/${f.id}`; } }, 'edit'),
-          f.parentId ? null : btn('Partager', { variant: 'ghost', onclick: () => { location.hash = `#/parcels/${f.id}/share`; } }, 'users')) : null));
+          f.parentId ? null : btn('Partager', { variant: 'ghost', onclick: () => { location.hash = `#/parcels/${f.id}/share`; } }, 'users'),
+          btn('Seule', { variant: 'ghost', title: 'Afficher uniquement cette parcelle', onclick: async () => { const { showOnlyParcels } = await import('./state.js'); M.closePopup(); await showOnlyParcels([f.id]); toast('Seule cette parcelle est affichée. Parcelles → « Tout afficher » pour revenir.', 'info', 4000); } }, 'eye'),
+          btn('', { variant: 'ghost', 'aria-label': 'Masquer cette parcelle', title: 'Masquer', onclick: async () => { const { setHidden } = await import('./state.js'); M.closePopup(); await setHidden([f.id], true); toast('Parcelle masquée sur la carte.', 'info'); } }, 'eye-off')) : null));
     }
   });
 

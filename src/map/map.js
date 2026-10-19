@@ -12,7 +12,7 @@ import { densify } from '../core/geodesy.js';
 import { formatCoord, formatArea, fmtNum } from '../core/units.js';
 import { toDMS } from '../core/angles.js';
 import { verticesLL, analyze } from '../io/common.js';
-import { state, on, codeInfo, emit } from '../state.js';
+import { state, on, codeInfo, emit, isHidden } from '../state.js';
 
 export { L };
 
@@ -168,6 +168,7 @@ function renderNow() {
   const points = state.features.filter((f) => f.type === 'point');
   const many = points.length > 300 && !selectionMode;
   for (const f of state.features) {
+    if (f.type !== 'point' && isHidden(f)) continue;
     try {
       if (f.type === 'point') {
         const sel = selection.has(f.id);
@@ -261,6 +262,7 @@ export async function refreshOverlays() {
     if (!cfg.on || p.id === state.project?.id) continue;
     const feats = await db.listFeatures(p.id);
     for (const f of feats) {
+      if (f.type !== 'point' && isHidden(f, feats)) continue;
       try {
         const popup = () => emit('overlay-click', { project: p, feature: f });
         if (f.type === 'point' && cfg.points) {

@@ -13,7 +13,8 @@ export async function render(root) {
   const label = await versionLabel();
   const about = h('details.help', { open: true }, h('summary', null, icon('info'), `Version ${label}`),
     h('p.small', null, `TopoMaroc GIS ${APP_VERSION} du ${new Date(APP_DATE).toLocaleDateString('fr-FR')}${label.includes('(') ? ` — publication ${label.match(/\((\w+)\)/)?.[1]}` : ''}. Le numéro de publication correspond au code source sur GitHub (milyasse/topomaroc-gis).`),
-    CHANGELOG.map((c) => h('div.changelog', null, h('b', null, `v${c.version}`), h('ul', null, c.items.map((i) => h('li', null, i))))));
+    h('p', null, h('a', { href: '#/about' }, icon('tag'), ' Page « Version » : publication, mises à jour, historique complet')),
+    CHANGELOG.slice(0, 2).map((c) => h('div.changelog', null, h('b', null, `v${c.version}`), h('ul', null, c.items.map((i) => h('li', null, i))))));
   mount(root,
     about,
     sec('Démarrage rapide',

@@ -52,6 +52,11 @@ Détection : moins de 3 sommets, fermeture répétée, sommets en double (≤ 1 
 
 **Rapport PDF** : projet, date, plan coté (échelle graphique, nord), tableau des sommets (Lambert + WGS 84), tableau des côtés (longueurs, gisements en grades ou degrés, longueurs géodésiques, azimuts), superficie et périmètre, système, méthode, qualité estimée, mention « ne constitue pas un document cadastral officiel ». [Exemple](docs/exemple-rapport-parcelle.pdf).
 
+### Nouveautés v1.4 — visibilité des parcelles et page Version
+- Chaque parcelle s'affiche ou se masque sur la carte, comme une couche : œil dans la liste des parcelles, cases à cocher dans Outils → Couches (projet ouvert), boutons « Afficher uniquement celle-ci » / « Masquer sur la carte » dans la fiche et dans la bulle de la carte, « Tout afficher » / « Tout masquer ».
+- Masquer une parcelle partagée masque ses lots. Le masquage est mémorisé (IndexedDB) et s'applique aussi quand le projet est superposé ; il ne touche que la carte : listes, totaux, rapports et exports gardent toutes les parcelles.
+- Page **Version de l'application** (`#/about`, accessible depuis l'accueil, les Réglages et l'Aide) : numéro, date, publication (commit), mode installé ou navigateur, cache hors connexion, stockage, recherche de mise à jour, historique complet.
+
 ### Nouveautés v1.3 — projection automatique selon la zone
 - Le système de projection est choisi automatiquement d'après la zone où l'on se trouve : position GPS (précision ≤ 2 km), ou centre de la carte (zoom ≥ 9) si le GPS est éteint. La puce du système affiche un badge **AUTO** et un message signale chaque changement de zone.
 - Limites (domaines d'usage EPSG enregistrés dans `src/core/crs.js`) : Lambert Nord au nord de 31,5° N, Sud de 27,665° à 31,5° N, Sahara Nord de 24,3° à 27,665° N, Sahara Sud au sud de 24,3° N ; option UTM 28/29/30 selon la longitude. Hystérésis de 0,02° (~2 km) le long des limites (`src/core/zones.js`).
