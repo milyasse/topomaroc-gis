@@ -1,0 +1,9 @@
+[   0.0 →    2.0] Sur le terrain, chaque maître compte.
+[   2.0 →    4.0] Voici Topo Maroc GIS.
+[   4.0 →    8.0] Le système Lambert est choisi automatiquement selon votre zone.
+[   8.0 →   11.0] Nord, Sud, Sahara Nord ou Sahara Sud.
+[  11.0 →   17.0] Saisissez les coordonnées d'une borne, distance, azimuth, puis une alerte à l'arrivée.
+[  17.0 →   22.0] Sélectionnez vos bornes, superficies, périmètres et côtés sont calculés aussitôt.
+[  22.0 →   24.0] Indiquez les parts de chacun.
+[  24.0 →   29.0] L'application propose un découpage et génère des lots colorés à la superficie exacte.
+[  29.0 →   34.0] Topo Maroc GIS. Lancez votre premier lever dès aujourd'hui.
