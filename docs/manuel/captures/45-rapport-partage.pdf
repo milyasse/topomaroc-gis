@@ -30,7 +30,7 @@ BT
 10.3499999999999996 TL
 1. g
 39.6850393700787407 796.5356692913385359 Td
-(TopoMaroc GIS v1.4.0 - 19/10/2026 00:59:39) Tj
+(TopoMaroc GIS v1.4.3 - 04/11/2026 16:37:42) Tj
 ET
 BT
 /F1 9 Tf
@@ -1428,14 +1428,14 @@ ET
 0.06 0.24 0.37 RG
 2.5511811023622051 w
 0.78 G
-39.6850393700787407 51.0238582677164274 m
-555.5905511811024553 51.0238582677164274 l
+39.6850393700787407 51.0236220472441033 m
+555.5949606299211609 51.0236220472441033 l
 S
 BT
 /F2 6.8 Tf
 7.8199999999999994 TL
 0.431 g
-39.6850393700787407 39.6852755905511003 Td
+39.6850393700787407 39.6850393700788118 Td
 (Document technique établi à partir des données saisies ou levées par l'utilisateur. Il ne constitue pas, à lui seul, un document cadastral ou) Tj
 T* (foncier officiel. Les positions issues d'un GPS de smartphone ont une précision métrique ; seul un levé réalisé par un ingénieur) Tj
 T* (géomètre-topographe \(station totale, GNSS RTK\) rattaché au réseau géodésique fait foi.) Tj
@@ -1444,7 +1444,7 @@ BT
 /F2 6.8 Tf
 7.8199999999999994 TL
 0.431 g
-528.1865511811023453 39.6852755905511003 Td
+528.1909606299211646 39.6850393700788118 Td
 (Page 1/2) Tj
 ET
 endstream
@@ -1474,14 +1474,14 @@ T* (les intéressés et établi par un ingénieur géomètre-topographe, puis formalis
 T* (ANCFCC\).) Tj
 ET
 0.78 G
-39.6850393700787407 51.0238582677164274 m
-555.5905511811024553 51.0238582677164274 l
+39.6850393700787407 51.0236220472441033 m
+555.5949606299211609 51.0236220472441033 l
 S
 BT
 /F2 6.8 Tf
 7.8199999999999994 TL
 0.431 g
-39.6850393700787407 39.6852755905511003 Td
+39.6850393700787407 39.6850393700788118 Td
 (Document technique établi à partir des données saisies ou levées par l'utilisateur. Il ne constitue pas, à lui seul, un document cadastral ou) Tj
 T* (foncier officiel. Les positions issues d'un GPS de smartphone ont une précision métrique ; seul un levé réalisé par un ingénieur) Tj
 T* (géomètre-topographe \(station totale, GNSS RTK\) rattaché au réseau géodésique fait foi.) Tj
@@ -1490,7 +1490,7 @@ BT
 /F2 6.8 Tf
 7.8199999999999994 TL
 0.431 g
-528.1865511811023453 39.6852755905511003 Td
+528.1909606299211646 39.6850393700788118 Td
 (Page 2/2) Tj
 ET
 endstream
@@ -1665,7 +1665,7 @@ endobj
 21 0 obj
 <<
 /Producer (jsPDF 3.0.4)
-/CreationDate (D:20261019005939-00'00')
+/CreationDate (D:20261104163742-00'00')
 >>
 endobj
 22 0 obj
@@ -1706,7 +1706,7 @@ trailer
 /Size 23
 /Root 22 0 R
 /Info 21 0 R
-/ID [ <F03401BF6C0E2E37B9E4273F86C66339> <F03401BF6C0E2E37B9E4273F86C66339> ]
+/ID [ <3099CB7928E4C3B4BEFEC65EE5EEEB96> <3099CB7928E4C3B4BEFEC65EE5EEEB96> ]
 >>
 startxref
 31435
