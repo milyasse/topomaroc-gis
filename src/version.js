@@ -1,9 +1,14 @@
 // @ts-check
 /** Version de l'application (numérotation sémantique) et historique des nouveautés. */
-export const APP_VERSION = '1.4.2';
+export const APP_VERSION = '1.4.3';
 export const APP_DATE = '2026-11-04';
 
 export const CHANGELOG = [
+  {
+    version: '1.4.3', date: '2026-11-04', items: [
+      'Mises à jour fiables : une nouvelle version déjà téléchargée est annoncée dès l’ouverture, la recherche se fait aussi au retour dans l’application, et la page « Version » propose « Mettre à jour maintenant ».',
+    ],
+  },
   {
     version: '1.4.2', date: '2026-11-04', items: [
       'Export PDF : rapport de parcelle complet (superficie, plan coté, carte de situation sur fond satellite, coordonnées des sommets en Lambert/UTM et WGS 84, côtés) — une page par parcelle, puis la fiche des points.',
@@ -53,7 +58,7 @@ let build = /** @type {string|null} */ (null);
 export async function buildId() {
   if (build !== null) return build;
   try {
-    const r = await fetch(new URL('../version.txt', import.meta.url), { cache: 'no-store' });
+    const r = await fetch(new URL(`../version.txt?fresh=${Date.now()}`, import.meta.url), { cache: 'no-store' });
     build = r.ok ? (await r.text()).trim().slice(0, 7) : '';
   } catch { build = ''; }
   return build;

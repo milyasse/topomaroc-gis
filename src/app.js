@@ -15,6 +15,7 @@ import { analyze } from './io/common.js';
 import { startPlacing, startSelecting, stopModes } from './ui/maptools.js';
 import { APP_VERSION, versionLabel } from './version.js';
 import { startAutoCrs, manualCrsChoice } from './services/autocrs.js';
+import { registerUpdates } from './services/update.js';
 import { FAMILIES, zoneAt } from './core/zones.js';
 
 const ROUTES = /** @type {Record<string, { title: string, load: () => Promise<any>, ic: string }>} */ ({
@@ -351,26 +352,7 @@ function wireChrome() {
 }
 
 // ------------------------------------------------------------- Service worker (PWA)
-let updateRequested = false;
-function registerSW() {
-  if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  navigator.serviceWorker.register('./sw.js').then((reg) => {
-    reg.addEventListener('updatefound', () => {
-      const nw = reg.installing;
-      nw?.addEventListener('statechange', () => {
-        if (nw.state === 'installed' && navigator.serviceWorker.controller) {
-          const b = h('button.link-btn', { type: 'button', onclick: () => { updateRequested = true; nw.postMessage('skipWaiting'); } }, 'Mettre à jour');
-          const el = h('div.update-bar', null, icon('info'), h('span', null, 'Une nouvelle version est disponible.'), b);
-          document.body.append(el);
-        }
-      });
-    });
-  }).catch((e) => console.warn('Service worker non enregistré', e));
-  // Rechargement uniquement après une mise à jour acceptée par l'utilisateur
-  // (pas lors de la première prise de contrôle, qui interromprait la saisie en cours).
-  let reloaded = false;
-  navigator.serviceWorker.addEventListener('controllerchange', () => { if (updateRequested && !reloaded) { reloaded = true; location.reload(); } });
-}
+function registerSW() { registerUpdates(); }
 
 boot().catch((e) => {
   console.error(e);

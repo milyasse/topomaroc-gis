@@ -28,6 +28,8 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return; // tiers : réseau uniquement
+  // contrôle de version : toujours le réseau (jamais le cache hors ligne)
+  if (url.searchParams.has('fresh') || url.pathname.endsWith('/version.txt')) return;
   if (req.mode === 'navigate') {
     // Réseau d'abord (version à jour), repli sur la page en cache hors connexion
     event.respondWith((async () => {

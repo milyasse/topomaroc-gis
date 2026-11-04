@@ -847,11 +847,11 @@ await test('Page « Version de l’application » (accueil, réglages, aide)', a
   const { page, ctx, errors } = await newPage({ hash: '#/home' });
   await page.waitForSelector('.version-tag');
   const v = await text(page, '.version-tag');
-  assert(/v1\.4\.2/.test(v), v);
+  assert(/v1\.4\.3/.test(v), v);
   await page.click('.version-tag');
-  await page.waitForSelector('#about-version:has-text("Version 1.4.2")');
+  await page.waitForSelector('#about-version:has-text("Version 1.4.3")');
   await page.waitForSelector('.about-kv dt:has-text("Publication")');
-  await page.waitForSelector('.changelog.current:has-text("v1.4.2")');
+  await page.waitForSelector('.changelog.current:has-text("v1.4.3")');
   const n = await page.locator('.changelog').count();
   assert(n >= 5, `${n} versions dans l’historique`);
   await page.click('button:has-text("Rechercher une mise à jour")');
@@ -859,7 +859,7 @@ await test('Page « Version de l’application » (accueil, réglages, aide)', a
   const st = await text(page, '[aria-live=polite]');
   await page.screenshot({ path: path.join(SHOTS, 'mobile-version.png') });
   await page.goto(BASE + '#/settings'); await page.waitForSelector('a[href="#/about"]');
-  await page.goto(BASE + '#/help'); await page.waitForSelector('summary:has-text("Version v1.4.2")');
+  await page.goto(BASE + '#/help'); await page.waitForSelector('summary:has-text("Version v1.4.3")');
   assert(errors.length === 0, errors.join(' | '));
   await ctx.close();
   return `${v} · ${n} versions · « ${st} »`;
