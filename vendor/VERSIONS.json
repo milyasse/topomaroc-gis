@@ -1,0 +1,38 @@
+{
+  "leaflet": {
+    "version": "1.9.4",
+    "license": "BSD-2-Clause"
+  },
+  "proj4": {
+    "version": "2.22.0",
+    "license": "MIT"
+  },
+  "geographiclib-geodesic": {
+    "version": "2.2.0",
+    "license": "MIT"
+  },
+  "papaparse": {
+    "version": "5.7.0",
+    "license": "MIT"
+  },
+  "@tmcw/togeojson": {
+    "version": "5.8.1",
+    "license": "BSD-2-Clause"
+  },
+  "jspdf": {
+    "version": "3.0.4",
+    "license": "MIT"
+  },
+  "jspdf-autotable": {
+    "version": "5.0.9",
+    "license": "MIT"
+  },
+  "write-excel-file": {
+    "version": "2.3.10",
+    "license": "MIT"
+  },
+  "gsap": {
+    "version": "3.15.0",
+    "license": "Standard 'no charge' license: https://gsap.com/standard-license."
+  }
+}
