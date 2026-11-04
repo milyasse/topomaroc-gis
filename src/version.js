@@ -1,9 +1,15 @@
 // @ts-check
 /** Version de l'application (numérotation sémantique) et historique des nouveautés. */
-export const APP_VERSION = '1.4.0';
-export const APP_DATE = '2026-10-19';
+export const APP_VERSION = '1.4.1';
+export const APP_DATE = '2026-11-04';
 
 export const CHANGELOG = [
+  {
+    version: '1.4.1', date: '2026-11-04', items: [
+      'Export direct : le bouton « Exporter » propose les formats ; toucher un format crée le fichier aussitôt, sans seconde validation.',
+      'Le dernier format utilisé est proposé en premier ; le système de coordonnées suit la zone des données (options repliables).',
+    ],
+  },
   {
     version: '1.4.0', date: '2026-10-19', items: [
       'Afficher / masquer chaque parcelle sur la carte (œil dans la liste, Outils → Couches, fiche et bulle de la parcelle), « Afficher uniquement celle-ci », « Tout afficher ».',

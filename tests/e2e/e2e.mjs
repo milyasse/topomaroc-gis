@@ -298,7 +298,7 @@ await test('Parcelle : mode dessin sur la carte puis rapport PDF', async () => {
   return `4 sommets dessinés, ${v}, PDF ${buf.length} octets`;
 });
 
-await test('Import CSV (séparateur ;) avec choix du système puis export GeoJSON/DXF/CSV/XLSX', async () => {
+await test('Import CSV (séparateur ;) avec choix du système puis export direct GeoJSON/DXF/CSV/XLSX', async () => {
   const { page, ctx } = await newPage({ hash: '#/projects' });
   const csv = 'Point;X;Y;Code\nB1;386512,35;371204,88;borne\nB2;386640,12;371198,40;borne\nB3;386702,91;371301,77;borne\n';
   const tmp = path.join(SHOTS, '..', 'import-test.csv');
@@ -319,9 +319,8 @@ await test('Import CSV (séparateur ;) avec choix du système puis export GeoJSO
     await page.goto(BASE + '#/projects'); await page.waitForSelector('button:has-text("Exporter les données")', { state: 'attached' });
     await page.evaluate(() => { const d = document.querySelector('details.group'); if (d) d.open = true; });
     await page.click('button:has-text("Exporter les données")');
-    await page.selectOption('.modal select >> nth=0', fmt);
-    await page.uncheck('.modal label.switch input');
-    const [dl] = await Promise.all([page.waitForEvent('download'), page.click('.modal-actions button:has-text("Exporter")')]);
+    // export direct : toucher le format crée le fichier, sans seconde validation
+    const [dl] = await Promise.all([page.waitForEvent('download'), page.click(`.modal .fmt-btn[data-fmt="${fmt}"]`)]);
     assert(dl.suggestedFilename().endsWith(ext), dl.suggestedFilename());
     const buf = fs.readFileSync(await dl.path());
     if (fmt === 'geojson') { const g = JSON.parse(buf.toString()); assert(g.features.length === 3, 'geojson'); }
@@ -330,8 +329,18 @@ await test('Import CSV (séparateur ;) avec choix du système puis export GeoJSO
     if (fmt === 'xlsx') assert(buf.subarray(0, 2).toString() === 'PK', 'xlsx');
     got.push(dl.suggestedFilename());
   }
+  // le dernier format utilisé est proposé en premier ; un seul fichier par défaut (pas de -SRC.txt)
+  await page.goto(BASE + '#/projects'); await page.waitForSelector('button:has-text("Exporter les données")', { state: 'attached' });
+  await page.evaluate(() => { const d = document.querySelector('details.group'); if (d) d.open = true; });
+  await page.click('button:has-text("Exporter les données")');
+  const lastFmt = await page.getAttribute('.modal .fmt-btn.last', 'data-fmt');
+  assert(lastFmt === 'xlsx', `dernier format ${lastFmt}`);
+  let extra = 0; page.on('download', () => extra++);
+  const [dl2] = await Promise.all([page.waitForEvent('download'), page.click('.modal .fmt-btn[data-fmt="dxf"]')]);
+  await page.waitForTimeout(800);
+  assert(dl2.suggestedFilename().endsWith('.dxf') && extra === 1, `téléchargements : ${extra}`);
   await ctx.close();
-  return got.join(', ');
+  return `${got.join(', ')} ; export direct en un geste`;
 });
 
 await test('Sauvegarde complète puis restauration', async () => {
@@ -812,11 +821,11 @@ await test('Page « Version de l’application » (accueil, réglages, aide)', a
   const { page, ctx, errors } = await newPage({ hash: '#/home' });
   await page.waitForSelector('.version-tag');
   const v = await text(page, '.version-tag');
-  assert(/v1\.4\.0/.test(v), v);
+  assert(/v1\.4\.1/.test(v), v);
   await page.click('.version-tag');
-  await page.waitForSelector('#about-version:has-text("Version 1.4.0")');
+  await page.waitForSelector('#about-version:has-text("Version 1.4.1")');
   await page.waitForSelector('.about-kv dt:has-text("Publication")');
-  await page.waitForSelector('.changelog.current:has-text("v1.4.0")');
+  await page.waitForSelector('.changelog.current:has-text("v1.4.1")');
   const n = await page.locator('.changelog').count();
   assert(n >= 5, `${n} versions dans l’historique`);
   await page.click('button:has-text("Rechercher une mise à jour")');
@@ -824,7 +833,7 @@ await test('Page « Version de l’application » (accueil, réglages, aide)', a
   const st = await text(page, '[aria-live=polite]');
   await page.screenshot({ path: path.join(SHOTS, 'mobile-version.png') });
   await page.goto(BASE + '#/settings'); await page.waitForSelector('a[href="#/about"]');
-  await page.goto(BASE + '#/help'); await page.waitForSelector('summary:has-text("Version v1.4.0")');
+  await page.goto(BASE + '#/help'); await page.waitForSelector('summary:has-text("Version v1.4.1")');
   assert(errors.length === 0, errors.join(' | '));
   await ctx.close();
   return `${v} · ${n} versions · « ${st} »`;

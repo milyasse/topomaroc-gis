@@ -4,7 +4,8 @@ import * as crs from '../core/crs.js';
 import { parseCSV, guessMapping, guessCoordinateKind, rowsToPoints, toCSV } from '../io/csv.js';
 import { parseGeoJSON, geojsonToItems, parseKmlGpx, toGeoJSON, toKML, toGPX, toDXF } from '../io/formats.js';
 import { crsSidecar, safeName, stamp } from '../io/common.js';
-import { state, addFeature, ensureProject, nextPointNumber, openProject } from '../state.js';
+import { state, addFeature, ensureProject, nextPointNumber, openProject, updateSettings } from '../state.js';
+import { zoneAt } from '../core/zones.js';
 import * as db from '../services/storage.js';
 import { parseAngle, parseNumber } from '../core/angles.js';
 import { h, icon, mount, toast, field, select, modal, saveFile, pickFile, shareOrSave } from './dom.js';
@@ -161,58 +162,91 @@ async function restoreBackup(data) {
 
 // ------------------------------------------------------------- Export
 export const EXPORT_FORMATS = [
-  { value: 'geojson', label: 'GeoJSON (SIG, WGS 84)' },
-  { value: 'geojson-proj', label: 'GeoJSON projeté (QGIS)' },
-  { value: 'kml', label: 'KML (Google Earth)' },
-  { value: 'gpx', label: 'GPX (GPS)' },
-  { value: 'csv', label: 'CSV (tableur, SIG)' },
-  { value: 'csv-fr', label: 'CSV Excel français (; et virgule)' },
-  { value: 'xlsx', label: 'XLSX (Excel)' },
-  { value: 'dxf', label: 'DXF (AutoCAD / Covadis)' },
-  { value: 'pdf-sheet', label: 'PDF — fiche de levé' },
+  { value: 'geojson', label: 'GeoJSON', sub: 'SIG · WGS 84', ext: '.geojson', ic: 'globe', proj: false },
+  { value: 'geojson-proj', label: 'GeoJSON projeté', sub: 'QGIS · Lambert / UTM', ext: '.geojson', ic: 'globe', proj: true },
+  { value: 'kml', label: 'KML', sub: 'Google Earth · WGS 84', ext: '.kml', ic: 'map', proj: false },
+  { value: 'gpx', label: 'GPX', sub: 'GPS · WGS 84', ext: '.gpx', ic: 'locate', proj: false },
+  { value: 'csv', label: 'CSV', sub: 'Tableur, SIG', ext: '.csv', ic: 'list', proj: true },
+  { value: 'csv-fr', label: 'CSV Excel français', sub: 'Séparateur ; et virgule', ext: '.csv', ic: 'list', proj: true },
+  { value: 'xlsx', label: 'XLSX', sub: 'Excel', ext: '.xlsx', ic: 'grid', proj: true },
+  { value: 'dxf', label: 'DXF', sub: 'AutoCAD / Covadis', ext: '.dxf', ic: 'polygon', proj: true },
+  { value: 'pdf-sheet', label: 'PDF', sub: 'Fiche de levé', ext: '.pdf', ic: 'file', proj: true },
 ];
 
+/** Système projeté proposé pour exporter des entités : leur zone (projection automatique), sinon le système affiché. @param {any[]} features */
+export function exportCrsFor(features) {
+  const own = features.map((f) => (f.type === 'point' ? f.input?.crsId : f.crsId)).find((id) => id && crs.getCrs(id).kind === 'projected');
+  if (state.settings.autoCrs) {
+    const p = features.find((f) => f.type === 'point' && f.wgs84);
+    const z = p ? zoneAt(p.wgs84.lon, p.wgs84.lat, /** @type {any} */ (state.settings).autoFamily ?? 'lambert') : null;
+    if (z) return z;
+    if (own) return own;
+  }
+  const d = state.settings.displayCrs;
+  if (crs.getCrs(d).kind === 'projected') return d;
+  return own ?? 'EPSG:26191';
+}
+
 /**
- * Exporte des entités dans un format, avec choix du SRC si nécessaire.
- * @param {any[]} features @param {string} [preset] format présélectionné @param {string} [baseName]
+ * Exporte immédiatement des entités dans un format.
+ * @param {any[]} features @param {string} fmt
+ * @param {{ crsId?: string, sidecar?: boolean, baseName?: string }} [o]
+ * @returns {Promise<boolean>}
+ */
+export async function exportAs(features, fmt, o = {}) {
+  if (!features.length) { toast('Rien à exporter.', 'warn'); return false; }
+  const name = `${safeName(o.baseName ?? state.project?.name ?? 'topomaroc')}-${stamp()}`;
+  const cid = o.crsId ?? exportCrsFor(features);
+  if (fmt === 'dxf' && crs.getCrs(cid).kind !== 'projected') { toast('Le DXF nécessite un système projeté (Lambert ou UTM).', 'error'); return false; }
+  const ep = crs.getCrs(cid).epsg;
+  try {
+    switch (fmt) {
+      case 'geojson': await saveFile(toGeoJSON(features, { project: state.project }), `${name}.geojson`, 'application/geo+json'); break;
+      case 'geojson-proj': await saveFile(toGeoJSON(features, { projectedCrsId: cid, project: state.project }), `${name}-${ep}.geojson`, 'application/geo+json'); break;
+      case 'kml': await saveFile(toKML(features, { project: state.project }), `${name}.kml`, 'application/vnd.google-earth.kml+xml'); break;
+      case 'gpx': await saveFile(toGPX(features, { project: state.project }), `${name}.gpx`, 'application/gpx+xml'); break;
+      case 'csv': await saveFile(toCSV(features, cid), `${name}-${ep}.csv`, 'text/csv'); break;
+      case 'csv-fr': await saveFile(toCSV(features, cid, { delimiter: ';', decimal: ',' }), `${name}-${ep}.csv`, 'text/csv'); break;
+      case 'dxf': await saveFile(toDXF(features, cid), `${name}-${ep}.dxf`, 'application/dxf'); break;
+      case 'xlsx': { const { toXLSX } = await import('../io/office.js'); await shareOrSave(await toXLSX(features, cid, state.project), `${name}.xlsx`); break; }
+      case 'pdf-sheet': { const { surveySheetPDF } = await import('../io/office.js'); await shareOrSave(await surveySheetPDF(features, state.project, cid), `${name}-fiche.pdf`); break; }
+      default: toast('Format inconnu.', 'error'); return false;
+    }
+    const wgsOnly = ['geojson', 'kml', 'gpx'].includes(fmt);
+    if (o.sidecar) await saveFile(crsSidecar(wgsOnly ? 'EPSG:4326' : cid), `${name}-SRC.txt`, 'text/plain');
+    const f = EXPORT_FORMATS.find((x) => x.value === fmt);
+    toast(`Export ${f?.label ?? fmt} : ${features.length} entité(s)${wgsOnly ? ' (WGS 84)' : ` (${crs.getCrs(cid).label})`}.`, 'ok');
+    return true;
+  } catch (e) {
+    toast(`Export impossible : ${/** @type {Error} */ (e).message}`, 'error', 6000);
+    return false;
+  }
+}
+
+/**
+ * Choix du format : toucher un format crée le fichier aussitôt (pas de seconde validation).
+ * Le dernier format utilisé est proposé en premier ; système et fichier SRC restent réglables.
+ * @param {any[]} features @param {string} [preset] format mis en avant si aucun n'a encore été utilisé @param {string} [baseName]
  */
 export async function exportDialog(features, preset = 'geojson', baseName) {
   if (!features.length) { toast('Rien à exporter.', 'warn'); return; }
-  const fmt = select(EXPORT_FORMATS, preset);
-  const defCrs = crs.getCrs(state.settings.displayCrs).kind === 'projected' ? state.settings.displayCrs : 'EPSG:26191';
-  const cs = crsSelect(defCrs);
-  const csField = field('Système des coordonnées X/Y', cs, 'Les formats GeoJSON, KML et GPX standard sont toujours en WGS 84.');
-  const sidecar = /** @type {HTMLInputElement} */ (h('input', { type: 'checkbox', checked: true }));
-  const info = h('div.crs-info-box');
-  const refresh = () => {
-    const needs = ['geojson-proj', 'csv', 'csv-fr', 'xlsx', 'dxf', 'pdf-sheet'].includes(fmt.value);
-    csField.hidden = !needs;
-    info.replaceChildren(needs ? crsInfo(cs.value) : h('p.small', null, 'Coordonnées WGS 84 (longitude, latitude), conformes au format.'));
-  };
-  fmt.addEventListener('change', refresh); cs.addEventListener('change', refresh); refresh();
-  const ok = await modal({ title: `Exporter ${features.length} entité(s)`, body: () => [field('Format', fmt), csField, info,
-    h('label.switch', null, sidecar, h('span', null, 'Joindre un fichier décrivant le système de coordonnées'))],
-  actions: [{ label: 'Annuler', value: false }, { label: 'Exporter', value: true, variant: 'primary', ic: 'download' }] });
-  if (!ok) return;
-  const name = `${safeName(baseName ?? state.project?.name ?? 'topomaroc')}-${stamp()}`;
-  const cid = cs.value;
-  if (fmt.value === 'dxf' && crs.getCrs(cid).kind !== 'projected') { toast('Le DXF nécessite un système projeté (Lambert ou UTM).', 'error'); return; }
-  try {
-    switch (fmt.value) {
-      case 'geojson': await saveFile(toGeoJSON(features, { project: state.project }), `${name}.geojson`, 'application/geo+json'); break;
-      case 'geojson-proj': await saveFile(toGeoJSON(features, { projectedCrsId: cid, project: state.project }), `${name}-${crs.getCrs(cid).epsg}.geojson`, 'application/geo+json'); break;
-      case 'kml': await saveFile(toKML(features, { project: state.project }), `${name}.kml`, 'application/vnd.google-earth.kml+xml'); break;
-      case 'gpx': await saveFile(toGPX(features, { project: state.project }), `${name}.gpx`, 'application/gpx+xml'); break;
-      case 'csv': await saveFile(toCSV(features, cid), `${name}-${crs.getCrs(cid).epsg}.csv`, 'text/csv'); break;
-      case 'csv-fr': await saveFile(toCSV(features, cid, { delimiter: ';', decimal: ',' }), `${name}-${crs.getCrs(cid).epsg}.csv`, 'text/csv'); break;
-      case 'dxf': await saveFile(toDXF(features, cid), `${name}-${crs.getCrs(cid).epsg}.dxf`, 'application/dxf'); break;
-      case 'xlsx': { const { toXLSX } = await import('../io/office.js'); await shareOrSave(await toXLSX(features, cid, state.project), `${name}.xlsx`); break; }
-      case 'pdf-sheet': { const { surveySheetPDF } = await import('../io/office.js'); await shareOrSave(await surveySheetPDF(features, state.project, cid), `${name}-fiche.pdf`); break; }
-      default: break;
-    }
-    const wgsOnly = ['geojson', 'kml', 'gpx'].includes(fmt.value);
-    if (sidecar.checked) await saveFile(crsSidecar(wgsOnly ? 'EPSG:4326' : cid), `${name}-SRC.txt`, 'text/plain');
-  } catch (e) {
-    toast(`Export impossible : ${/** @type {Error} */ (e).message}`, 'error', 6000);
-  }
+  const last = /** @type {any} */ (state.settings).exportFormat ?? preset;
+  const cs = crsSelect(exportCrsFor(features), { projectedOnly: true });
+  const sidecar = /** @type {HTMLInputElement} */ (h('input', { type: 'checkbox', checked: !!(/** @type {any} */ (state.settings).exportSidecar) }));
+  const order = [...EXPORT_FORMATS].sort((a, b) => (b.value === last ? 1 : 0) - (a.value === last ? 1 : 0));
+  const r = await modal({
+    title: `Exporter ${features.length} entité(s)`,
+    dismissValue: null,
+    body: (close) => [
+      h('p.small.muted', null, 'Touchez un format : le fichier est créé aussitôt.'),
+      h('div.fmt-grid', null, order.map((f) => h(`button.fmt-btn${f.value === last ? '.last' : ''}`, { type: 'button', 'data-fmt': f.value, onclick: () => close(f.value) },
+        icon(f.ic), h('span.fmt-t', null, h('b', null, f.label), h('small', null, f.value === last ? `${f.sub} · dernier utilisé` : f.sub))))),
+      h('details.fmt-opts', null, h('summary', null, icon('settings'), 'Options'),
+        field('Système des coordonnées X/Y (CSV, XLSX, DXF, PDF, GeoJSON projeté)', cs, 'GeoJSON, KML et GPX standard sont toujours en WGS 84.'),
+        h('label.switch', null, sidecar, h('span', null, 'Joindre un fichier décrivant le système de coordonnées'))),
+    ],
+  });
+  if (!r) return;
+  await updateSettings(/** @type {any} */ ({ exportFormat: r, exportSidecar: sidecar.checked }));
+  await exportAs(features, r, { crsId: cs.value, sidecar: sidecar.checked, baseName });
 }

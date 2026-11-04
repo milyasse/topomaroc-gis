@@ -33,6 +33,9 @@ export const DEFAULT_SETTINGS = {
   /** Système de projection choisi automatiquement selon la zone de navigation (v1.3). */
   autoCrs: true,
   autoFamily: /** @type {'lambert'|'utm'} */ ('lambert'),
+  /** Dernier format d'export utilisé (proposé en premier) et fichier SRC joint. */
+  exportFormat: /** @type {string|null} */ (null),
+  exportSidecar: false,
   projectLayers: /** @type {Record<string, {on?:boolean, points?:boolean, parcels?:boolean, lines?:boolean, color?:string|null}>} */ ({}),
   customBasemap: /** @type {null|{url:string,label?:string,maxNativeZoom?:number,attribution?:string}} */ (null),
 };

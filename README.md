@@ -52,6 +52,10 @@ Détection : moins de 3 sommets, fermeture répétée, sommets en double (≤ 1 
 
 **Rapport PDF** : projet, date, plan coté (échelle graphique, nord), tableau des sommets (Lambert + WGS 84), tableau des côtés (longueurs, gisements en grades ou degrés, longueurs géodésiques, azimuts), superficie et périmètre, système, méthode, qualité estimée, mention « ne constitue pas un document cadastral officiel ». [Exemple](docs/exemple-rapport-parcelle.pdf).
 
+### Nouveautés v1.4.1 — export direct
+- Le bouton **Exporter** (fiche parcelle, liste des parcelles, projets) affiche les formats sous forme de boutons : **toucher un format crée le fichier aussitôt**, sans seconde validation. Le dernier format utilisé est proposé en premier.
+- Le système des coordonnées X/Y (CSV, XLSX, DXF, PDF, GeoJSON projeté) suit la zone des données ; il reste modifiable, comme l'ajout du fichier `-SRC.txt`, dans « Options ».
+
 ### Nouveautés v1.4 — visibilité des parcelles et page Version
 - Chaque parcelle s'affiche ou se masque sur la carte, comme une couche : œil dans la liste des parcelles, cases à cocher dans Outils → Couches (projet ouvert), boutons « Afficher uniquement celle-ci » / « Masquer sur la carte » dans la fiche et dans la bulle de la carte, « Tout afficher » / « Tout masquer ».
 - Masquer une parcelle partagée masque ses lots. Le masquage est mémorisé (IndexedDB) et s'applique aussi quand le projet est superposé ; il ne touche que la carte : listes, totaux, rapports et exports gardent toutes les parcelles.

@@ -608,3 +608,17 @@ label.switch.sm input { width: 18px; height: 18px; }
   #chip-project { flex: 1 1 auto; max-width: none; }
 }
 @media (max-width: 360px) { .chip-auto { display: none; } }
+
+/* Export direct : grille de formats */
+.fmt-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 10px 0 12px; }
+.fmt-btn { display: flex; gap: 10px; align-items: center; min-height: 58px; padding: 9px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
+.fmt-btn:hover, .fmt-btn:focus-visible { border-color: var(--accent); }
+.fmt-btn .ic { flex: none; color: var(--accent); width: 22px; height: 22px; }
+.fmt-btn .fmt-t { display: flex; flex-direction: column; min-width: 0; }
+.fmt-btn b { font-weight: 650; font-size: .95rem; }
+.fmt-btn small { color: var(--ink-2); font-size: .74rem; line-height: 1.25; }
+.fmt-btn.last { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--surface)); grid-column: 1 / -1; }
+.fmt-opts { border-top: 1px solid var(--line); padding-top: 8px; }
+.fmt-opts summary { display: flex; gap: 6px; align-items: center; cursor: pointer; font-weight: 600; color: var(--ink-2); }
+.fmt-opts[open] summary { margin-bottom: 8px; }
+@media (max-width: 360px) { .fmt-grid { grid-template-columns: 1fr; } }
