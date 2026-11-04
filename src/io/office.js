@@ -119,7 +119,7 @@ function drawPlan(doc, pts, labels, box, crsLabel) {
   const bx = box.x + 6, by = box.y + box.h - 7;
   doc.setDrawColor(30); doc.setLineWidth(0.5); doc.line(bx, by, bx + len, by); doc.line(bx, by - 1.5, bx, by + 1.5); doc.line(bx + len, by - 1.5, bx + len, by + 1.5);
   doc.setFontSize(7); doc.text(`${nice >= 1000 ? nice / 1000 + ' km' : fnum(nice, nice < 1 ? 2 : 0) + ' m'}`, bx + len / 2, by - 2, { align: 'center' });
-  doc.text(pdfText(`Echelle approx. 1:${fnum(Math.round(1000 / s), 0)} - ${crsLabel}`), bx + len + 4, by + 1);
+  doc.text(pdfText(box.w < 120 ? `1:${fnum(Math.round(1000 / s), 0)} env.` : `Echelle approx. 1:${fnum(Math.round(1000 / s), 0)} - ${crsLabel}`), bx + len + 4, by + 1);
 }
 
 /**
@@ -129,14 +129,49 @@ function drawPlan(doc, pts, labels, box, crsLabel) {
  */
 export async function parcelReportPDF(f, project, opts = {}) {
   const { jsPDF, autoTable } = await import('../../vendor/jspdf.mjs');
+  const doc = new (/** @type {any} */ (jsPDF))({ unit: 'mm', format: 'a4' });
+  await addParcelReport(doc, autoTable, f, project, opts);
+  addFooters(doc);
+  return doc.output('blob');
+}
+
+/**
+ * Rapport PDF de plusieurs parcelles (une section par parcelle), suivi de la fiche des points s'il y en a.
+ * @param {any[]} parcels @param {any[]} points @param {any} project
+ * @param {{ angleUnit?: 'grad'|'deg', crsId?: string }} [opts] crsId : système des points et des parcelles en WGS 84
+ * @returns {Promise<Blob>}
+ */
+export async function parcelsReportPDF(parcels, points, project, opts = {}) {
+  const { jsPDF, autoTable } = await import('../../vendor/jspdf.mjs');
+  const doc = new (/** @type {any} */ (jsPDF))({ unit: 'mm', format: 'a4' });
+  for (let i = 0; i < parcels.length; i++) {
+    if (i) doc.addPage('a4', 'portrait');
+    const f = parcels[i];
+    await addParcelReport(doc, autoTable, f, project, { angleUnit: opts.angleUnit, reportCrsId: crs.getCrs(f.crsId).kind === 'projected' ? null : (opts.crsId ?? null) });
+  }
+  if (points.length) {
+    doc.addPage('a4', 'landscape');
+    drawSurveySheet(doc, autoTable, points, project, opts.crsId ?? 'EPSG:26191');
+  }
+  addFooters(doc);
+  return doc.output('blob');
+}
+
+/**
+ * Section « rapport de superficie » d'une parcelle, à partir de la page courante du document.
+ * @param {any} doc @param {any} autoTable @param {any} f @param {any} project @param {{ angleUnit?: 'grad'|'deg', reportCrsId?: string|null }} opts
+ */
+async function addParcelReport(doc, autoTable, f, project, opts) {
   const a = analyze(f, opts.reportCrsId ?? null);
-  if (!a.valid) throw new Error('Parcelle invalide : corrigez les erreurs avant d’éditer le rapport.');
+  if (!a.valid) throw new Error(`Parcelle « ${f.name || 'sans nom'} » invalide : corrigez les erreurs avant d’éditer le rapport.`);
   const planeId = a.planeCrsId;
   const pc = crs.getCrs(planeId);
   const src = crs.getCrs(f.crsId);
   const labels = f.vertices.map((/** @type {any} */ v, /** @type {number} */ i) => String(v.label ?? i + 1));
-  const doc = new (/** @type {any} */ (jsPDF))({ unit: 'mm', format: 'a4' });
   const W = 210, M = 14;
+  // Carte de situation sur fond satellite (si les tuiles sont accessibles)
+  const { parcelMapImage, MAP_ATTRIBUTION } = await import('./mapimage.js');
+  const map = await parcelMapImage(a.wgs84, labels).catch(() => null);
   const now = new Date();
 
   // En-tête
@@ -161,9 +196,19 @@ export async function parcelReportPDF(f, project, opts = {}) {
   doc.text(pdfText(`${a.n} sommets - orientation ${a.orientation}`), M + 100, y + 20);
   y += 30;
 
-  // Plan
-  drawPlan(doc, /** @type {[number,number][]} */ (a.plane), labels, { x: M, y, w: W - 2 * M, h: 92 }, pc.label);
-  y += 98;
+  // Plan coté et carte de situation
+  if (map) {
+    const bw = (W - 2 * M - 6) / 2, bh = 80;
+    doc.setFontSize(8); doc.setTextColor(90); doc.text('PLAN COTE', M, y + 3); doc.text('CARTE DE SITUATION (FOND SATELLITE)', M + bw + 6, y + 3);
+    drawPlan(doc, /** @type {[number,number][]} */ (a.plane), labels, { x: M, y: y + 5, w: bw, h: bh }, pc.label);
+    doc.addImage(map.dataUrl, 'JPEG', M + bw + 6, y + 5, bw, bh);
+    doc.setDrawColor(200); doc.setLineWidth(0.2); doc.rect(M + bw + 6, y + 5, bw, bh);
+    doc.setFontSize(6.5); doc.setTextColor(110); doc.text(pdfText(MAP_ATTRIBUTION), M + bw + 6, y + bh + 8.5);
+    y += bh + 12;
+  } else {
+    drawPlan(doc, /** @type {[number,number][]} */ (a.plane), labels, { x: M, y, w: W - 2 * M, h: 92 }, pc.label);
+    y += 98;
+  }
 
   // Méthode et référence
   doc.setFontSize(8.5); doc.setTextColor(30);
@@ -177,6 +222,11 @@ export async function parcelReportPDF(f, project, opts = {}) {
     const t = f.terrain;
     methodLines.push(`Relief (indicatif, ${t.source}) : altitude ${fnum(t.elevMin, 0)} à ${fnum(t.elevMax, 0)} m, dénivelé ${fnum(t.relief, 1)} m, pente moyenne ${fnum(t.slopeMeanPct, 1)} % (${fnum(t.slopeMeanDeg, 1)}°), pente maximale ${fnum(t.slopeMaxPct, 1)} %${Number.isFinite(t.aspect) ? `, exposition ${fnum(t.aspect, 0)}°` : ''}.`);
   }
+  // Qualité des mesures (avant les tableaux, pour tenir sur la page)
+  methodLines.push(a.worstAccuracy != null
+    ? `Qualité : précision GPS estimée la plus défavorable ±${a.worstAccuracy.toFixed(1)} m (précision annoncée par l'appareil, non garantie).`
+    : 'Qualité : sommets saisis ou importés, précision dépendant de la source des coordonnées.');
+  for (const i of a.issues.filter((/** @type {any} */ x) => x.level !== 'info')) methodLines.push(`Avertissement : ${i.message}`);
   for (const l of methodLines) {
     const wrapped = doc.splitTextToSize(pdfText(l), W - 2 * M);
     doc.text(wrapped, M, y); y += wrapped.length * 3.8;
@@ -188,7 +238,7 @@ export async function parcelReportPDF(f, project, opts = {}) {
     startY: y + 2, margin: { left: M, right: M },
     head: [['Sommet', `X ${pc.label} (m)`, `Y ${pc.label} (m)`, 'Latitude WGS 84', 'Longitude WGS 84', 'Précision']].map((r) => r.map(pdfText)),
     body: labels.map((l, i) => [l, fnum(showPlane[i][0], 3), fnum(showPlane[i][1], 3), a.wgs84[i].lat.toFixed(8), a.wgs84[i].lon.toFixed(8), f.vertices[i].accuracy != null ? `±${f.vertices[i].accuracy.toFixed(1)} m` : '-']).map((r) => r.map(pdfText)),
-    styles: { fontSize: 8, cellPadding: 1.4 }, headStyles: { fillColor: [15, 61, 94] },
+    styles: { fontSize: 8, cellPadding: 1.1 }, headStyles: { fillColor: [15, 61, 94] },
     columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' } },
   });
   // Tableau des côtés
@@ -205,20 +255,7 @@ export async function parcelReportPDF(f, project, opts = {}) {
   // @ts-ignore
   y = doc.lastAutoTable.finalY + 5;
 
-  // Qualité
-  const quality = [];
-  quality.push(a.worstAccuracy != null
-    ? `Précision GPS estimée la plus défavorable : ±${a.worstAccuracy.toFixed(1)} m (précision annoncée par l'appareil, non garantie).`
-    : 'Sommets saisis ou importés : précision dépendant de la source des coordonnées.');
-  for (const i of a.issues.filter((/** @type {any} */ x) => x.level !== 'info')) quality.push(`Avertissement : ${i.message}`);
-  if (y > 250) { doc.addPage(); y = 20; }
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(15, 61, 94); doc.text('Qualité des mesures', M, y); y += 5;
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(30);
-  for (const q of quality) { const w = doc.splitTextToSize(pdfText(q), W - 2 * M); if (y > 275) { doc.addPage(); y = 20; } doc.text(w, M, y); y += w.length * 3.8; }
-  if (f.description) { const w = doc.splitTextToSize(pdfText(`Observations : ${f.description}`), W - 2 * M); doc.text(w, M, y + 1); y += w.length * 3.8 + 1; }
-
-  addFooters(doc);
-  return doc.output('blob');
+  if (f.description) { const w = doc.splitTextToSize(pdfText(`Observations : ${f.description}`), W - 2 * M); if (y + w.length * 3.8 > 272) { doc.addPage(); y = 20; } doc.setFontSize(8.5); doc.setTextColor(30); doc.text(w, M, y + 1); }
 }
 
 /** @param {any} doc */
@@ -226,10 +263,11 @@ function addFooters(doc) {
   const n = doc.getNumberOfPages();
   for (let p = 1; p <= n; p++) {
     doc.setPage(p);
-    doc.setDrawColor(200); doc.line(14, 279, 196, 279);
+    const pw = doc.internal.pageSize.getWidth(), ph = doc.internal.pageSize.getHeight();
+    doc.setDrawColor(200); doc.line(14, ph - 18, pw - 14, ph - 18);
     doc.setFontSize(6.8); doc.setTextColor(110);
-    doc.text(doc.splitTextToSize(pdfText(DISCLAIMER), 160), 14, 283);
-    doc.text(`Page ${p}/${n}`, 196, 283, { align: 'right' });
+    doc.text(doc.splitTextToSize(pdfText(DISCLAIMER), pw - 50), 14, ph - 14);
+    doc.text(`Page ${p}/${n}`, pw - 14, ph - 14, { align: 'right' });
   }
 }
 
@@ -240,8 +278,15 @@ function addFooters(doc) {
  */
 export async function surveySheetPDF(features, project, crsId) {
   const { jsPDF, autoTable } = await import('../../vendor/jspdf.mjs');
-  const c = crs.getCrs(crsId);
   const doc = new (/** @type {any} */ (jsPDF))({ unit: 'mm', format: 'a4', orientation: 'landscape' });
+  drawSurveySheet(doc, autoTable, features, project, crsId);
+  addFooters(doc);
+  return doc.output('blob');
+}
+
+/** Fiche de levé (page paysage courante). @param {any} doc @param {any} autoTable @param {any[]} features @param {any} project @param {string} crsId */
+function drawSurveySheet(doc, autoTable, features, project, crsId) {
+  const c = crs.getCrs(crsId);
   const W = 297, M = 12;
   doc.setFillColor(15, 61, 94); doc.rect(0, 0, W, 18, 'F');
   doc.setTextColor(255); doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.text('Fiche de levé', M, 11);
@@ -261,13 +306,6 @@ export async function surveySheetPDF(features, project, crsId) {
     }),
     styles: { fontSize: 7.5, cellPadding: 1.2 }, headStyles: { fillColor: [15, 61, 94] },
   });
-  const n = doc.getNumberOfPages();
-  for (let p = 1; p <= n; p++) {
-    doc.setPage(p); doc.setFontSize(6.8); doc.setTextColor(110);
-    doc.text(doc.splitTextToSize(pdfText(DISCLAIMER), 250), M, 200);
-    doc.text(`Page ${p}/${n}`, W - M, 200, { align: 'right' });
-  }
-  return doc.output('blob');
 }
 
 // ------------------------------------------------------------------ Rapport de partage

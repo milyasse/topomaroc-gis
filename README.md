@@ -52,6 +52,9 @@ Détection : moins de 3 sommets, fermeture répétée, sommets en double (≤ 1 
 
 **Rapport PDF** : projet, date, plan coté (échelle graphique, nord), tableau des sommets (Lambert + WGS 84), tableau des côtés (longueurs, gisements en grades ou degrés, longueurs géodésiques, azimuts), superficie et périmètre, système, méthode, qualité estimée, mention « ne constitue pas un document cadastral officiel ». [Exemple](docs/exemple-rapport-parcelle.pdf).
 
+### Nouveautés v1.4.2 — rapport PDF des parcelles
+- Export **PDF — rapport** : pour chaque parcelle, une page avec superficie et périmètre, **plan coté**, **carte de situation sur fond satellite** (Esri World Imagery, attribution imprimée), tableau des **coordonnées des sommets** (Lambert/UTM et WGS 84) et des côtés ; les points du projet suivent dans une fiche de levé. Sans connexion, la carte est omise et le plan occupe toute la largeur (`src/io/mapimage.js`).
+
 ### Nouveautés v1.4.1 — export direct
 - Le bouton **Exporter** (fiche parcelle, liste des parcelles, projets) affiche les formats sous forme de boutons : **toucher un format crée le fichier aussitôt**, sans seconde validation. Le dernier format utilisé est proposé en premier.
 - Le système des coordonnées X/Y (CSV, XLSX, DXF, PDF, GeoJSON projeté) suit la zone des données ; il reste modifiable, comme l'ajout du fichier `-SRC.txt`, dans « Options ».

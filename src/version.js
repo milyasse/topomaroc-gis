@@ -1,9 +1,15 @@
 // @ts-check
 /** Version de l'application (numérotation sémantique) et historique des nouveautés. */
-export const APP_VERSION = '1.4.1';
+export const APP_VERSION = '1.4.2';
 export const APP_DATE = '2026-11-04';
 
 export const CHANGELOG = [
+  {
+    version: '1.4.2', date: '2026-11-04', items: [
+      'Export PDF : rapport de parcelle complet (superficie, plan coté, carte de situation sur fond satellite, coordonnées des sommets en Lambert/UTM et WGS 84, côtés) — une page par parcelle, puis la fiche des points.',
+      'Le rapport PDF de la fiche parcelle inclut aussi la carte de situation (sans connexion : plan coté seul).',
+    ],
+  },
   {
     version: '1.4.1', date: '2026-11-04', items: [
       'Export direct : le bouton « Exporter » propose les formats ; toucher un format crée le fichier aussitôt, sans seconde validation.',

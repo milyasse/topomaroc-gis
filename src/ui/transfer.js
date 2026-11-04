@@ -3,7 +3,7 @@
 import * as crs from '../core/crs.js';
 import { parseCSV, guessMapping, guessCoordinateKind, rowsToPoints, toCSV } from '../io/csv.js';
 import { parseGeoJSON, geojsonToItems, parseKmlGpx, toGeoJSON, toKML, toGPX, toDXF } from '../io/formats.js';
-import { crsSidecar, safeName, stamp } from '../io/common.js';
+import { crsSidecar, safeName, stamp, analyze } from '../io/common.js';
 import { state, addFeature, ensureProject, nextPointNumber, openProject, updateSettings } from '../state.js';
 import { zoneAt } from '../core/zones.js';
 import * as db from '../services/storage.js';
@@ -170,7 +170,7 @@ export const EXPORT_FORMATS = [
   { value: 'csv-fr', label: 'CSV Excel français', sub: 'Séparateur ; et virgule', ext: '.csv', ic: 'list', proj: true },
   { value: 'xlsx', label: 'XLSX', sub: 'Excel', ext: '.xlsx', ic: 'grid', proj: true },
   { value: 'dxf', label: 'DXF', sub: 'AutoCAD / Covadis', ext: '.dxf', ic: 'polygon', proj: true },
-  { value: 'pdf-sheet', label: 'PDF', sub: 'Fiche de levé', ext: '.pdf', ic: 'file', proj: true },
+  { value: 'pdf-sheet', label: 'PDF — rapport', sub: 'Parcelle : carte, plan, coordonnées', ext: '.pdf', ic: 'file', proj: true },
 ];
 
 /** Système projeté proposé pour exporter des entités : leur zone (projection automatique), sinon le système affiché. @param {any[]} features */
@@ -209,7 +209,19 @@ export async function exportAs(features, fmt, o = {}) {
       case 'csv-fr': await saveFile(toCSV(features, cid, { delimiter: ';', decimal: ',' }), `${name}-${ep}.csv`, 'text/csv'); break;
       case 'dxf': await saveFile(toDXF(features, cid), `${name}-${ep}.dxf`, 'application/dxf'); break;
       case 'xlsx': { const { toXLSX } = await import('../io/office.js'); await shareOrSave(await toXLSX(features, cid, state.project), `${name}.xlsx`); break; }
-      case 'pdf-sheet': { const { surveySheetPDF } = await import('../io/office.js'); await shareOrSave(await surveySheetPDF(features, state.project, cid), `${name}-fiche.pdf`); break; }
+      case 'pdf-sheet': {
+        const office = await import('../io/office.js');
+        const pts = features.filter((f) => f.type === 'point');
+        const parcels = features.filter((f) => f.type === 'parcel' && f.vertices?.length >= 3);
+        const ok = parcels.filter((f) => { try { return analyze(f).valid; } catch { return false; } });
+        if (parcels.length > ok.length) toast(`${parcels.length - ok.length} parcelle(s) invalide(s) non incluse(s) dans le rapport.`, 'warn', 5000);
+        if (!ok.length && !pts.length) { toast('Rien à mettre dans le rapport PDF (aucune parcelle valide ni point).', 'warn'); return false; }
+        toast('Préparation du rapport PDF (carte de situation)…', 'info', 2500);
+        const angleUnit = state.settings.angleUnit === 'grad' ? 'grad' : 'deg';
+        const blob = ok.length ? await office.parcelsReportPDF(ok, pts, state.project, { angleUnit, crsId: cid }) : await office.surveySheetPDF(pts, state.project, cid);
+        await shareOrSave(blob, `${name}-${ok.length ? 'rapport' : 'fiche'}.pdf`);
+        break;
+      }
       default: toast('Format inconnu.', 'error'); return false;
     }
     const wgsOnly = ['geojson', 'kml', 'gpx'].includes(fmt);

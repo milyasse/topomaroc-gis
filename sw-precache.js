@@ -1,6 +1,6 @@
 // Fichier généré par tools/gen-precache.mjs — ne pas modifier à la main.
 self.PRECACHE = {
- "version": "b24886818513",
+ "version": "cb1f1224ba9b",
  "files": [
   "./",
   "./index.html",
@@ -22,6 +22,7 @@ self.PRECACHE = {
   "./src/io/common.js",
   "./src/io/csv.js",
   "./src/io/formats.js",
+  "./src/io/mapimage.js",
   "./src/io/office.js",
   "./src/map/basemaps.js",
   "./src/map/map.js",

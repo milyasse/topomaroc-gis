@@ -817,15 +817,41 @@ await test('Parcelles : afficher / masquer chacune, « uniquement celle-ci », l
   return 'seule P1 → 1 tracé ; P2 + lot réaffichés ; couches 2/4 → 4/4 ; masquage conservé après rechargement';
 });
 
+await test('Export PDF : rapport de parcelle avec carte de situation et coordonnées (une page par parcelle)', async () => {
+  const { page, ctx, errors } = await newPage({ hash: '#/projects' });
+  await page.route(/server\.arcgisonline\.com/, (r) => r.fulfill({ status: 200, contentType: 'image/jpeg', body: FIXTURE, headers: { 'access-control-allow-origin': '*' } }));
+  await seed(page, async () => {
+    const st = await import('./src/state.js');
+    await st.createProject({ name: 'Rapport PDF' });
+    await st.addFeature({ type: 'parcel', name: 'P1', crsId: 'EPSG:26191', vertices: [[400000, 380000], [400050, 380000], [400050, 380040], [400000, 380040]].map(([x, y], i) => ({ x, y, label: `B${i + 1}` })) });
+    await st.addFeature({ type: 'parcel', name: 'P2', crsId: 'EPSG:26191', vertices: [[400060, 380000], [400100, 380000], [400090, 380040]].map(([x, y], i) => ({ x, y, label: `C${i + 1}` })) });
+  });
+  await page.goto(BASE + '#/projects'); await page.waitForSelector('button:has-text("Exporter les données")', { state: 'attached' });
+  await page.evaluate(() => { const d = document.querySelector('details.group'); if (d) d.open = true; });
+  await page.click('button:has-text("Exporter les données")');
+  const [dl] = await Promise.all([page.waitForEvent('download', { timeout: 30000 }), page.click('.modal .fmt-btn[data-fmt="pdf-sheet"]')]);
+  const buf = fs.readFileSync(await dl.path());
+  const txt = buf.toString('latin1');
+  assert(buf.subarray(0, 5).toString() === '%PDF-' && /rapport\.pdf$/.test(dl.suggestedFilename()), dl.suggestedFilename());
+  const pages = (txt.match(/\/Type\s*\/Page[^s]/g) || []).length;
+  const images = (txt.match(/\/Subtype\s*\/Image/g) || []).length;
+  assert(pages === 2, `${pages} pages`);
+  assert(images >= 2, `${images} image(s) de carte`);
+  fs.writeFileSync(path.join(SHOTS, 'rapport-export.pdf'), buf);
+  assert(errors.length === 0, errors.join(' | '));
+  await ctx.close();
+  return `${pages} pages (une par parcelle), ${images} cartes de situation, ${buf.length} octets`;
+});
+
 await test('Page « Version de l’application » (accueil, réglages, aide)', async () => {
   const { page, ctx, errors } = await newPage({ hash: '#/home' });
   await page.waitForSelector('.version-tag');
   const v = await text(page, '.version-tag');
-  assert(/v1\.4\.1/.test(v), v);
+  assert(/v1\.4\.2/.test(v), v);
   await page.click('.version-tag');
-  await page.waitForSelector('#about-version:has-text("Version 1.4.1")');
+  await page.waitForSelector('#about-version:has-text("Version 1.4.2")');
   await page.waitForSelector('.about-kv dt:has-text("Publication")');
-  await page.waitForSelector('.changelog.current:has-text("v1.4.1")');
+  await page.waitForSelector('.changelog.current:has-text("v1.4.2")');
   const n = await page.locator('.changelog').count();
   assert(n >= 5, `${n} versions dans l’historique`);
   await page.click('button:has-text("Rechercher une mise à jour")');
@@ -833,7 +859,7 @@ await test('Page « Version de l’application » (accueil, réglages, aide)', a
   const st = await text(page, '[aria-live=polite]');
   await page.screenshot({ path: path.join(SHOTS, 'mobile-version.png') });
   await page.goto(BASE + '#/settings'); await page.waitForSelector('a[href="#/about"]');
-  await page.goto(BASE + '#/help'); await page.waitForSelector('summary:has-text("Version v1.4.1")');
+  await page.goto(BASE + '#/help'); await page.waitForSelector('summary:has-text("Version v1.4.2")');
   assert(errors.length === 0, errors.join(' | '));
   await ctx.close();
   return `${v} · ${n} versions · « ${st} »`;
