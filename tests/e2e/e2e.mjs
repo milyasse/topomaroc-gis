@@ -26,6 +26,7 @@ async function newPage(opts = {}) {
     permissions: opts.denyGeo ? [] : ['geolocation'], geolocation: { ...RABAT, accuracy: 4 }, acceptDownloads: true, ...opts.ctx,
   });
   if (opts.init) await ctx.addInitScript(opts.init);
+  if (opts.setup) await opts.setup(ctx);
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
@@ -555,15 +556,16 @@ await test('Fiche projet : statistiques et superficie par personne', async () =>
 });
 
 await test('Satellite : au-delà de l’imagerie disponible, image agrandie au lieu d’une zone vide', async () => {
-  const { page, ctx, errors } = await newPage({ hash: '#/map' });
   const PH = Buffer.alloc(2521, 7);
-  await page.route(/server\.arcgisonline\.com\/ArcGIS\/rest\/services\/World_Imagery/, (route) => {
+  // tuiles simulées dès le chargement (le satellite est le fond par défaut) : résultat indépendant du réseau
+  const setup = (c) => c.route(/server\.arcgisonline\.com\/ArcGIS\/rest\/services\/World_Imagery/, (route) => {
     const z = Number(route.request().url().match(/tile\/(\d+)\//)[1]);
     if (z >= 19) route.fulfill({ status: 200, contentType: 'image/jpeg', body: PH, headers: { 'access-control-allow-origin': '*' } });
     else route.fulfill({ status: 200, contentType: 'image/jpeg', body: FIXTURE, headers: { 'access-control-allow-origin': '*' } });
   });
+  const { page, ctx, errors } = await newPage({ hash: '#/map', setup });
   await page.evaluate(async () => { const st = await import('./src/state.js'); await st.updateSettings({ basemap: 'sat' }); const M = await import('./src/map/map.js'); M.getMap().setView([31.45, -8.10], 21, { animate: false }); });
-  await page.waitForSelector('#res-badge:not([hidden])', { timeout: 10000 });
+  await page.waitForFunction(() => /zoom 18/.test(document.querySelector('#res-badge:not([hidden])')?.textContent ?? ''), null, { timeout: 10000 }).catch(() => {});
   const badge = await text(page, '#res-badge');
   assert(/zoom 18/.test(badge), badge);
   const drawn = await page.evaluate(() => [...document.querySelectorAll('.leaflet-tile-loaded')].filter((c) => c.tagName === 'CANVAS').length);
