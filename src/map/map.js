@@ -351,6 +351,7 @@ function updateGps(f) {
 }
 /** @param {boolean} v */
 export function setFollow(v) { followGps = v; }
+export function isFollowing() { return followGps; }
 export function recenterOnGps() {
   const f = state.gps.last;
   if (!f) return false;

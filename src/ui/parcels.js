@@ -19,6 +19,8 @@ import { analyze, safeName, pointXY } from '../io/common.js';
 import { renderShare } from './share.js';
 import { showBar, hideBar } from './maptools.js';
 import { OWNER_COLORS } from '../core/division.js';
+import { parcelZoneMismatches, convertedParcel } from '../services/autocrs.js';
+import { zoneAt } from '../core/zones.js';
 
 const L = M.L;
 /** @type {Set<string>} */ const selected = new Set();
@@ -172,7 +174,9 @@ function renderEditor(root, id) {
   const unit = areaUnitSelect();
   const method = select([{ value: 'auto', label: 'Méthode automatique' }, { value: 'plane', label: 'Plane (projection)' }, { value: 'geodesic', label: 'Géodésique (ellipsoïde)' }], get().method || 'auto', { 'aria-label': 'Méthode de calcul' });
   method.addEventListener('change', () => { const p = get(); updateFeature({ ...p, method: method.value }, 'Méthode de calcul'); });
-  const projSel = crsSelect(crs.getCrs(state.settings.displayCrs).kind === 'projected' ? state.settings.displayCrs : (crs.getCrs(get().crsId).kind === 'projected' ? get().crsId : 'EPSG:26191'), { projectedOnly: true });
+  // système plan proposé pour une parcelle en WGS 84 : la zone de son centre
+  const zoneOfParcel = () => { const v = get().vertices; if (!v?.length || crs.getCrs(get().crsId).kind === 'projected') return null; return zoneAt(v.reduce((s, q) => s + q.x, 0) / v.length, v.reduce((s, q) => s + q.y, 0) / v.length); };
+  const projSel = crsSelect(crs.getCrs(get().crsId).kind === 'projected' ? get().crsId : (zoneOfParcel() ?? (crs.getCrs(state.settings.displayCrs).kind === 'projected' ? state.settings.displayCrs : 'EPSG:26191')), { projectedOnly: true });
 
   const paintResults = () => {
     const p = get(); if (!p) return;
@@ -371,10 +375,26 @@ function renderEditor(root, id) {
   };
   paintOwner();
 
+  // système des sommets, avec conversion proposée si la parcelle n'est pas dans la zone de sa position
+  const crsLine = h('div.crs-line');
+  const paintCrsLine = () => {
+    const p = get(); if (!p) return;
+    const c = crs.getCrs(p.crsId);
+    const mm = parcelZoneMismatches([p])[0];
+    mount(crsLine, h('div.muted.small', null, `Sommets en ${c.label}${c.epsg ? ` (EPSG:${c.epsg})` : ''}`),
+      mm ? h('div.zone-warn', null, icon('alert'), h('span', null, `Cette parcelle est située en ${crs.getCrs(mm.to).label}, mais ses sommets sont en ${c.label}.`),
+        btn(`Convertir en ${crs.getCrs(mm.to).label.replace(/ Maroc/, '')}`, { variant: 'ghost', onclick: async () => {
+          await updateFeature(convertedParcel(mm), `Zone de la parcelle ${p.name ?? ''}`);
+          toast(`Sommets convertis en ${crs.getCrs(mm.to).label} (positions inchangées ; annulable).`, 'ok', 5000);
+        } }, 'grid')) : null);
+  };
+  paintCrsLine();
+  const offCrs = on('features', paintCrsLine);
+
   mount(root,
     summary,
     h('div.editor-head', null, h('button.icon-btn', { type: 'button', 'aria-label': 'Retour à la liste', title: 'Retour à la liste', onclick: () => { location.hash = '#/parcels'; } }, icon('back')), title, rename, h('span.spacer'), undo, redo),
-    h('div.muted.small', null, `Sommets en ${crs.getCrs(p0.crsId).label} (${crs.getCrs(p0.crsId).epsg ? 'EPSG:' + crs.getCrs(p0.crsId).epsg : ''})`),
+    crsLine,
     results, ownerBox, issues, terrainBox, tabs, body, sides, between, actions,
   );
   paintTabs(); paintTab(); paintResults(); paintMap();
@@ -383,7 +403,7 @@ function renderEditor(root, id) {
   const off = on('features', () => { if (!get()) { location.hash = '#/parcels'; return; } paintResults(); paintMap(); paintOwner(); paintTerrain(); if (tab === 'manual') tabManual(body, get, saveVertices, true); });
   const off2 = on('settings', (s) => { if (s.areaUnit || s.angleUnit) paintResults(); });
   const offDatum = on('datum', () => { paintResults(); paintMap(); });
-  return () => { off(); off2(); offDatum(); offVis(); tabCleanup?.(); M.setClickHandler(null); draft.clearLayers(); };
+  return () => { off(); off2(); offDatum(); offVis(); offCrs(); tabCleanup?.(); M.setClickHandler(null); draft.clearLayers(); };
 }
 
 // ---------------- Onglet A : GPS

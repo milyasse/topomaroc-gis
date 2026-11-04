@@ -52,6 +52,12 @@ Détection : moins de 3 sommets, fermeture répétée, sommets en double (≤ 1 
 
 **Rapport PDF** : projet, date, plan coté (échelle graphique, nord), tableau des sommets (Lambert + WGS 84), tableau des côtés (longueurs, gisements en grades ou degrés, longueurs géodésiques, azimuts), superficie et périmètre, système, méthode, qualité estimée, mention « ne constitue pas un document cadastral officiel ». [Exemple](docs/exemple-rapport-parcelle.pdf).
 
+### Nouveautés v1.4.4 — zone de travail et fond satellite
+- **Fond satellite par défaut** (y compris pour les installations restées sur le plan d'origine).
+- Projection automatique : si la position GPS n'est pas dans la vue de la carte (on consulte une autre région), la zone suit le **centre de la carte** ; elle revient à la zone GPS dès que la position est de nouveau visible ou en mode suivi.
+- Parcelle saisie dans une autre zone que celle de sa position : avertissement dans sa fiche et **conversion en un geste** (conversion directe entre zones du même datum, aller-retour < 1 µm, ancien système conservé dans `crsOriginal`) ; « Recalculer dans leur zone » (Réglages) traite aussi parcelles et lignes.
+- Mises à jour (v1.4.3) : une version téléchargée est annoncée dès l'ouverture ; page Version → « Mettre à jour maintenant ».
+
 ### Nouveautés v1.4.2 — rapport PDF des parcelles
 - Export **PDF — rapport** : pour chaque parcelle, une page avec superficie et périmètre, **plan coté**, **carte de situation sur fond satellite** (Esri World Imagery, attribution imprimée), tableau des **coordonnées des sommets** (Lambert/UTM et WGS 84) et des côtés ; les points du projet suivent dans une fiche de levé. Sans connexion, la carte est omise et le plan occupe toute la largeur (`src/io/mapimage.js`).
 

@@ -1,9 +1,16 @@
 // @ts-check
 /** Version de l'application (numérotation sémantique) et historique des nouveautés. */
-export const APP_VERSION = '1.4.3';
+export const APP_VERSION = '1.4.4';
 export const APP_DATE = '2026-11-04';
 
 export const CHANGELOG = [
+  {
+    version: '1.4.4', date: '2026-11-04', items: [
+      'Fond satellite par défaut.',
+      'Projection automatique : quand la carte montre une autre région que votre position GPS, la zone suit la carte consultée (retour à la zone GPS en revenant sur votre position).',
+      'Parcelle enregistrée dans une autre zone que la sienne : avertissement dans sa fiche et conversion en un geste ; Réglages → « Recalculer dans leur zone » traite aussi les parcelles.',
+    ],
+  },
   {
     version: '1.4.3', date: '2026-11-04', items: [
       'Mises à jour fiables : une nouvelle version déjà téléchargée est annoncée dès l’ouverture, la recherche se fait aussi au retour dans l’application, et la page « Version » propose « Mettre à jour maintenant ».',

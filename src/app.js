@@ -43,7 +43,7 @@ async function boot() {
   M.initMap(/** @type {HTMLElement} */ (document.getElementById('map')));
   sheet = makeSheet(/** @type {HTMLElement} */ (document.getElementById('sheet')), /** @type {HTMLElement} */ (document.getElementById('sheet-handle')));
   wireChrome();
-  startAutoCrs(M.getMap());
+  startAutoCrs(M.getMap(), { isFollowing: M.isFollowing });
   on('sheet-snap', (st) => { if (sheet && !document.getElementById('sheet')?.hidden) sheet.snap(st); });
   if (state.settings.lastProjectId) await openProject(state.settings.lastProjectId).catch(() => openProject(null));
   window.addEventListener('hashchange', route);

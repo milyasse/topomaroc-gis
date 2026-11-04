@@ -622,3 +622,8 @@ label.switch.sm input { width: 18px; height: 18px; }
 .fmt-opts summary { display: flex; gap: 6px; align-items: center; cursor: pointer; font-weight: 600; color: var(--ink-2); }
 .fmt-opts[open] summary { margin-bottom: 8px; }
 @media (max-width: 360px) { .fmt-grid { grid-template-columns: 1fr; } }
+
+/* Parcelle hors de sa zone de projection */
+.zone-warn { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 6px 0; padding: 8px 10px; border-radius: 10px; background: color-mix(in srgb, var(--warn) 12%, var(--surface)); border: 1px solid color-mix(in srgb, var(--warn) 45%, transparent); font-size: .85rem; }
+.zone-warn .ic { color: var(--warn); flex: none; }
+.zone-warn span { flex: 1 1 200px; }

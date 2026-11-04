@@ -73,17 +73,27 @@ function gpsFresh() {
 export const MAP_MIN_ZOOM = 9;
 
 /**
- * Branche le suivi : GPS (prioritaire) et déplacements de la carte.
- * @param {{ on: (ev:string, fn:()=>void)=>void, getCenter: ()=>{lat:number, lng:number}, getZoom: ()=>number }|null} map
+ * Branche le suivi. Règle : la zone est celle de l'endroit où l'on travaille.
+ * - Position GPS quand elle est visible sur la carte (ou en mode suivi GPS) : on travaille sur place.
+ * - Centre de la carte (zoom ≥ 9) quand on consulte une autre région que sa position : on travaille sur la vue.
+ * @param {{ on: (ev:string, fn:()=>void)=>void, getCenter: ()=>{lat:number, lng:number}, getZoom: ()=>number, getBounds: ()=>{contains: (ll:[number,number])=>boolean} }|null} map
+ * @param {{ isFollowing?: () => boolean }} [o]
  */
-export function startAutoCrs(map) {
+export function startAutoCrs(map, o = {}) {
+  const gpsInView = () => {
+    const f = state.gps.last;
+    if (!f || !map) return true;
+    if (o.isFollowing?.()) return true;
+    try { return map.getBounds().contains([f.lat, f.lon]); } catch { return true; }
+  };
   state.gps.addEventListener('fix', () => {
     const f = state.gps.last;
-    if (f && f.accuracy <= 2000) evaluate(f.lon, f.lat, 'gps');
+    if (f && f.accuracy <= 2000 && gpsInView()) evaluate(f.lon, f.lat, 'gps');
   });
   if (!map) return;
   const fromMap = () => {
-    if (gpsFresh() || map.getZoom() < MAP_MIN_ZOOM) return; // la position réelle prime ; vue d'ensemble ignorée
+    if (map.getZoom() < MAP_MIN_ZOOM) return; // vue d'ensemble du pays : ignorée
+    if (gpsFresh() && gpsInView()) return; // on travaille sur place : la position GPS prime
     const c = map.getCenter();
     evaluate(c.lng, c.lat, 'carte');
   };
@@ -115,6 +125,30 @@ export async function manualCrsChoice(key, id) {
   await updateSettings(patch);
   return disabled;
 }
+
+/**
+ * Parcelles en coordonnées projetées dont le système n'est pas celui de la zone de leur centre.
+ * Conversion directe entre projections du même datum (aller-retour < 1 µm) ; l'ancien système est conservé.
+ * @param {any[]} features @param {string} [family]
+ * @returns {{ f:any, from:string, to:string, vertices:any[] }[]}
+ */
+export function parcelZoneMismatches(features, family = activeFamily()) {
+  const out = [];
+  for (const f of features) {
+    if ((f.type !== 'parcel' && f.type !== 'line') || !f.vertices?.length || crs.getCrs(f.crsId).kind !== 'projected') continue;
+    const ll = f.vertices.map((/** @type {any} */ v) => crs.toWGS84(f.crsId, [v.x, v.y]));
+    const lon = ll.reduce((s, p) => s + p.lon, 0) / ll.length, lat = ll.reduce((s, p) => s + p.lat, 0) / ll.length;
+    const to = zoneAt(lon, lat, familyOf(f.crsId) ?? family);
+    if (!to || to === f.crsId) continue;
+    // même datum (Merchich ou WGS 84) : conversion directe, exacte ; sinon via WGS 84
+    const vertices = f.vertices.map((/** @type {any} */ v) => { const [x, y] = crs.transform(f.crsId, to, [v.x, v.y]); return { ...v, x, y }; });
+    out.push({ f, from: f.crsId, to, vertices });
+  }
+  return out;
+}
+
+/** Applique la conversion d'une parcelle dans sa zone. @param {{ f:any, from:string, to:string, vertices:any[] }} m */
+export const convertedParcel = (m) => ({ ...m.f, crsId: m.to, vertices: m.vertices, crsOriginal: m.f.crsOriginal ?? m.from });
 
 /**
  * Points dont le système d'enregistrement ne correspond pas à la zone de leur position.

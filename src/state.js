@@ -24,7 +24,7 @@ export const codeInfo = (code) => POINT_CODES.find((c) => c.value === code) ?? {
 
 export const DEFAULT_SETTINGS = {
   theme: 'auto', contrast: false, inputCrs: 'EPSG:26191', displayCrs: 'EPSG:26191',
-  angleUnit: 'deg', areaUnit: 'm2', basemap: 'osm', sound: true, vibrate: true,
+  angleUnit: 'deg', areaUnit: 'm2', basemap: 'sat', sound: true, vibrate: true,
   arrivalRadius: 10, avgEnabled: false, avgMaxAcc: 8, avgDuration: 20,
   lastProjectId: null, merchichCustom: null, lang: 'fr',
   layers: { parcels: true, lines: true, points: true, nav: true, measures: true },
@@ -62,6 +62,9 @@ export function on(type, fn) {
 export async function loadSettings() {
   const saved = await db.getSetting('settings', {});
   state.settings = { ...structuredClone(DEFAULT_SETTINGS), ...saved, layers: { ...DEFAULT_SETTINGS.layers, ...(saved?.layers ?? {}) } };
+  // v1.4.4 : fond satellite par défaut, y compris pour les installations existantes restées sur le plan d'origine
+  const st = /** @type {any} */ (state.settings);
+  if (!st.basemapSatDefault) { if (st.basemap === 'osm') st.basemap = 'sat'; st.basemapSatDefault = true; await db.setSetting('settings', state.settings); }
   applyDatumSettings();
 }
 /** @param {Partial<typeof DEFAULT_SETTINGS>} patch */

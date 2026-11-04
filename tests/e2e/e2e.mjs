@@ -753,6 +753,36 @@ await test('Projection automatique sans GPS : « + Point » à Laâyoune → Lam
   return 'point carte en EPSG:26194 ; vue pays ignorée ; choix manuel respecté';
 });
 
+await test('Zone de travail : GPS à Rabat, carte consultée à Agadir → Lambert Sud ; parcelle mal zonée convertie', async () => {
+  const { page, ctx, errors } = await newPage({ hash: '#/survey' });
+  await page.waitForSelector('.gps-card.st-active', { timeout: 8000 });
+  await page.waitForSelector('#chip-crs:has-text("Lambert Nord")');
+  // la position GPS (Rabat) n'est plus dans la vue : la zone suit la carte consultée
+  await page.goto(BASE + '#/map');
+  await page.evaluate(async () => { const M = await import('./src/map/map.js'); M.getMap().setView([30.4202, -9.5982], 15, { animate: false }); });
+  await page.waitForSelector('#chip-crs:has-text("Lambert Sud")', { timeout: 5000 });
+  // retour sur sa position : la zone GPS reprend
+  await page.evaluate(async () => { const M = await import('./src/map/map.js'); M.getMap().setView([34.0209, -6.8498], 15, { animate: false }); });
+  await page.waitForSelector('#chip-crs:has-text("Lambert Nord")', { timeout: 5000 });
+  // parcelle d'Agadir saisie par erreur en zone 1
+  const id = await seed(page, async () => {
+    const st = await import('./src/state.js'); const crs = await import('./src/core/crs.js');
+    const ll = [[-9.600, 30.420], [-9.599, 30.420], [-9.599, 30.421], [-9.600, 30.421]];
+    const p = await st.addFeature({ type: 'parcel', name: 'Agadir', crsId: 'EPSG:26191', vertices: ll.map(([lon, lat]) => { const [x, y] = crs.fromWGS84('EPSG:26191', lon, lat); return { x, y }; }) });
+    return p.id;
+  });
+  await page.goto(BASE + `#/parcels/${id}`);
+  await page.waitForSelector('.zone-warn:has-text("Lambert Sud")');
+  await page.click('.zone-warn button');
+  await page.waitForSelector('.crs-line:has-text("EPSG:26192")');
+  assert(await page.locator('.zone-warn').count() === 0, 'avertissement encore affiché');
+  const r = await page.evaluate(async (id) => { const st = await import('./src/state.js'); const crs = await import('./src/core/crs.js'); const f = st.state.features.find((x) => x.id === id); const back = crs.transform(f.crsId, 'EPSG:26191', [f.vertices[0].x, f.vertices[0].y]); const ref = crs.fromWGS84('EPSG:26191', -9.6, 30.42); return { crs: f.crsId, orig: f.crsOriginal, ecart: Math.hypot(back[0] - ref[0], back[1] - ref[1]) }; }, id);
+  assert(r.crs === 'EPSG:26192' && r.orig === 'EPSG:26191' && r.ecart < 1e-4, JSON.stringify(r));
+  assert(errors.length === 0, errors.join(' | '));
+  await ctx.close();
+  return 'carte à Agadir → zone 2, retour à Rabat → zone 1 ; parcelle convertie de 26191 vers 26192 sans déplacement (< 1 mm)';
+});
+
 await test('Réglages : recalcul des points anciens dans leur zone', async () => {
   const { page, ctx, errors } = await newPage({ hash: '#/home', denyGeo: true });
   await seed(page, async () => {
@@ -843,15 +873,23 @@ await test('Export PDF : rapport de parcelle avec carte de situation et coordonn
   return `${pages} pages (une par parcelle), ${images} cartes de situation, ${buf.length} octets`;
 });
 
+await test('Fond satellite par défaut (nouvelle installation)', async () => {
+  const { page, ctx } = await newPage({ hash: '#/map' });
+  const bm = await page.evaluate(async () => (await import('./src/state.js')).state.settings.basemap);
+  assert(bm === 'sat', bm);
+  await ctx.close();
+  return bm;
+});
+
 await test('Page « Version de l’application » (accueil, réglages, aide)', async () => {
   const { page, ctx, errors } = await newPage({ hash: '#/home' });
   await page.waitForSelector('.version-tag');
   const v = await text(page, '.version-tag');
-  assert(/v1\.4\.3/.test(v), v);
+  assert(/v1\.4\.4/.test(v), v);
   await page.click('.version-tag');
-  await page.waitForSelector('#about-version:has-text("Version 1.4.3")');
+  await page.waitForSelector('#about-version:has-text("Version 1.4.4")');
   await page.waitForSelector('.about-kv dt:has-text("Publication")');
-  await page.waitForSelector('.changelog.current:has-text("v1.4.3")');
+  await page.waitForSelector('.changelog.current:has-text("v1.4.4")');
   const n = await page.locator('.changelog').count();
   assert(n >= 5, `${n} versions dans l’historique`);
   await page.click('button:has-text("Rechercher une mise à jour")');
@@ -859,7 +897,7 @@ await test('Page « Version de l’application » (accueil, réglages, aide)', a
   const st = await text(page, '[aria-live=polite]');
   await page.screenshot({ path: path.join(SHOTS, 'mobile-version.png') });
   await page.goto(BASE + '#/settings'); await page.waitForSelector('a[href="#/about"]');
-  await page.goto(BASE + '#/help'); await page.waitForSelector('summary:has-text("Version v1.4.3")');
+  await page.goto(BASE + '#/help'); await page.waitForSelector('summary:has-text("Version v1.4.4")');
   assert(errors.length === 0, errors.join(' | '));
   await ctx.close();
   return `${v} · ${n} versions · « ${st} »`;

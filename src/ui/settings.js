@@ -8,7 +8,7 @@ import { requestPersistence } from '../services/storage.js';
 import { h, icon, btn, mount, toast, field, select } from './dom.js';
 import { crsSelect, crsInfo } from './coordinput.js';
 import { versionLabel } from '../version.js';
-import { manualCrsChoice, zoneMismatches } from '../services/autocrs.js';
+import { manualCrsChoice, zoneMismatches, parcelZoneMismatches, convertedParcel } from '../services/autocrs.js';
 import { FAMILIES } from '../core/zones.js';
 import { updateFeature } from '../state.js';
 
@@ -33,13 +33,16 @@ export function render(root) {
   const mis = h('div.small');
   const paintMis = () => {
     const m = zoneMismatches(state.features, fam.value);
-    mount(mis, m.length
-      ? [h('p', null, `${m.length} point(s) du projet sont enregistrés dans un système qui n’est pas celui de leur zone (ex. point ${m[0].f.num ?? ''} : ${m[0].from === '—' ? '—' : crs.getCrs(m[0].from).label} → ${crs.getCrs(m[0].to).label}).`),
+    const pm = parcelZoneMismatches(state.features, fam.value);
+    const ex = m[0] ? `point ${m[0].f.num ?? ''} : ${m[0].from === '—' ? '—' : crs.getCrs(m[0].from).label} → ${crs.getCrs(m[0].to).label}` : `parcelle « ${pm[0]?.f.name ?? ''} » : ${pm[0] ? crs.getCrs(pm[0].from).label : ''} → ${pm[0] ? crs.getCrs(pm[0].to).label : ''}`;
+    mount(mis, m.length || pm.length
+      ? [h('p', null, `${m.length} point(s) et ${pm.length} parcelle(s) du projet sont enregistrés dans un système qui n’est pas celui de leur zone (ex. ${ex}).`),
         btn('Recalculer dans leur zone', { variant: 'ghost', onclick: async () => {
           for (const x of m) await updateFeature({ ...x.f, input: x.input }, `Zone du point ${x.f.num ?? ''}`);
-          toast(`${m.length} point(s) recalculé(s) dans leur zone (positions inchangées, ancienne valeur conservée).`, 'ok', 5000); paintMis();
+          for (const x of pm) await updateFeature(convertedParcel(x), `Zone de la parcelle ${x.f.name ?? ''}`);
+          toast(`${m.length} point(s) et ${pm.length} parcelle(s) recalculés dans leur zone (positions inchangées, ancien système conservé).`, 'ok', 5000); paintMis();
         } }, 'grid')]
-      : h('p.muted', null, state.features.some((f) => f.type === 'point') ? 'Tous les points du projet sont enregistrés dans la zone de leur position.' : 'Aucun point dans le projet ouvert.'));
+      : h('p.muted', null, state.features.length ? 'Tous les points et parcelles du projet sont dans la zone de leur position.' : 'Aucune donnée dans le projet ouvert.'));
   };
   fam.addEventListener('change', paintMis);
   paintMis();
