@@ -1,9 +1,16 @@
 // @ts-check
 /** Version de l'application (numérotation sémantique) et historique des nouveautés. */
-export const APP_VERSION = '1.7.1';
+export const APP_VERSION = '1.8.0';
 export const APP_DATE = '2026-11-18';
 
 export const CHANGELOG = [
+  {
+    version: '1.8.0', date: '2026-11-18', items: [
+      'Liste des parcelles : « Tout sélectionner », puis « PDF parcelles et partages » pour un rapport PDF unique des parcelles cochées.',
+      'Ce rapport contient une page de synthèse (chaque parcelle, puis ses lots : nom de la personne, part en %, superficie en m² et ha a ca, total), puis pour chaque parcelle son plan des lots, le tableau des parts et les coordonnées des sommets.',
+      'Une parcelle non partagée figure avec son propriétaire éventuel (100 %) ; cocher un lot inclut sa parcelle d’origine.',
+    ],
+  },
   {
     version: '1.7.1', date: '2026-11-18', items: [
       'Ordinateur (PC, Mac) : « Rapport PDF » et « Exporter » téléchargent directement le fichier (dossier Téléchargements) au lieu d’ouvrir la fenêtre « Partager » du système.',

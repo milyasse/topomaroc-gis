@@ -654,3 +654,10 @@ label.switch.sm input { width: 18px; height: 18px; }
 .save-txt b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .save-txt small { color: var(--ink-2); }
 .save-link { flex: none; text-decoration: none; }
+
+/* Sélection des parcelles (rapport groupé) */
+.sel-bar { display: flex; align-items: center; gap: 8px; padding: 6px 10px; margin: 4px 0; border-radius: 10px; background: var(--surface-2); }
+.sel-all { display: flex; align-items: center; gap: 8px; font-weight: 600; cursor: pointer; }
+.sel-all input { width: 20px; height: 20px; }
+.total-acts { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; flex-basis: 100%; }
+.total-acts .link-btn { margin-left: 0; }

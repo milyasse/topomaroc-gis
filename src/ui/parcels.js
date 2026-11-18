@@ -40,6 +40,7 @@ export function render(root, id) {
   const list = h('div.parcel-list');
   const total = h('div.total-bar');
   const visBar = h('div.vis-bar');
+  const selBar = h('div.sel-bar');
   const unit = areaUnitSelect();
 
   const paint = () => {
@@ -47,7 +48,7 @@ export function render(root, id) {
     // parcelles d'origine suivies de leurs lots
     const parcels = all.filter((f) => !f.parentId || !all.some((q) => q.id === f.parentId)).flatMap((f) => [f, ...all.filter((c) => c.parentId === f.id)]);
     for (const s of [...selected]) if (!parcels.some((p) => p.id === s)) selected.delete(s);
-    if (!parcels.length) { mount(visBar); mount(list, h('p.empty', null, 'Aucune parcelle. Créez-en une par levé GPS, saisie de coordonnées, import de fichier ou dessin sur la carte.')); total.hidden = true; return; }
+    if (!parcels.length) { mount(visBar); mount(selBar); mount(list, h('p.empty', null, 'Aucune parcelle. Créez-en une par levé GPS, saisie de coordonnées, import de fichier ou dessin sur la carte.')); total.hidden = true; return; }
     const res = new Map(parcels.map((p) => [p.id, safeAnalyze(p)]));
     mount(list, parcels.map((p) => {
       const a = res.get(p.id);
@@ -71,6 +72,14 @@ export function render(root, id) {
       ? [icon('eye-off'), h('span', null, `${nHidden} parcelle(s) masquée(s) sur la carte`), h('span.spacer'), h('button.link-btn', { type: 'button', onclick: () => setHidden(parcels.map((p) => p.id), false) }, icon('eye'), 'Tout afficher')]
       : [icon('eye'), h('span', null, 'Toutes les parcelles sont affichées'), h('span.spacer'),
         selected.size ? h('button.link-btn', { type: 'button', onclick: () => showOnlyParcels([...selected]) }, icon('eye'), 'N’afficher que la sélection') : h('small.muted', null, 'œil = afficher / masquer')]);
+    // sélection : tout / aucune
+    const roots = parcels.filter((p) => !p.parentId);
+    const allSel = roots.length > 0 && roots.every((p) => selected.has(p.id));
+    const selAll = /** @type {HTMLInputElement} */ (h('input', { type: 'checkbox', checked: allSel, 'aria-label': 'Sélectionner toutes les parcelles' }));
+    selAll.indeterminate = !allSel && selected.size > 0;
+    selAll.addEventListener('change', () => { selected.clear(); if (selAll.checked) roots.forEach((p) => selected.add(p.id)); paint(); });
+    mount(selBar, h('label.sel-all', null, selAll, h('span', null, allSel ? 'Tout désélectionner' : 'Tout sélectionner')),
+      h('span.spacer'), h('small.muted', null, selected.size ? `${selected.size} sélectionnée(s)` : 'Cochez des parcelles pour un rapport PDF groupé'));
     paintTotal();
     function paintTotal() {
       const sel = parcels.filter((p) => selected.has(p.id)).map((p) => res.get(p.id));
@@ -79,7 +88,9 @@ export function render(root, id) {
       const t = totalArea(sel);
       mount(total, h('span', null, `${t.count} parcelle(s) sélectionnée(s) : `), h('b', null, formatArea(t.area, /** @type {any} */ (state.settings.areaUnit))),
         t.mixedMethods ? h('small.warn', null, ' (méthodes de calcul différentes)') : null,
-        h('button.link-btn', { type: 'button', onclick: () => exportDialog(parcels.filter((p) => selected.has(p.id)), 'geojson', 'parcelles') }, icon('download'), 'Exporter'));
+        h('div.total-acts', null,
+          btn('PDF parcelles et partages', { variant: 'primary', onclick: () => groupReport(parcels.filter((p) => selected.has(p.id))) }, 'file'),
+          h('button.link-btn', { type: 'button', onclick: () => exportDialog(parcels.filter((p) => selected.has(p.id)), 'geojson', 'parcelles') }, icon('download'), 'Exporter')));
     }
   };
   const off = on('features', paint);
@@ -88,11 +99,36 @@ export function render(root, id) {
 
   mount(root,
     h('div.row', null, btn('Nouvelle parcelle', { variant: 'primary', onclick: () => newParcel() }, 'plus'), h('span.spacer'), field('Unité', unit)),
-    visBar, list, total,
+    visBar, selBar, list, total,
     h('details.help', null, h('summary', null, icon('info'), 'Méthode de calcul'),
       h('p', null, 'Coordonnées projetées (Lambert, UTM) : superficie plane par la formule de Gauss, comme sur les plans topographiques et cadastraux. Levés GPS (WGS 84) : superficie géodésique exacte sur l’ellipsoïde (GeographicLib). Au-delà de 10 km d’emprise, la méthode géodésique est retenue. Les deux valeurs sont toujours affichées pour contrôle.')),
   );
   return () => { off(); off2(); };
+}
+
+/**
+ * Rapport PDF groupé des parcelles sélectionnées : synthèse (lots, personnes, parts %, superficies),
+ * puis le partage de chaque parcelle. Un lot sélectionné entraîne sa parcelle d'origine.
+ * @param {any[]} sel
+ */
+async function groupReport(sel) {
+  const all = state.features.filter((f) => f.type === 'parcel');
+  /** @type {any[]} */ const parents = [];
+  for (const f of sel) {
+    const root = f.parentId ? all.find((q) => q.id === f.parentId) ?? f : f;
+    if (!parents.includes(root)) parents.push(root);
+  }
+  const bad = parents.filter((p) => !safeAnalyze(p)?.valid);
+  const ok = parents.filter((p) => !bad.includes(p));
+  if (!ok.length) { toast('Aucune parcelle valide dans la sélection.', 'error'); return; }
+  if (bad.length) toast(`Ignorée(s) car à corriger : ${bad.map((p) => p.name || 'sans nom').join(', ')}.`, 'warn', 6000);
+  const groups = ok.map((p) => ({ parent: p, lots: all.filter((c) => c.parentId === p.id) }));
+  toast(`Rapport de ${groups.length} parcelle(s) en préparation…`, 'info', 2500);
+  try {
+    const { divisionsReportPDF } = await import('../io/office.js');
+    const blob = await divisionsReportPDF(groups, state.project, { summary: true });
+    await shareOrSave(blob, `${safeName(state.project?.name || 'parcelles')}-parcelles-partages.pdf`);
+  } catch (e) { toast(/** @type {Error} */ (e).message, 'error', 6000); }
 }
 
 /** @param {any} p */

@@ -52,6 +52,11 @@ Détection : moins de 3 sommets, fermeture répétée, sommets en double (≤ 1 
 
 **Rapport PDF** : projet, date, plan coté (échelle graphique, nord), tableau des sommets (Lambert + WGS 84), tableau des côtés (longueurs, gisements en grades ou degrés, longueurs géodésiques, azimuts), superficie et périmètre, système, méthode, qualité estimée, mention « ne constitue pas un document cadastral officiel ». [Exemple](docs/exemple-rapport-parcelle.pdf).
 
+### Nouveautés v1.8 — rapport PDF groupé des parcelles et partages
+
+- Dans la liste des parcelles, cochez des parcelles (ou « Tout sélectionner »), puis **PDF parcelles et partages**.
+- Un seul PDF : page de synthèse (chaque parcelle et ses lots avec nom de la personne, part en %, superficie en m² et ha a ca, total), puis une page par parcelle (plan des lots en couleur, tableau des parts, coordonnées des sommets).
+
 ### Nouveautés v1.7.1 — enregistrement sur ordinateur
 
 - Sur PC/Mac, « Rapport PDF » et « Exporter » téléchargent directement (dossier Téléchargements) au lieu d'ouvrir la fenêtre « Partager » de Windows/macOS ; un bandeau garde un bouton « Télécharger » de secours. Sur téléphone, la feuille de partage reste utilisée.
