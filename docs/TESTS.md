@@ -1,6 +1,6 @@
 # Résultats des tests — TopoMaroc GIS
 
-Généré le 2026-11-18 13:26 UTC par `tools/tests-report.mjs` à partir d'exécutions réelles. Aucun test n'est déclaré réussi sans avoir été exécuté.
+Généré le 2026-11-18 14:09 UTC par `tools/tests-report.mjs` à partir d'exécutions réelles. Aucun test n'est déclaré réussi sans avoir été exécuté.
 
 ## 1. Tests unitaires (Node v22.23.4, `node --test`)
 
@@ -108,9 +108,9 @@ Constat documenté : PROJ n'applique pas EPSG:1166 dans les zones Sahara Nord/Su
 
 ## 2. Tests navigateur — http://127.0.0.1:8080/
 
-Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ordinateur 1440×900 ; GPS simulé. Exécution du 2026-11-18 13:23 UTC.
+Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ordinateur 1440×900 ; GPS simulé. Exécution du 2026-11-18 14:07 UTC.
 
-**41 réussi(s), 0 échoué(s), 2 non exécuté(s).**
+**42 réussi(s), 0 échoué(s), 2 non exécuté(s).**
 
 | Résultat | Scénario | Détail |
 |---|---|---|
@@ -129,7 +129,7 @@ Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ord
 | ✅ réussi | Parcelle : carré 10 m × 10 m saisi en Lambert Nord → 100,00 m² | superficie 100,00 m², périmètre 40,00 m |
 | ✅ réussi | Parcelle : polygone auto-intersecté et sommets en double détectés |  |
 | ✅ réussi | Parcelle : mode dessin sur la carte puis rapport PDF | 4 sommets dessinés, 2 930,61 m², PDF 185703 octets |
-| ✅ réussi | Import CSV (séparateur ;) avec choix du système puis export direct GeoJSON/DXF/CSV/XLSX | Leve_du_18_11_2026-20261118-1323.geojson, Leve_du_18_11_2026-20261118-1323-26191.dxf, Leve_du_18_11_2026-20261118-1323-26191.csv, Leve_du_18_11_2026-20261118-1323.xlsx ; export direct en un geste |
+| ✅ réussi | Import CSV (séparateur ;) avec choix du système puis export direct GeoJSON/DXF/CSV/XLSX | Leve_du_18_11_2026-20261118-1406.geojson, Leve_du_18_11_2026-20261118-1406-26191.dxf, Leve_du_18_11_2026-20261118-1406-26191.csv, Leve_du_18_11_2026-20261118-1406.xlsx ; export direct en un geste |
 | ✅ réussi | Sauvegarde complète puis restauration | 1 projet(s), 1 entité(s) restaurés |
 | ✅ réussi | Outils : convertisseur (Lambert Nord → tous systèmes) et mesure de distance | origine (500 000 ; 300 000) → φ 33,3° λ −5,4° ; distance mesurée 148,64 m |
 | ✅ réussi | Interface tablette et ordinateur (captures) |  |
@@ -141,6 +141,7 @@ Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ord
 | ✅ réussi | Partage : direction tracée sur la carte (2 points accrochés), parts 30/70, ordre inversé | gisement 0.0° (0.00 gr) ; Ali 1500.00 m² (x 400070.00–400100.00), Nadia 3500.00 m² |
 | ✅ réussi | Partage par superficie : 1 200 m², 18 a et le reste, lots exacts | Omar 1200.00 m², Salma 1800.00 m², Hassan 2000.00 m² |
 | ✅ réussi | Ajuster à une superficie : côté déplacé (Lambert), mise à l’échelle (WGS 84), annulation | côté : 5000 → 6000.0000 m² ; échelle WGS 84 → 5000.0000 m² |
+| ✅ réussi | Enregistrement sur PC : téléchargement direct (pas de feuille de partage) + lien « Télécharger » ; téléphone : partage | PC : Export_PC-rapport.pdf (98543 octets), lien de secours OK, DXF Export_PC-20261118-1406-26191.dxf ; iPhone : partage |
 | ✅ réussi | Fiche projet : statistiques et superficie par personne |  |
 | ✅ réussi | Satellite : au-delà de l’imagerie disponible, image agrandie au lieu d’une zone vide | 8 tuiles affichées au zoom 21, Imagerie max. ici : zoom 18 — image agrandie |
 | ✅ réussi | Déplacer un point en édition (glisser sur la carte) + sommet de parcelle lié | point déplacé à X=400003.00 ; sommet lié suivi ; nouvelle superficie 85.00 m² |
@@ -154,15 +155,15 @@ Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ord
 | ✅ réussi | Parcelles : afficher / masquer chacune, « uniquement celle-ci », lots masqués avec leur parcelle | seule P1 → 1 tracé ; P2 + lot réaffichés ; couches 2/4 → 4/4 ; masquage conservé après rechargement |
 | ✅ réussi | Export PDF : rapport de parcelle avec carte de situation et coordonnées (une page par parcelle) | 2 pages (une par parcelle), 2 cartes de situation, 104285 octets |
 | ✅ réussi | Fond satellite par défaut (nouvelle installation) | sat |
-| ✅ réussi | Page « Version de l’application » (accueil, réglages, aide) | TopoMaroc GIS v1.7.0 · version et nouveautés · 12 versions · « Vous utilisez la dernière version (v1.7.0). » |
+| ✅ réussi | Page « Version de l’application » (accueil, réglages, aide) | TopoMaroc GIS v1.7.1 · version et nouveautés · 13 versions · « Vous utilisez la dernière version (v1.7.1). » |
 | ⏸ non exécuté | Smartphone iOS / Android réels | aucun appareil physique disponible dans l’environnement de test : à valider sur le terrain (Safari iOS, Chrome Android) |
 | ⏸ non exécuté | Installation PWA sur l’écran d’accueil | nécessite une interaction utilisateur sur un appareil réel ; critères vérifiés automatiquement (manifeste, icônes, service worker, HTTPS) |
 
 ## 3. Tests navigateur — https://milyasse.github.io/topomaroc-gis/
 
-Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ordinateur 1440×900 ; GPS simulé. Exécution du 2026-11-18 13:26 UTC.
+Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ordinateur 1440×900 ; GPS simulé. Exécution du 2026-11-18 14:09 UTC.
 
-**41 réussi(s), 0 échoué(s), 2 non exécuté(s).**
+**42 réussi(s), 0 échoué(s), 2 non exécuté(s).**
 
 | Résultat | Scénario | Détail |
 |---|---|---|
@@ -181,7 +182,7 @@ Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ord
 | ✅ réussi | Parcelle : carré 10 m × 10 m saisi en Lambert Nord → 100,00 m² | superficie 100,00 m², périmètre 40,00 m |
 | ✅ réussi | Parcelle : polygone auto-intersecté et sommets en double détectés |  |
 | ✅ réussi | Parcelle : mode dessin sur la carte puis rapport PDF | 4 sommets dessinés, 2 930,61 m², PDF 185703 octets |
-| ✅ réussi | Import CSV (séparateur ;) avec choix du système puis export direct GeoJSON/DXF/CSV/XLSX | Leve_du_18_11_2026-20261118-1325.geojson, Leve_du_18_11_2026-20261118-1325-26191.dxf, Leve_du_18_11_2026-20261118-1325-26191.csv, Leve_du_18_11_2026-20261118-1325.xlsx ; export direct en un geste |
+| ✅ réussi | Import CSV (séparateur ;) avec choix du système puis export direct GeoJSON/DXF/CSV/XLSX | Leve_du_18_11_2026-20261118-1408.geojson, Leve_du_18_11_2026-20261118-1408-26191.dxf, Leve_du_18_11_2026-20261118-1408-26191.csv, Leve_du_18_11_2026-20261118-1408.xlsx ; export direct en un geste |
 | ✅ réussi | Sauvegarde complète puis restauration | 1 projet(s), 1 entité(s) restaurés |
 | ✅ réussi | Outils : convertisseur (Lambert Nord → tous systèmes) et mesure de distance | origine (500 000 ; 300 000) → φ 33,3° λ −5,4° ; distance mesurée 148,64 m |
 | ✅ réussi | Interface tablette et ordinateur (captures) |  |
@@ -193,6 +194,7 @@ Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ord
 | ✅ réussi | Partage : direction tracée sur la carte (2 points accrochés), parts 30/70, ordre inversé | gisement 0.0° (0.00 gr) ; Ali 1500.00 m² (x 400070.00–400100.00), Nadia 3500.00 m² |
 | ✅ réussi | Partage par superficie : 1 200 m², 18 a et le reste, lots exacts | Omar 1200.00 m², Salma 1800.00 m², Hassan 2000.00 m² |
 | ✅ réussi | Ajuster à une superficie : côté déplacé (Lambert), mise à l’échelle (WGS 84), annulation | côté : 5000 → 6000.0000 m² ; échelle WGS 84 → 5000.0000 m² |
+| ✅ réussi | Enregistrement sur PC : téléchargement direct (pas de feuille de partage) + lien « Télécharger » ; téléphone : partage | PC : Export_PC-rapport.pdf (98543 octets), lien de secours OK, DXF Export_PC-20261118-1409-26191.dxf ; iPhone : partage |
 | ✅ réussi | Fiche projet : statistiques et superficie par personne |  |
 | ✅ réussi | Satellite : au-delà de l’imagerie disponible, image agrandie au lieu d’une zone vide | 8 tuiles affichées au zoom 21, Imagerie max. ici : zoom 18 — image agrandie |
 | ✅ réussi | Déplacer un point en édition (glisser sur la carte) + sommet de parcelle lié | point déplacé à X=400003.00 ; sommet lié suivi ; nouvelle superficie 85.00 m² |
@@ -206,7 +208,7 @@ Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ord
 | ✅ réussi | Parcelles : afficher / masquer chacune, « uniquement celle-ci », lots masqués avec leur parcelle | seule P1 → 1 tracé ; P2 + lot réaffichés ; couches 2/4 → 4/4 ; masquage conservé après rechargement |
 | ✅ réussi | Export PDF : rapport de parcelle avec carte de situation et coordonnées (une page par parcelle) | 2 pages (une par parcelle), 2 cartes de situation, 104285 octets |
 | ✅ réussi | Fond satellite par défaut (nouvelle installation) | sat |
-| ✅ réussi | Page « Version de l’application » (accueil, réglages, aide) | TopoMaroc GIS v1.7.0 (5a23969) · version et nouveautés · 12 versions · « Vous utilisez la dernière version (v1.7.0). » |
+| ✅ réussi | Page « Version de l’application » (accueil, réglages, aide) | TopoMaroc GIS v1.7.1 (187759c) · version et nouveautés · 13 versions · « Vous utilisez la dernière version (v1.7.1). » |
 | ⏸ non exécuté | Smartphone iOS / Android réels | aucun appareil physique disponible dans l’environnement de test : à valider sur le terrain (Safari iOS, Chrome Android) |
 | ⏸ non exécuté | Installation PWA sur l’écran d’accueil | nécessite une interaction utilisateur sur un appareil réel ; critères vérifiés automatiquement (manifeste, icônes, service worker, HTTPS) |
 
