@@ -1,12 +1,13 @@
 // Fichier généré par tools/gen-precache.mjs — ne pas modifier à la main.
 self.PRECACHE = {
- "version": "d9b1bd8ae42d",
+ "version": "2b438e4dc96a",
  "files": [
   "./",
   "./index.html",
   "./manifest.webmanifest",
   "./src/app.js",
   "./src/core/angles.js",
+  "./src/core/areafit.js",
   "./src/core/assemble.js",
   "./src/core/crs.js",
   "./src/core/division.js",

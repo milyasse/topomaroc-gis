@@ -581,6 +581,63 @@ await test('Partage par superficie : 1 200 m², 18 a et le reste, lots exacts', 
   return lots.lots.map((l) => `${l.n} ${l.a.toFixed(2)} m²`).join(', ');
 });
 
+await test('Ajuster à une superficie : côté déplacé (Lambert), mise à l’échelle (WGS 84), annulation', async () => {
+  const { page, ctx, errors } = await newPage({ hash: '#/map' });
+  const ids = await seed(page, async () => {
+    const st = await import('./src/state.js');
+    const c = [[400000, 380000], [400100, 380000], [400100, 380050], [400000, 380050]]; // 5000 m²
+    const a = await st.addFeature({ type: 'parcel', name: 'Dessin', crsId: 'EPSG:26191', method: 'auto', vertices: c.map(([x, y], i) => ({ x, y, label: `D${i + 1}`, pointId: i === 1 ? 'pt-x' : undefined })) });
+    const g = [[-6.84, 34.0], [-6.838, 34.0], [-6.838, 34.0015], [-6.84, 34.0015]];
+    const b = await st.addFeature({ type: 'parcel', name: 'GPS', crsId: 'EPSG:4326', method: 'auto', vertices: g.map(([x, y], i) => ({ x, y, label: `G${i + 1}` })) });
+    return [a.id, b.id];
+  });
+  const shown = async (id) => page.evaluate(async (id) => {
+    const st = await import('./src/state.js'); const P = await import('./src/core/parcel.js');
+    const f = st.state.features.find((q) => q.id === id);
+    return { area: P.analyzeParcel(f.vertices, f.crsId, { method: f.method || 'auto' }).area, v: f.vertices, fit: f.areaFit };
+  }, id);
+  // 1) côté D2–D3 (le plus long n’est pas celui-là : choix explicite) → 6 000 m²
+  await page.goto(BASE + `#/parcels/${ids[0]}/manual`);
+  await page.click('.fit-head');
+  await page.fill('.fit-in', '60 a');
+  await page.selectOption('select[aria-label="Côté à déplacer"]', '1');
+  await page.waitForSelector('.fit-out:has-text("déplacé de")');
+  await page.screenshot({ path: path.join(SHOTS, 'mobile-ajuster-superficie.png') });
+  await page.click('.fit-out button:has-text("Appliquer")');
+  await page.waitForSelector('.toast:has-text("Superficie ajustée")');
+  const r1 = await shown(ids[0]);
+  assert(Math.abs(r1.area - 6000) < 1e-3, `aire ${r1.area}`);
+  assert(r1.v[0].x === 400000 && r1.v[3].x === 400000 && r1.v[3].y === 380050, 'sommets fixes déplacés');
+  assert(r1.v[1].pointId === undefined && r1.v[1].moved === true, 'lien au point levé conservé à tort');
+  assert(r1.fit?.target === 6000 && r1.fit.method === 'side', JSON.stringify(r1.fit));
+  const sumTxt = await text(page, '.sticky-summary');
+  assert(/6\s?000,00/.test(sumTxt), sumTxt);
+  // annulation : retour à 5000 m²
+  await page.click('button[aria-label="Annuler"]');
+  await page.waitForSelector('.toast:has-text("Annulé")');
+  const r0 = await shown(ids[0]);
+  assert(Math.abs(r0.area - 5000) < 1e-6, `annulation ${r0.area}`);
+  // 2) WGS 84, mise à l’échelle → 0,5 ha, superficie affichée exacte
+  await page.goto(BASE + `#/parcels/${ids[1]}/manual`);
+  await page.click('.fit-head');
+  await page.selectOption('select[aria-label="Méthode d’ajustement"]', 'scale');
+  await page.fill('.fit-in', '0,5 ha');
+  await page.waitForSelector('.fit-out:has-text("forme et angles conservés")');
+  await page.click('.fit-out button:has-text("Appliquer")');
+  await page.evaluate((id) => { window.__fitId = id; }, ids[1]);
+  await until(page, async () => { const st = await import('./src/state.js'); return !!st.state.features.find((q) => q.id === window.__fitId)?.areaFit; });
+  const r2 = await shown(ids[1]);
+  assert(Math.abs(r2.area - 5000) < 1e-3, `aire WGS 84 ${r2.area}`);
+  // 3) cible impossible en déplaçant un côté → message, rien n’est modifié
+  await page.goto(BASE + `#/parcels/${ids[0]}/manual`);
+  await page.click('.fit-head');
+  await page.fill('.fit-in', 'abc');
+  await page.waitForSelector('.fit-out .issue.error:has-text("illisible")');
+  assert(errors.length === 0, errors.join(' | '));
+  await ctx.close();
+  return `côté : 5000 → ${r1.area.toFixed(4)} m² ; échelle WGS 84 → ${r2.area.toFixed(4)} m²`;
+});
+
 await test('Fiche projet : statistiques et superficie par personne', async () => {
   const { page, ctx } = await newPage({ hash: '#/map' });
   const id = await seed(page, async () => {
@@ -930,11 +987,11 @@ await test('Page « Version de l’application » (accueil, réglages, aide)', a
   const { page, ctx, errors } = await newPage({ hash: '#/home' });
   await page.waitForSelector('.version-tag');
   const v = await text(page, '.version-tag');
-  assert(/v1\.5\.0/.test(v), v);
+  assert(/v1\.6\.0/.test(v), v);
   await page.click('.version-tag');
-  await page.waitForSelector('#about-version:has-text("Version 1.5.0")');
+  await page.waitForSelector('#about-version:has-text("Version 1.6.0")');
   await page.waitForSelector('.about-kv dt:has-text("Publication")');
-  await page.waitForSelector('.changelog.current:has-text("v1.5.0")');
+  await page.waitForSelector('.changelog.current:has-text("v1.6.0")');
   const n = await page.locator('.changelog').count();
   assert(n >= 5, `${n} versions dans l’historique`);
   await page.click('button:has-text("Rechercher une mise à jour")');
@@ -942,7 +999,7 @@ await test('Page « Version de l’application » (accueil, réglages, aide)', a
   const st = await text(page, '[aria-live=polite]');
   await page.screenshot({ path: path.join(SHOTS, 'mobile-version.png') });
   await page.goto(BASE + '#/settings'); await page.waitForSelector('a[href="#/about"]');
-  await page.goto(BASE + '#/help'); await page.waitForSelector('summary:has-text("Version v1.5.0")');
+  await page.goto(BASE + '#/help'); await page.waitForSelector('summary:has-text("Version v1.6.0")');
   assert(errors.length === 0, errors.join(' | '));
   await ctx.close();
   return `${v} · ${n} versions · « ${st} »`;

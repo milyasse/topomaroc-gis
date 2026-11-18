@@ -18,7 +18,8 @@ import { importWizard, exportDialog } from './transfer.js';
 import { analyze, safeName, pointXY } from '../io/common.js';
 import { renderShare } from './share.js';
 import { showBar, hideBar } from './maptools.js';
-import { OWNER_COLORS } from '../core/division.js';
+import { OWNER_COLORS, parseAreaInput } from '../core/division.js';
+import { fitBySide, fitByScale } from '../core/areafit.js';
 import { parcelZoneMismatches, convertedParcel } from '../services/autocrs.js';
 import { zoneAt } from '../core/zones.js';
 
@@ -165,6 +166,8 @@ function renderEditor(root, id) {
   const body = h('div.tab-body');
   const sides = h('div.sides');
   const between = h('div.between');
+  const fitBox = h('div.fit-box');
+  const fit = { target: '', method: /** @type {'side'|'scale'} */ ('side'), side: /** @type {number|null} */ (null), open: false };
   /** @type {(() => void)|null} */ let tabCleanup = null;
 
   /** Sauvegarde des sommets (avec historique). @param {any[]} vertices @param {string} label @param {any} [extra] */
@@ -189,7 +192,7 @@ function renderEditor(root, id) {
       summary.className = 'sticky-summary';
       mount(summary, h('span', null, `${p.vertices.length} sommet(s) — au moins 3 pour calculer`));
       mount(results, h('div.big-figure', null, h('div.eyebrow', null, 'Superficie'), h('div.value', null, '—')), h('p.muted', null, `${p.vertices.length} sommet(s) : au moins 3 nécessaires.`));
-      mount(issues); mount(sides); mount(between); return;
+      mount(issues); mount(sides); mount(between); mount(fitBox); return;
     }
     const val = h('div.value', null, a.valid ? formatArea(a.area, u) : '—');
     summary.className = `sticky-summary${a.valid ? '' : ' invalid'}`;
@@ -225,7 +228,98 @@ function renderEditor(root, id) {
     };
     s1.addEventListener('change', calc); s2.addEventListener('change', calc); calc();
     mount(between, h('h4', null, 'Distance entre deux sommets'), h('div.coord-pair', null, s1, s2), out);
+    paintFit(a, labels);
   };
+
+  // ---------------- ajustement à une superficie souhaitée
+  /** @type {any} */ let fitPreview = null;
+  const clearPreview = () => { if (fitPreview) { draft.removeLayer(fitPreview); fitPreview = null; } };
+  /**
+   * Calcule la nouvelle géométrie : ajustement dans le plan, puis contrôle avec la superficie AFFICHÉE
+   * (méthode plane ou ellipsoïdale), corrigée en 2-3 itérations.
+   * @param {any} a0 @param {number} target
+   * @returns {{ ok: true, vertices: any[], a: any, info: string } | { ok: false, error: string }}
+   */
+  const computeFit = (a0, target) => {
+    const p = get();
+    const planeId = a0.planeCrsId, src = p.crsId;
+    let verts = p.vertices.slice(0, a0.n);
+    let a = a0, info = '', total = 0, kTot = 1;
+    for (let it = 0; it < 4; it++) {
+      const tPlane = target * a.planeArea / a.area;
+      const r = fit.method === 'scale' ? fitByScale(a.plane, tPlane) : fitBySide(a.plane, /** @type {number} */ (fit.side), tPlane);
+      if (!r.ok) return { ok: false, error: /** @type {any} */ (r).error };
+      const moved = fit.method === 'scale' ? null : [/** @type {number} */ (fit.side), (/** @type {number} */ (fit.side) + 1) % a.n];
+      verts = verts.map((v, k) => {
+        if (moved && !moved.includes(k)) return v;
+        const [x, y] = planeId === src ? r.ring[k] : crs.transform(planeId, src, r.ring[k]);
+        const { pointId, ...rest } = v; void pointId;
+        return { ...rest, x, y, accuracy: null, moved: true };
+      });
+      if ('shift' in r) total += r.shift; else kTot *= r.scale;
+      a = analyzeParcel(verts, src, { method: p.method || 'auto', planeCrsId: crs.getCrs(src).kind === 'projected' ? null : projSel.value });
+      if (!a.valid) return { ok: false, error: 'La parcelle ajustée ne serait pas valide. Choisissez un autre côté ou la mise à l’échelle.' };
+      if (Math.abs(a.area - target) < 1e-4) break;
+    }
+    info = fit.method === 'scale'
+      ? `Tous les sommets s’écartent du centre : côtés ${kTot >= 1 ? 'allongés' : 'raccourcis'} de ${Math.abs((kTot - 1) * 100).toFixed(3)} % (forme et angles conservés).`
+      : `Côté ${a0.labels[fit.side ?? 0]}–${a0.labels[((fit.side ?? 0) + 1) % a0.n]} déplacé de ${formatLength(Math.abs(total), 3)} vers ${total >= 0 ? 'l’extérieur' : 'l’intérieur'} ; les autres limites ne bougent pas.`;
+    return { ok: true, vertices: verts, a, info };
+  };
+
+  /** @param {any} a @param {string[]} labels */
+  function paintFit(a, labels) {
+    if (!a.valid) { mount(fitBox); clearPreview(); return; }
+    a.labels = labels;
+    const u = /** @type {any} */ (state.settings.areaUnit);
+    if (fit.side == null || fit.side >= a.n) fit.side = a.sides.reduce((b, s, k) => (s.gridLength > a.sides[b].gridLength ? k : b), 0);
+    const target = /** @type {HTMLInputElement} */ (h('input.fit-in', { type: 'text', inputmode: 'decimal', value: fit.target, placeholder: 'ex. 2500, 25 a, 0,25 ha', 'aria-label': 'Superficie souhaitée' }));
+    const meth = select([{ value: 'side', label: 'Déplacer un côté (parallèlement)' }, { value: 'scale', label: 'Mise à l’échelle (forme conservée)' }], fit.method, { 'aria-label': 'Méthode d’ajustement' });
+    const sideSel = select(a.sides.map((/** @type {any} */ s, /** @type {number} */ k) => ({ value: String(k), label: `Côté ${labels[s.from]}–${labels[s.to]} (${formatLength(s.gridLength)})` })), String(fit.side), { 'aria-label': 'Côté à déplacer' });
+    const sideField = field('Côté à déplacer', sideSel, 'Ses deux sommets glissent sur les côtés voisins.');
+    const out = h('div.fit-out', { 'aria-live': 'polite' });
+    /** @type {any} */ let res = null;
+    const run = () => {
+      clearPreview(); res = null;
+      fit.target = target.value; fit.method = /** @type {any} */ (meth.value); fit.side = Number(sideSel.value);
+      sideField.hidden = fit.method !== 'side';
+      if (!target.value.trim()) { mount(out, h('p.small.muted', null, `Superficie actuelle : ${formatArea(a.area, 'm2')} (${formatArea(a.area, 'haaca')}).`)); return; }
+      const t = parseAreaInput(target.value);
+      if (!(t > 0)) { mount(out, h('p.issue.error', null, icon('alert'), 'Superficie illisible : saisissez par ex. 2500 (m²), 25 a ou 0,25 ha.')); return; }
+      if (Math.abs(t - a.area) < 1e-4) { mount(out, h('p.issue.info', null, icon('check'), `La parcelle mesure déjà ${formatArea(t, 'm2')}.`)); return; }
+      const r = computeFit(a, t);
+      if (!r.ok) { mount(out, h('p.issue.error', null, icon('alert'), /** @type {any} */ (r).error)); return; }
+      res = { ...r, t };
+      const ll = r.vertices.map((v) => { const w = crs.toWGS84(get().crsId, [v.x, v.y]); return L.latLng(w.lat, w.lon); });
+      fitPreview = L.polygon(ll, { pane: 'draft', color: '#2e7d32', weight: 3, fillColor: '#2e7d32', fillOpacity: 0.15, interactive: false }).addTo(draft);
+      const lots = state.features.filter((f) => f.parentId === pid).length;
+      mount(out,
+        h('div.fit-res', null,
+          h('div', null, h('span.muted', null, 'Actuelle '), h('b', null, formatArea(a.area, u))),
+          h('div', null, h('span.muted', null, 'Ajustée '), h('b', null, formatArea(r.a.area, u))),
+          h('div', null, h('span.muted', null, 'Écart '), h('b', null, `${formatArea(r.a.area - a.area, 'm2')}`))),
+        h('p.small', null, icon('info'), ' ', r.info, ' Aperçu en vert sur la carte.'),
+        lots ? h('p.issue.warning', null, icon('alert'), `Cette parcelle a ${lots} lots issus d’un partage : refaites le partage après l’ajustement.`) : null,
+        h('div.row.wrap', null, btn('Appliquer', { variant: 'primary', onclick: apply }, 'check'), btn('Annuler l’aperçu', { variant: 'ghost', onclick: () => { target.value = ''; run(); } }, 'close')));
+    };
+    const apply = async () => {
+      if (!res) return;
+      const before = a.area;
+      await saveVertices(res.vertices, `Ajustement à ${formatArea(res.t, 'm2')}`, {
+        areaFit: { target: res.t, method: fit.method, side: fit.method === 'side' ? fit.side : null, from: before, date: new Date().toISOString() },
+      });
+      fit.target = ''; clearPreview();
+      toast(`Superficie ajustée : ${formatArea(res.t, 'm2')} (annulable).`, 'ok', 4000);
+    };
+    target.addEventListener('input', run); meth.addEventListener('change', run); sideSel.addEventListener('change', run);
+    const head = h('button.fit-head', { type: 'button', 'aria-expanded': String(fit.open), onclick: () => { fit.open = !fit.open; paintFit(a, labels); } },
+      icon('ruler'), h('span', null, 'Ajuster à une superficie souhaitée'), h('span.spacer'), icon(fit.open ? 'up' : 'down'));
+    if (!fit.open) { clearPreview(); mount(fitBox, head); return; }
+    mount(fitBox, head,
+      h('p.small', null, 'Saisissez la superficie réelle souhaitée : le système modifie la parcelle pour l’atteindre exactement.'),
+      field('Superficie souhaitée (m², ou a / ha)', target), field('Méthode', meth), sideField, out);
+    run();
+  }
 
   // ---------------- carte : brouillon + sommets déplaçables
   const draft = M.layer('draft');
@@ -238,7 +332,7 @@ function renderEditor(root, id) {
     M.getMap().fitBounds(sideHl.getBounds(), { padding: [80, 80], maxZoom: 21 });
   }
   const paintMap = () => {
-    draft.clearLayers(); sideHl = null;
+    draft.clearLayers(); sideHl = null; fitPreview = null;
     const p = get(); if (!p) return;
     const ll = p.vertices.map((/** @type {any} */ v) => { const w = crs.toWGS84(p.crsId, [v.x, v.y]); return L.latLng(w.lat, w.lon); });
     if (ll.length >= 3) L.polygon(ll, { pane: 'draft', color: '#d6602a', weight: 3, fillOpacity: 0.12, dashArray: '8 6', interactive: false }).addTo(draft);
@@ -395,12 +489,12 @@ function renderEditor(root, id) {
     summary,
     h('div.editor-head', null, h('button.icon-btn', { type: 'button', 'aria-label': 'Retour à la liste', title: 'Retour à la liste', onclick: () => { location.hash = '#/parcels'; } }, icon('back')), title, rename, h('span.spacer'), undo, redo),
     crsLine,
-    results, ownerBox, issues, terrainBox, tabs, body, sides, between, actions,
+    results, fitBox, ownerBox, issues, terrainBox, tabs, body, sides, between, actions,
   );
   paintTabs(); paintTab(); paintResults(); paintMap();
   if (p0.vertices.length) M.zoomToFeature(p0);
   projSel.addEventListener('change', paintResults);
-  const off = on('features', () => { if (!get()) { location.hash = '#/parcels'; return; } paintResults(); paintMap(); paintOwner(); paintTerrain(); if (tab === 'manual') tabManual(body, get, saveVertices, true); });
+  const off = on('features', () => { if (!get()) { location.hash = '#/parcels'; return; } paintMap(); paintResults(); paintOwner(); paintTerrain(); if (tab === 'manual') tabManual(body, get, saveVertices, true); });
   const off2 = on('settings', (s) => { if (s.areaUnit || s.angleUnit) paintResults(); });
   const offDatum = on('datum', () => { paintResults(); paintMap(); });
   return () => { off(); off2(); offDatum(); offVis(); offCrs(); tabCleanup?.(); M.setClickHandler(null); draft.clearLayers(); };

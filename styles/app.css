@@ -631,3 +631,14 @@ label.switch.sm input { width: 18px; height: 18px; }
 .zone-warn { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 6px 0; padding: 8px 10px; border-radius: 10px; background: color-mix(in srgb, var(--warn) 12%, var(--surface)); border: 1px solid color-mix(in srgb, var(--warn) 45%, transparent); font-size: .85rem; }
 .zone-warn .ic { color: var(--warn); flex: none; }
 .zone-warn span { flex: 1 1 200px; }
+
+/* Ajustement à une superficie souhaitée */
+.fit-box { margin: 10px 0; border: 1px solid var(--line); border-radius: 12px; padding: 4px 12px; background: var(--surface); }
+.fit-box:empty { display: none; }
+.fit-head { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 44px; border: 0; background: transparent; color: var(--brand); font: 700 .95rem var(--font); cursor: pointer; padding: 0; text-align: left; }
+.fit-head .spacer { flex: 1; }
+.fit-in { font-family: var(--mono); }
+.fit-res { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 8px 0; font-variant-numeric: tabular-nums; }
+.fit-res > div { background: var(--surface-2); border-radius: 8px; padding: 6px 8px; display: flex; flex-direction: column; font-size: .85rem; }
+.fit-res b { font-size: .95rem; }
+.fit-out { padding-bottom: 8px; }

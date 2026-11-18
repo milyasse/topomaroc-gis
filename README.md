@@ -52,6 +52,13 @@ Détection : moins de 3 sommets, fermeture répétée, sommets en double (≤ 1 
 
 **Rapport PDF** : projet, date, plan coté (échelle graphique, nord), tableau des sommets (Lambert + WGS 84), tableau des côtés (longueurs, gisements en grades ou degrés, longueurs géodésiques, azimuts), superficie et périmètre, système, méthode, qualité estimée, mention « ne constitue pas un document cadastral officiel ». [Exemple](docs/exemple-rapport-parcelle.pdf).
 
+### Nouveautés v1.6 — ajuster une parcelle à une superficie souhaitée
+
+- Dans la fiche d'une parcelle (dessinée, levée ou saisie), ouvrez **Ajuster à une superficie souhaitée** et saisissez la superficie réelle (m², « 60 a », « 0,5 ha »).
+- **Déplacer un côté (parallèlement)** : la limite choisie se déplace parallèlement à elle-même, ses deux sommets glissent sur les côtés voisins ; les autres limites ne bougent pas. Solution exacte (équation du 2ᵉ degré), refusée si la forme se croiserait.
+- **Mise à l'échelle** : homothétie autour du centre de gravité, forme et angles conservés.
+- La superficie atteinte est celle affichée (méthode plane ou ellipsoïdale), à 0,1 mm² près. Aperçu vert sur la carte, puis « Appliquer » ; annulable. Les sommets déplacés perdent leur lien avec les points levés.
+
 ### Nouveautés v1.5 — partage par superficie
 
 - Dans « Partager entre personnes », choisissez **En superficie (m²)** : saisissez la superficie de chaque personne (m², a, ha ou « 1 ha 20 a 30 ca »). Un champ vide reçoit **le reste** de la parcelle.
