@@ -1,9 +1,15 @@
 // @ts-check
 /** Version de l'application (numérotation sémantique) et historique des nouveautés. */
-export const APP_VERSION = '1.8.0';
+export const APP_VERSION = '1.8.1';
 export const APP_DATE = '2026-11-18';
 
 export const CHANGELOG = [
+  {
+    version: '1.8.1', date: '2026-11-18', items: [
+      'PDF en arabe : les noms en arabe (personnes, parcelles, projet, points) s’affichent correctement, lettres liées et de droite à gauche, dans tous les rapports PDF (parcelles et partages, rapport de parcelle, fiche de levé).',
+      'Police DejaVu Sans (latin + arabe) intégrée au PDF seulement s’il contient de l’arabe ; disponible hors connexion.',
+    ],
+  },
   {
     version: '1.8.0', date: '2026-11-18', items: [
       'Liste des parcelles : « Tout sélectionner », puis « PDF parcelles et partages » pour un rapport PDF unique des parcelles cochées.',

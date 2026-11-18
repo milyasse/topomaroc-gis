@@ -34,5 +34,9 @@
   "gsap": {
     "version": "3.15.0",
     "license": "Standard 'no charge' license: https://gsap.com/standard-license."
+  },
+  "dejavu-fonts (sous-ensemble latin + arabe)": {
+    "version": "2.37",
+    "license": "Bitstream Vera / DejaVu (libre)"
   }
 }

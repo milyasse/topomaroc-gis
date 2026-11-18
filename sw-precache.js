@@ -1,6 +1,6 @@
 // Fichier généré par tools/gen-precache.mjs — ne pas modifier à la main.
 self.PRECACHE = {
- "version": "7dd00d81303b",
+ "version": "d023736eb337",
  "files": [
   "./",
   "./index.html",
@@ -61,6 +61,8 @@ self.PRECACHE = {
   "./icons/maskable-512.png",
   "./icons/maskable.svg",
   "./vendor/VERSIONS.json",
+  "./vendor/fonts/DejaVuSans-ArLat.ttf",
+  "./vendor/fonts/DejaVuSans-Bold-ArLat.ttf",
   "./vendor/geodesic.mjs",
   "./vendor/gsap.mjs",
   "./vendor/jspdf.mjs",

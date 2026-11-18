@@ -1104,15 +1104,48 @@ await test('PDF groupé : parcelles sélectionnées avec leurs lots (personne, %
   return `${dl.suggestedFilename()} : ${pages} pages, ${buf.length} octets`;
 });
 
+await test('PDF en arabe : noms arabes (parcelle, personnes, projet) avec police intégrée ; PDF latin sans police ajoutée', async () => {
+  const { page, ctx, errors } = await newPage({ hash: '#/map' });
+  await seed(page, async () => {
+    const st = await import('./src/state.js');
+    const sq = (x0, y0, w, hh) => [[x0, y0], [x0 + w, y0], [x0 + w, y0 + hh], [x0, y0 + hh]].map(([x, y], i) => ({ x, y, label: `S${i + 1}` }));
+    const a = await st.addFeature({ type: 'parcel', name: 'ملك الزيتون', crsId: 'EPSG:26191', method: 'auto', vertices: sq(400000, 380000, 100, 50) });
+    await st.addFeature({ type: 'parcel', name: 'lot 1', crsId: 'EPSG:26191', method: 'plane', parentId: a.id, owner: { name: 'يوسف العلوي', percent: 40, color: '#e6194b' }, division: { index: 0, target: 2000 }, vertices: sq(400000, 380000, 40, 50) });
+    await st.addFeature({ type: 'parcel', name: 'lot 2', crsId: 'EPSG:26191', method: 'plane', parentId: a.id, owner: { name: 'إيمان', percent: 60, color: '#3cb44b' }, division: { index: 1, target: 3000 }, vertices: sq(400040, 380000, 60, 50) });
+  });
+  await page.goto(BASE + '#/parcels');
+  await page.waitForSelector('.sel-bar');
+  await page.click('.sel-all input');
+  const [dl] = await Promise.all([page.waitForEvent('download', { timeout: 30000 }), page.click('.total-bar button:has-text("PDF parcelles et partages")')]);
+  const buf = fs.readFileSync(await dl.path());
+  const txt = buf.toString('latin1');
+  assert(txt.startsWith('%PDF-'), 'PDF');
+  assert(/\/BaseFont\s*\/DejaVu/.test(txt) && /\/FontFile2/.test(txt), 'police arabe non intégrée');
+  const pages = (txt.match(/\/Type\s*\/Page[^s]/g) || []).length;
+  assert(pages === 2, `${pages} pages`);
+  fs.writeFileSync(path.join(SHOTS, 'rapport-arabe.pdf'), buf);
+  // un PDF sans arabe garde les polices standard (pas de police intégrée)
+  const latin = await page.evaluate(async () => {
+    const O = await import('./src/io/office.js');
+    const sq = [[0, 0], [10, 0], [10, 10], [0, 10]].map(([x, y], i) => ({ x: 400000 + x, y: 380000 + y, label: `P${i + 1}` }));
+    const b = await O.divisionsReportPDF([{ parent: { id: 'z', type: 'parcel', name: 'Latin', crsId: 'EPSG:26191', vertices: sq }, lots: [] }], { name: 'Projet' });
+    return (await b.text()).includes('/FontFile2');
+  });
+  assert(latin === false, 'police intégrée sans arabe');
+  assert(errors.length === 0, errors.join(' | '));
+  await ctx.close();
+  return `${dl.suggestedFilename()} : ${pages} pages, ${buf.length} octets, police DejaVu Sans intégrée`;
+});
+
 await test('Page « Version de l’application » (accueil, réglages, aide)', async () => {
   const { page, ctx, errors } = await newPage({ hash: '#/home' });
   await page.waitForSelector('.version-tag');
   const v = await text(page, '.version-tag');
-  assert(/v1\.8\.0/.test(v), v);
+  assert(/v1\.8\.1/.test(v), v);
   await page.click('.version-tag');
-  await page.waitForSelector('#about-version:has-text("Version 1.8.0")');
+  await page.waitForSelector('#about-version:has-text("Version 1.8.1")');
   await page.waitForSelector('.about-kv dt:has-text("Publication")');
-  await page.waitForSelector('.changelog.current:has-text("v1.8.0")');
+  await page.waitForSelector('.changelog.current:has-text("v1.8.1")');
   const n = await page.locator('.changelog').count();
   assert(n >= 5, `${n} versions dans l’historique`);
   await page.click('button:has-text("Rechercher une mise à jour")');
@@ -1120,7 +1153,7 @@ await test('Page « Version de l’application » (accueil, réglages, aide)', a
   const st = await text(page, '[aria-live=polite]');
   await page.screenshot({ path: path.join(SHOTS, 'mobile-version.png') });
   await page.goto(BASE + '#/settings'); await page.waitForSelector('a[href="#/about"]');
-  await page.goto(BASE + '#/help'); await page.waitForSelector('summary:has-text("Version v1.8.0")');
+  await page.goto(BASE + '#/help'); await page.waitForSelector('summary:has-text("Version v1.8.1")');
   assert(errors.length === 0, errors.join(' | '));
   await ctx.close();
   return `${v} · ${n} versions · « ${st} »`;

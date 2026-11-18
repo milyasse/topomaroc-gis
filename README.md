@@ -52,6 +52,10 @@ Détection : moins de 3 sommets, fermeture répétée, sommets en double (≤ 1 
 
 **Rapport PDF** : projet, date, plan coté (échelle graphique, nord), tableau des sommets (Lambert + WGS 84), tableau des côtés (longueurs, gisements en grades ou degrés, longueurs géodésiques, azimuts), superficie et périmètre, système, méthode, qualité estimée, mention « ne constitue pas un document cadastral officiel ». [Exemple](docs/exemple-rapport-parcelle.pdf).
 
+### Nouveautés v1.8.1 — arabe dans les PDF
+
+- Les noms en arabe s'affichent correctement dans tous les PDF (lettres liées, sens de droite à gauche). La police DejaVu Sans (latin + arabe, sous-ensemble ~100 Ko, licence libre : `vendor/licenses/dejavu-fonts.LICENSE.txt`) n'est intégrée que si le document contient de l'arabe.
+
 ### Nouveautés v1.8 — rapport PDF groupé des parcelles et partages
 
 - Dans la liste des parcelles, cochez des parcelles (ou « Tout sélectionner »), puis **PDF parcelles et partages**.

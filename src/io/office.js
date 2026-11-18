@@ -68,6 +68,60 @@ export async function toXLSX(features, crsId, project) {
 }
 
 // ------------------------------------------------------------------ PDF
+/** Lettres arabes (y compris formes de présentation). */
+const ARABIC = /[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/;
+/** @type {Promise<{normal:string, bold:string}>|null} */
+let arabicFonts = null;
+/** @param {ArrayBuffer} buf */
+function toBase64(buf) {
+  const b = new Uint8Array(buf); let s = '';
+  for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, /** @type {any} */ (b.subarray(i, i + 0x8000)));
+  return btoa(s);
+}
+/** Police DejaVu Sans (latin + arabe, sous-ensemble ~100 Ko), chargée seulement si nécessaire et disponible hors ligne. */
+function loadArabicFonts() {
+  if (!arabicFonts) {
+    const get = async (/** @type {string} */ f) => { const r = await fetch(new URL(`../../vendor/fonts/${f}`, import.meta.url)); if (!r.ok) throw new Error(`Police ${f} introuvable`); return toBase64(await r.arrayBuffer()); };
+    arabicFonts = Promise.all([get('DejaVuSans-ArLat.ttf'), get('DejaVuSans-Bold-ArLat.ttf')]).then(([normal, bold]) => ({ normal, bold }));
+    arabicFonts.catch(() => { arabicFonts = null; });
+  }
+  return arabicFonts;
+}
+
+/**
+ * Nouveau document PDF. Si les données contiennent de l'arabe (noms de personnes, de parcelles, de projet…),
+ * tout le document utilise DejaVu Sans, qui contient les lettres latines ET arabes ; jsPDF assure
+ * la liaison des lettres arabes (formes contextuelles) et le sens de lecture de droite à gauche.
+ * @param {any} jsPDF @param {any} opts options jsPDF @param {any} data données à imprimer (pour détecter l'arabe)
+ */
+async function newPdf(jsPDF, opts, data) {
+  const doc = new (/** @type {any} */ (jsPDF))(opts);
+  let txt = '';
+  try { txt = JSON.stringify(data); } catch { /* */ }
+  if (!ARABIC.test(txt)) return doc;
+  const f = await loadArabicFonts();
+  doc.addFileToVFS('DejaVuSans-ArLat.ttf', f.normal); doc.addFont('DejaVuSans-ArLat.ttf', 'DejaVu', 'normal');
+  doc.addFileToVFS('DejaVuSans-Bold-ArLat.ttf', f.bold); doc.addFont('DejaVuSans-Bold-ArLat.ttf', 'DejaVu', 'bold');
+  const setFont = doc.setFont.bind(doc);
+  doc.setFont = (/** @type {string} */ name, /** @type {string} */ style, /** @type {any} */ weight) => {
+    const st = /bold/.test(String(style ?? doc.getFont().fontStyle)) ? 'bold' : 'normal';
+    return setFont(!name || /helvetica|times|courier/i.test(name) ? 'DejaVu' : name, st, weight);
+  };
+  // Les tableaux (autoTable) imposent isInputVisual:false, ce qui inverse l'ordre des lettres arabes :
+  // on rend au texte des tableaux le même traitement que le texte simple (déjà correct).
+  const text = doc.text.bind(doc);
+  doc.text = (/** @type {any} */ t, /** @type {any} */ x, /** @type {any} */ y, /** @type {any} */ o, /** @type {any} */ ...rest) => {
+    if (o && typeof o === 'object' && o.isInputVisual === false) {
+      const { isInputVisual, isOutputVisual, isInputRtl, isOutputRtl, isSymmetricSwapping, ...clean } = o;
+      void isInputVisual; void isOutputVisual; void isInputRtl; void isOutputRtl; void isSymmetricSwapping;
+      return text(t, x, y, clean, ...rest);
+    }
+    return text(t, x, y, o, ...rest);
+  };
+  doc.setFont('helvetica', 'normal');
+  return doc;
+}
+
 /** Texte compatible avec la police standard du PDF (WinAnsi). @param {any} s */
 function pdfText(s) {
   return String(s ?? '').replace(/[  ]/g, ' ').replace(/[′’]/g, "'").replace(/″/g, '"').replace(/−/g, '-').replace(/≈/g, '~').replace(/≤/g, '<=').replace(/≥/g, '>=').replace(/[–—]/g, '-').replace(/…/g, '...').replace(/[«»]/g, '"').replace(/·/g, '-').replace(/φ/g, 'phi').replace(/λ/g, 'lambda').replace(/Δ/g, 'd');
@@ -129,7 +183,7 @@ function drawPlan(doc, pts, labels, box, crsLabel) {
  */
 export async function parcelReportPDF(f, project, opts = {}) {
   const { jsPDF, autoTable } = await import('../../vendor/jspdf.mjs');
-  const doc = new (/** @type {any} */ (jsPDF))({ unit: 'mm', format: 'a4' });
+  const doc = await newPdf(jsPDF, { unit: 'mm', format: 'a4' }, [f.name, f.owner, project?.name, f.vertices?.map((/** @type {any} */ v) => v.label)]);
   await addParcelReport(doc, autoTable, f, project, opts);
   addFooters(doc);
   return doc.output('blob');
@@ -143,7 +197,7 @@ export async function parcelReportPDF(f, project, opts = {}) {
  */
 export async function parcelsReportPDF(parcels, points, project, opts = {}) {
   const { jsPDF, autoTable } = await import('../../vendor/jspdf.mjs');
-  const doc = new (/** @type {any} */ (jsPDF))({ unit: 'mm', format: 'a4' });
+  const doc = await newPdf(jsPDF, { unit: 'mm', format: 'a4' }, [parcels, points, project?.name]);
   for (let i = 0; i < parcels.length; i++) {
     if (i) doc.addPage('a4', 'portrait');
     const f = parcels[i];
@@ -278,7 +332,7 @@ function addFooters(doc) {
  */
 export async function surveySheetPDF(features, project, crsId) {
   const { jsPDF, autoTable } = await import('../../vendor/jspdf.mjs');
-  const doc = new (/** @type {any} */ (jsPDF))({ unit: 'mm', format: 'a4', orientation: 'landscape' });
+  const doc = await newPdf(jsPDF, { unit: 'mm', format: 'a4', orientation: 'landscape' }, [features, project?.name]);
   drawSurveySheet(doc, autoTable, features, project, crsId);
   addFooters(doc);
   return doc.output('blob');
@@ -328,7 +382,7 @@ export async function divisionReportPDF(parent, lots, project) {
 export async function divisionsReportPDF(groups, project, o = {}) {
   const { jsPDF, autoTable } = await import('../../vendor/jspdf.mjs');
   const { analyzeParcel } = await import('../core/parcel.js');
-  const doc = new (/** @type {any} */ (jsPDF))({ unit: 'mm', format: 'a4' });
+  const doc = await newPdf(jsPDF, { unit: 'mm', format: 'a4' }, [groups, project?.name]);
   const W = 210, M = 14;
   const summary = o.summary ?? true;
   if (!groups.length) throw new Error('Aucune parcelle sélectionnée.');
