@@ -1,0 +1,528 @@
+// @ts-check
+/** Exports XLSX (tableaux) et PDF (rapport de superficie, fiche de levé). Chargés à la demande. */
+import * as crs from '../core/crs.js';
+import { degToGrad } from '../core/angles.js';
+import { formatHaACa, formatPercent } from '../core/units.js';
+import { pointXY, verticesXY, analyze } from './common.js';
+
+import { APP_VERSION } from '../version.js';
+const APP = `TopoMaroc GIS v${APP_VERSION}`;
+export const DISCLAIMER = 'Document technique établi à partir des données saisies ou levées par l’utilisateur. Il ne constitue pas, à lui seul, un document cadastral ou foncier officiel. Les positions issues d’un GPS de smartphone ont une précision métrique ; seul un levé réalisé par un ingénieur géomètre-topographe (station totale, GNSS RTK) rattaché au réseau géodésique fait foi.';
+
+// ------------------------------------------------------------------ XLSX
+/**
+ * @param {any[]} features @param {string} crsId @param {any} project
+ * @returns {Promise<Blob>}
+ */
+export async function toXLSX(features, crsId, project) {
+  const { default: writeXlsxFile } = await import('../../vendor/xlsx.mjs');
+  const c = crs.getCrs(crsId);
+  const H = (/** @type {string} */ v) => ({ value: v, fontWeight: 'bold', backgroundColor: '#E8EEF5' });
+  const N = (/** @type {number|null|undefined} */ v, fmt = '0.000') => (v == null || !Number.isFinite(v) ? null : { value: v, type: Number, format: fmt });
+  const S = (/** @type {any} */ v) => ({ value: v == null ? '' : String(v), type: String });
+  const [ax, ay] = c.kind === 'projected' ? ['X (m)', 'Y (m)'] : ['Longitude (°)', 'Latitude (°)'];
+  const cf = c.unit === 'm' ? '0.000' : '0.00000000';
+
+  /** @type {any[][]} */
+  const points = [[H('N°'), H('Nom'), H('Code'), H(ax), H(ay), H('Latitude WGS 84'), H('Longitude WGS 84'), H('Précision (m)'), H('Source'), H('Date'), H('Description')]];
+  for (const f of features.filter((x) => x.type === 'point')) {
+    const [x, y] = pointXY(f, crsId);
+    points.push([S(f.num), S(f.name), S(f.code), N(x, cf), N(y, cf), N(f.wgs84.lat, '0.00000000'), N(f.wgs84.lon, '0.00000000'), N(f.accuracy, '0.0'), S(f.source), S(f.takenAt ?? f.createdAt), S(f.description)]);
+  }
+  /** @type {any[][]} */
+  const parcels = [[H('Parcelle'), H('Code'), H('Sommets'), H('Superficie (m²)'), H('Superficie (ha)'), H('ha a ca'), H('Périmètre (m)'), H('Méthode'), H('SRC de calcul'), H('Valide'), H('Remarques')]];
+  /** @type {any[][]} */
+  const verts = [[H('Parcelle'), H('Sommet'), H(ax), H(ay), H('Latitude WGS 84'), H('Longitude WGS 84'), H('Précision (m)')]];
+  /** @type {any[][]} */
+  const sides = [[H('Parcelle'), H('Côté'), H('Longueur plane (m)'), H('Gisement (gr)'), H('Gisement (°)'), H('Longueur géodésique (m)'), H('Azimut vrai (°)')]];
+  for (const f of features.filter((x) => x.type === 'parcel')) {
+    const a = analyze(f);
+    parcels.push([S(f.name), S(f.code), N(f.vertices.length, '0'), a.valid ? N(a.area, '0.00') : null, a.valid ? N(a.area / 1e4, '0.0000') : null, S(a.valid ? formatHaACa(a.area).replace(/ /g, ' ') : ''), a.valid ? N(a.perimeter, '0.00') : null, S(a.valid ? (a.method === 'plane' ? 'Plane' : 'Géodésique') : ''), S(a.valid ? (a.method === 'plane' ? crs.getCrs(a.planeCrsId).name : 'Ellipsoïde WGS 84') : ''), S(a.valid ? 'Oui' : 'Non'), S(a.issues.map((/** @type {any} */ i) => i.message).join(' | '))]);
+    const xy = verticesXY(f, crsId);
+    f.vertices.forEach((/** @type {any} */ v, /** @type {number} */ i) => {
+      const w = crs.toWGS84(f.crsId, [v.x, v.y]);
+      verts.push([S(f.name), S(v.label ?? i + 1), N(xy[i][0], cf), N(xy[i][1], cf), N(w.lat, '0.00000000'), N(w.lon, '0.00000000'), N(v.accuracy, '0.0')]);
+    });
+    if (a.valid) {
+      for (const s of a.sides) {
+        const la = f.vertices[s.from].label ?? s.from + 1, lb = f.vertices[s.to].label ?? s.to + 1;
+        sides.push([S(f.name), S(`${la}-${lb}`), N(s.gridLength, '0.000'), N(degToGrad(s.gridBearing), '0.0000'), N(s.gridBearing, '0.0000'), N(s.geodesicLength, '0.000'), N(s.trueAzimuth, '0.0000')]);
+      }
+    }
+  }
+  /** @type {any[][]} */
+  const meta = [
+    [H('Champ'), H('Valeur')],
+    [S('Application'), S(APP)],
+    [S('Projet'), S(project?.name)],
+    [S('Date d’export'), S(new Date().toLocaleString('fr-MA'))],
+    [S('SRC des colonnes X/Y'), S(`${c.name}${c.epsg ? ` (EPSG:${c.epsg})` : ''}`)],
+    [S('Transformation vers WGS 84'), S(crs.datumInfo(crsId).transformation)],
+    [S('Avertissement'), S(DISCLAIMER)],
+  ];
+  const widths = (/** @type {number[]} */ w) => w.map((width) => ({ width }));
+  return writeXlsxFile([points, parcels, verts, sides, meta], {
+    sheets: ['Points', 'Parcelles', 'Sommets', 'Côtés', 'Métadonnées'],
+    columns: [widths([8, 16, 12, 15, 15, 14, 14, 11, 10, 22, 30]), widths([18, 10, 9, 15, 14, 18, 14, 12, 26, 8, 60]), widths([18, 9, 15, 15, 14, 14, 11]), widths([18, 10, 16, 14, 14, 18, 14]), widths([28, 100])],
+  });
+}
+
+// ------------------------------------------------------------------ PDF
+/** Lettres arabes (y compris formes de présentation). */
+const ARABIC = /[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/;
+/** @type {Promise<{normal:string, bold:string}>|null} */
+let arabicFonts = null;
+/** @param {ArrayBuffer} buf */
+function toBase64(buf) {
+  const b = new Uint8Array(buf); let s = '';
+  for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, /** @type {any} */ (b.subarray(i, i + 0x8000)));
+  return btoa(s);
+}
+/** Police DejaVu Sans (latin + arabe, sous-ensemble ~100 Ko), chargée seulement si nécessaire et disponible hors ligne. */
+function loadArabicFonts() {
+  if (!arabicFonts) {
+    const get = async (/** @type {string} */ f) => { const r = await fetch(new URL(`../../vendor/fonts/${f}`, import.meta.url)); if (!r.ok) throw new Error(`Police ${f} introuvable`); return toBase64(await r.arrayBuffer()); };
+    arabicFonts = Promise.all([get('DejaVuSans-ArLat.ttf'), get('DejaVuSans-Bold-ArLat.ttf')]).then(([normal, bold]) => ({ normal, bold }));
+    arabicFonts.catch(() => { arabicFonts = null; });
+  }
+  return arabicFonts;
+}
+
+/**
+ * Nouveau document PDF. Si les données contiennent de l'arabe (noms de personnes, de parcelles, de projet…),
+ * tout le document utilise DejaVu Sans, qui contient les lettres latines ET arabes ; jsPDF assure
+ * la liaison des lettres arabes (formes contextuelles) et le sens de lecture de droite à gauche.
+ * @param {any} jsPDF @param {any} opts options jsPDF @param {any} data données à imprimer (pour détecter l'arabe)
+ */
+async function newPdf(jsPDF, opts, data) {
+  const doc = new (/** @type {any} */ (jsPDF))(opts);
+  let txt = '';
+  try { txt = JSON.stringify(data); } catch { /* */ }
+  if (!ARABIC.test(txt)) return doc;
+  const f = await loadArabicFonts();
+  doc.addFileToVFS('DejaVuSans-ArLat.ttf', f.normal); doc.addFont('DejaVuSans-ArLat.ttf', 'DejaVu', 'normal');
+  doc.addFileToVFS('DejaVuSans-Bold-ArLat.ttf', f.bold); doc.addFont('DejaVuSans-Bold-ArLat.ttf', 'DejaVu', 'bold');
+  const setFont = doc.setFont.bind(doc);
+  doc.setFont = (/** @type {string} */ name, /** @type {string} */ style, /** @type {any} */ weight) => {
+    const st = /bold/.test(String(style ?? doc.getFont().fontStyle)) ? 'bold' : 'normal';
+    return setFont(!name || /helvetica|times|courier/i.test(name) ? 'DejaVu' : name, st, weight);
+  };
+  // Les tableaux (autoTable) imposent isInputVisual:false, ce qui inverse l'ordre des lettres arabes :
+  // on rend au texte des tableaux le même traitement que le texte simple (déjà correct).
+  const text = doc.text.bind(doc);
+  doc.text = (/** @type {any} */ t, /** @type {any} */ x, /** @type {any} */ y, /** @type {any} */ o, /** @type {any} */ ...rest) => {
+    if (o && typeof o === 'object' && o.isInputVisual === false) {
+      const { isInputVisual, isOutputVisual, isInputRtl, isOutputRtl, isSymmetricSwapping, ...clean } = o;
+      void isInputVisual; void isOutputVisual; void isInputRtl; void isOutputRtl; void isSymmetricSwapping;
+      return text(t, x, y, clean, ...rest);
+    }
+    return text(t, x, y, o, ...rest);
+  };
+  doc.setFont('helvetica', 'normal');
+  return doc;
+}
+
+/** Texte compatible avec la police standard du PDF (WinAnsi). @param {any} s */
+function pdfText(s) {
+  return String(s ?? '').replace(/[  ]/g, ' ').replace(/[′’]/g, "'").replace(/″/g, '"').replace(/−/g, '-').replace(/≈/g, '~').replace(/≤/g, '<=').replace(/≥/g, '>=').replace(/[–—]/g, '-').replace(/…/g, '...').replace(/[«»]/g, '"').replace(/·/g, '-').replace(/φ/g, 'phi').replace(/λ/g, 'lambda').replace(/Δ/g, 'd');
+}
+const fnum = (/** @type {number} */ v, d = 2) => {
+  const [i, dec] = v.toFixed(d).split('.');
+  return i.replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + (dec ? ',' + dec : '');
+};
+
+/**
+ * Dessine le plan d'une parcelle dans un cadre (coordonnées planes).
+ * @param {any} doc @param {[number,number][]} pts @param {string[]} labels
+ * @param {{x:number,y:number,w:number,h:number}} box @param {string} crsLabel
+ */
+function drawPlan(doc, pts, labels, box, crsLabel) {
+  const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
+  const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
+  const dx = Math.max(maxX - minX, 1e-6), dy = Math.max(maxY - minY, 1e-6);
+  const pad = 14;
+  const s = Math.min((box.w - 2 * pad) / dx, (box.h - 2 * pad) / dy);
+  const ox = box.x + (box.w - dx * s) / 2, oy = box.y + (box.h + dy * s) / 2;
+  const P = (/** @type {[number,number]} */ p) => [ox + (p[0] - minX) * s, oy - (p[1] - minY) * s];
+  doc.setDrawColor(200); doc.setLineWidth(0.2); doc.rect(box.x, box.y, box.w, box.h);
+  // polygone
+  doc.setDrawColor(20, 90, 160); doc.setFillColor(220, 234, 248); doc.setLineWidth(0.6);
+  const sp = pts.map(P);
+  const segs = sp.slice(1).map((p, i) => [p[0] - sp[i][0], p[1] - sp[i][1]]);
+  segs.push([sp[0][0] - sp[sp.length - 1][0], sp[0][1] - sp[sp.length - 1][1]]);
+  doc.lines(segs.slice(0, -1), sp[0][0], sp[0][1], [1, 1], 'FD', true);
+  // sommets
+  doc.setFontSize(8); doc.setTextColor(20, 20, 20);
+  const cx = sp.reduce((a, p) => a + p[0], 0) / sp.length, cy = sp.reduce((a, p) => a + p[1], 0) / sp.length;
+  sp.forEach((p, i) => {
+    doc.setFillColor(214, 64, 40); doc.circle(p[0], p[1], 1.1, 'F');
+    const vx = p[0] - cx, vy = p[1] - cy, n = Math.hypot(vx, vy) || 1;
+    doc.text(pdfText(labels[i]), p[0] + (vx / n) * 4, p[1] + (vy / n) * 4 + 1, { align: 'center' });
+  });
+  // flèche du nord (grille)
+  const nx = box.x + box.w - 10, ny = box.y + 8;
+  doc.setDrawColor(30); doc.setFillColor(30, 30, 30); doc.setLineWidth(0.3);
+  doc.triangle(nx, ny, nx - 2.5, ny + 7, nx + 2.5, ny + 7, 'F');
+  doc.setFontSize(7); doc.text('Ng', nx, ny + 11, { align: 'center' });
+  // échelle graphique
+  const targetMm = box.w / 4;
+  const raw = targetMm / s;
+  const pow = 10 ** Math.floor(Math.log10(raw));
+  const nice = [1, 2, 5, 10].map((k) => k * pow).reduce((best, v) => (Math.abs(v - raw) < Math.abs(best - raw) ? v : best));
+  const len = nice * s;
+  const bx = box.x + 6, by = box.y + box.h - 7;
+  doc.setDrawColor(30); doc.setLineWidth(0.5); doc.line(bx, by, bx + len, by); doc.line(bx, by - 1.5, bx, by + 1.5); doc.line(bx + len, by - 1.5, bx + len, by + 1.5);
+  doc.setFontSize(7); doc.text(`${nice >= 1000 ? nice / 1000 + ' km' : fnum(nice, nice < 1 ? 2 : 0) + ' m'}`, bx + len / 2, by - 2, { align: 'center' });
+  doc.text(pdfText(box.w < 120 ? `1:${fnum(Math.round(1000 / s), 0)} env.` : `Echelle approx. 1:${fnum(Math.round(1000 / s), 0)} - ${crsLabel}`), bx + len + 4, by + 1);
+}
+
+/**
+ * Rapport PDF de superficie d'une parcelle.
+ * @param {any} f parcelle @param {any} project @param {{ angleUnit?: 'grad'|'deg', reportCrsId?: string|null }} [opts]
+ * @returns {Promise<Blob>}
+ */
+export async function parcelReportPDF(f, project, opts = {}) {
+  const { jsPDF, autoTable } = await import('../../vendor/jspdf.mjs');
+  const doc = await newPdf(jsPDF, { unit: 'mm', format: 'a4' }, [f.name, f.owner, project?.name, f.vertices?.map((/** @type {any} */ v) => v.label)]);
+  await addParcelReport(doc, autoTable, f, project, opts);
+  addFooters(doc);
+  return doc.output('blob');
+}
+
+/**
+ * Rapport PDF de plusieurs parcelles (une section par parcelle), suivi de la fiche des points s'il y en a.
+ * @param {any[]} parcels @param {any[]} points @param {any} project
+ * @param {{ angleUnit?: 'grad'|'deg', crsId?: string }} [opts] crsId : système des points et des parcelles en WGS 84
+ * @returns {Promise<Blob>}
+ */
+export async function parcelsReportPDF(parcels, points, project, opts = {}) {
+  const { jsPDF, autoTable } = await import('../../vendor/jspdf.mjs');
+  const doc = await newPdf(jsPDF, { unit: 'mm', format: 'a4' }, [parcels, points, project?.name]);
+  for (let i = 0; i < parcels.length; i++) {
+    if (i) doc.addPage('a4', 'portrait');
+    const f = parcels[i];
+    await addParcelReport(doc, autoTable, f, project, { angleUnit: opts.angleUnit, reportCrsId: crs.getCrs(f.crsId).kind === 'projected' ? null : (opts.crsId ?? null) });
+  }
+  if (points.length) {
+    doc.addPage('a4', 'landscape');
+    drawSurveySheet(doc, autoTable, points, project, opts.crsId ?? 'EPSG:26191');
+  }
+  addFooters(doc);
+  return doc.output('blob');
+}
+
+/**
+ * Section « rapport de superficie » d'une parcelle, à partir de la page courante du document.
+ * @param {any} doc @param {any} autoTable @param {any} f @param {any} project @param {{ angleUnit?: 'grad'|'deg', reportCrsId?: string|null }} opts
+ */
+async function addParcelReport(doc, autoTable, f, project, opts) {
+  const a = analyze(f, opts.reportCrsId ?? null);
+  if (!a.valid) throw new Error(`Parcelle « ${f.name || 'sans nom'} » invalide : corrigez les erreurs avant d’éditer le rapport.`);
+  const planeId = a.planeCrsId;
+  const pc = crs.getCrs(planeId);
+  const src = crs.getCrs(f.crsId);
+  const labels = f.vertices.map((/** @type {any} */ v, /** @type {number} */ i) => String(v.label ?? i + 1));
+  const W = 210, M = 14;
+  // Carte de situation sur fond satellite (si les tuiles sont accessibles)
+  const { parcelMapImage, MAP_ATTRIBUTION } = await import('./mapimage.js');
+  const map = await parcelMapImage(a.wgs84, labels).catch(() => null);
+  const now = new Date();
+
+  // En-tête
+  doc.setFillColor(15, 61, 94); doc.rect(0, 0, W, 22, 'F');
+  doc.setTextColor(255); doc.setFont('helvetica', 'bold'); doc.setFontSize(15);
+  doc.text('Rapport de superficie', M, 10);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+  doc.text(pdfText(`${APP} - ${now.toLocaleDateString('fr-FR')} ${now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`), M, 16);
+  doc.text(pdfText(`Projet : ${project?.name ?? '-'}`), W - M, 10, { align: 'right' });
+  doc.text(pdfText(`Parcelle : ${f.name || '-'}`), W - M, 16, { align: 'right' });
+
+  doc.setTextColor(20);
+  // Bloc résultat
+  let y = 28;
+  doc.setDrawColor(15, 61, 94); doc.setLineWidth(0.4); doc.roundedRect(M, y, W - 2 * M, 24, 2, 2);
+  doc.setFontSize(8); doc.setTextColor(90); doc.text('SUPERFICIE', M + 4, y + 6); doc.text('PERIMETRE', M + 100, y + 6);
+  doc.setTextColor(15, 61, 94); doc.setFont('helvetica', 'bold'); doc.setFontSize(17);
+  doc.text(pdfText(`${fnum(a.area, 2)} m²`), M + 4, y + 14);
+  doc.text(pdfText(`${fnum(a.perimeter, 2)} m`), M + 100, y + 14);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(40);
+  doc.text(pdfText(`${formatHaACa(a.area)}  -  ${fnum(a.area / 1e4, 4)} ha`), M + 4, y + 20);
+  doc.text(pdfText(`${a.n} sommets - orientation ${a.orientation}`), M + 100, y + 20);
+  y += 30;
+
+  // Plan coté et carte de situation
+  if (map) {
+    const bw = (W - 2 * M - 6) / 2, bh = 80;
+    doc.setFontSize(8); doc.setTextColor(90); doc.text('PLAN COTE', M, y + 3); doc.text('CARTE DE SITUATION (FOND SATELLITE)', M + bw + 6, y + 3);
+    drawPlan(doc, /** @type {[number,number][]} */ (a.plane), labels, { x: M, y: y + 5, w: bw, h: bh }, pc.label);
+    doc.addImage(map.dataUrl, 'JPEG', M + bw + 6, y + 5, bw, bh);
+    doc.setDrawColor(200); doc.setLineWidth(0.2); doc.rect(M + bw + 6, y + 5, bw, bh);
+    doc.setFontSize(6.5); doc.setTextColor(110); doc.text(pdfText(MAP_ATTRIBUTION), M + bw + 6, y + bh + 8.5);
+    y += bh + 12;
+  } else {
+    drawPlan(doc, /** @type {[number,number][]} */ (a.plane), labels, { x: M, y, w: W - 2 * M, h: 92 }, pc.label);
+    y += 98;
+  }
+
+  // Méthode et référence
+  doc.setFontSize(8.5); doc.setTextColor(30);
+  const methodLines = [
+    `Système de coordonnées de saisie : ${src.name}${src.epsg ? ` (EPSG:${src.epsg})` : ''}`,
+    `Méthode : ${a.methodNote}`,
+    `Contrôle : superficie plane ${pc.label} = ${fnum(a.planeArea, 2)} m² ; superficie ellipsoïdale WGS 84 = ${fnum(a.geodesicArea, 2)} m² (écart ${a.diffPercent.toFixed(3)} %).`,
+    `Datum : ${a.datum.datum}. Transformation vers WGS 84 : ${a.datum.transformation}.`,
+  ];
+  if (f.terrain) {
+    const t = f.terrain;
+    methodLines.push(`Relief (indicatif, ${t.source}) : altitude ${fnum(t.elevMin, 0)} à ${fnum(t.elevMax, 0)} m, dénivelé ${fnum(t.relief, 1)} m, pente moyenne ${fnum(t.slopeMeanPct, 1)} % (${fnum(t.slopeMeanDeg, 1)}°), pente maximale ${fnum(t.slopeMaxPct, 1)} %${Number.isFinite(t.aspect) ? `, exposition ${fnum(t.aspect, 0)}°` : ''}.`);
+  }
+  // Qualité des mesures (avant les tableaux, pour tenir sur la page)
+  methodLines.push(a.worstAccuracy != null
+    ? `Qualité : précision GPS estimée la plus défavorable ±${a.worstAccuracy.toFixed(1)} m (précision annoncée par l'appareil, non garantie).`
+    : 'Qualité : sommets saisis ou importés, précision dépendant de la source des coordonnées.');
+  for (const i of a.issues.filter((/** @type {any} */ x) => x.level !== 'info')) methodLines.push(`Avertissement : ${i.message}`);
+  for (const l of methodLines) {
+    const wrapped = doc.splitTextToSize(pdfText(l), W - 2 * M);
+    doc.text(wrapped, M, y); y += wrapped.length * 3.8;
+  }
+
+  // Tableau des sommets
+  const showPlane = a.plane;
+  autoTable(doc, {
+    startY: y + 2, margin: { left: M, right: M },
+    head: [['Sommet', `X ${pc.label} (m)`, `Y ${pc.label} (m)`, 'Latitude WGS 84', 'Longitude WGS 84', 'Précision']].map((r) => r.map(pdfText)),
+    body: labels.map((l, i) => [l, fnum(showPlane[i][0], 3), fnum(showPlane[i][1], 3), a.wgs84[i].lat.toFixed(8), a.wgs84[i].lon.toFixed(8), f.vertices[i].accuracy != null ? `±${f.vertices[i].accuracy.toFixed(1)} m` : '-']).map((r) => r.map(pdfText)),
+    styles: { fontSize: 8, cellPadding: 1.1 }, headStyles: { fillColor: [15, 61, 94] },
+    columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' } },
+  });
+  // Tableau des côtés
+  const unit = opts.angleUnit ?? 'grad';
+  // @ts-ignore
+  y = doc.lastAutoTable.finalY + 4;
+  autoTable(doc, {
+    startY: y, margin: { left: M, right: M },
+    head: [['Côté', 'Longueur plane (m)', unit === 'grad' ? 'Gisement (gr)' : 'Gisement (°)', 'Longueur géodésique (m)', 'Azimut vrai (°)'].map(pdfText)],
+    body: a.sides.map((/** @type {any} */ s) => [`${labels[s.from]} - ${labels[s.to]}`, fnum(s.gridLength, 3), unit === 'grad' ? fnum(degToGrad(s.gridBearing), 4) : fnum(s.gridBearing, 4), fnum(s.geodesicLength, 3), fnum(s.trueAzimuth, 4)].map(pdfText)),
+    styles: { fontSize: 8, cellPadding: 1.4 }, headStyles: { fillColor: [15, 61, 94] },
+    columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' } },
+  });
+  // @ts-ignore
+  y = doc.lastAutoTable.finalY + 5;
+
+  if (f.description) { const w = doc.splitTextToSize(pdfText(`Observations : ${f.description}`), W - 2 * M); if (y + w.length * 3.8 > 272) { doc.addPage(); y = 20; } doc.setFontSize(8.5); doc.setTextColor(30); doc.text(w, M, y + 1); }
+}
+
+/** @param {any} doc */
+function addFooters(doc) {
+  const n = doc.getNumberOfPages();
+  for (let p = 1; p <= n; p++) {
+    doc.setPage(p);
+    const pw = doc.internal.pageSize.getWidth(), ph = doc.internal.pageSize.getHeight();
+    doc.setDrawColor(200); doc.line(14, ph - 18, pw - 14, ph - 18);
+    doc.setFontSize(6.8); doc.setTextColor(110);
+    doc.text(doc.splitTextToSize(pdfText(DISCLAIMER), pw - 50), 14, ph - 14);
+    doc.text(`Page ${p}/${n}`, pw - 14, ph - 14, { align: 'right' });
+  }
+}
+
+/**
+ * Fiche de levé (liste des points d'un projet).
+ * @param {any[]} features @param {any} project @param {string} crsId
+ * @returns {Promise<Blob>}
+ */
+export async function surveySheetPDF(features, project, crsId) {
+  const { jsPDF, autoTable } = await import('../../vendor/jspdf.mjs');
+  const doc = await newPdf(jsPDF, { unit: 'mm', format: 'a4', orientation: 'landscape' }, [features, project?.name]);
+  drawSurveySheet(doc, autoTable, features, project, crsId);
+  addFooters(doc);
+  return doc.output('blob');
+}
+
+/** Fiche de levé (page paysage courante). @param {any} doc @param {any} autoTable @param {any[]} features @param {any} project @param {string} crsId */
+function drawSurveySheet(doc, autoTable, features, project, crsId) {
+  const c = crs.getCrs(crsId);
+  const W = 297, M = 12;
+  doc.setFillColor(15, 61, 94); doc.rect(0, 0, W, 18, 'F');
+  doc.setTextColor(255); doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.text('Fiche de levé', M, 11);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+  doc.text(pdfText(`Projet : ${project?.name ?? '-'}  -  ${project?.date ?? ''}  -  Edité le ${new Date().toLocaleString('fr-FR')}`), W - M, 11, { align: 'right' });
+  doc.setTextColor(30); doc.setFontSize(8.5);
+  doc.text(pdfText(`Système : ${c.name}${c.epsg ? ` (EPSG:${c.epsg})` : ''} - ${crs.datumInfo(crsId).transformation}`), M, 25);
+  if (project?.notes) doc.text(doc.splitTextToSize(pdfText(`Observations : ${project.notes}`), W - 2 * M), M, 30);
+  const [ax, ay] = c.kind === 'projected' ? ['X (m)', 'Y (m)'] : ['Longitude', 'Latitude'];
+  const pts = features.filter((f) => f.type === 'point');
+  autoTable(doc, {
+    startY: project?.notes ? 36 : 30, margin: { left: M, right: M, bottom: 22 },
+    head: [['N°', 'Nom', 'Code', ax, ay, 'Lat. WGS 84', 'Lon. WGS 84', 'Précision', 'Source', 'Date / heure', 'Description'].map(pdfText)],
+    body: pts.map((f) => {
+      const [x, y] = pointXY(f, crsId);
+      return [f.num ?? '', f.name ?? '', f.code ?? '', c.unit === 'm' ? fnum(x, 3) : x.toFixed(8), c.unit === 'm' ? fnum(y, 3) : y.toFixed(8), f.wgs84.lat.toFixed(8), f.wgs84.lon.toFixed(8), f.accuracy != null ? `±${f.accuracy.toFixed(1)} m` : '-', f.source ?? '', f.takenAt ? new Date(f.takenAt).toLocaleString('fr-FR') : '', f.description ?? ''].map(pdfText);
+    }),
+    styles: { fontSize: 7.5, cellPadding: 1.2 }, headStyles: { fillColor: [15, 61, 94] },
+  });
+}
+
+// ------------------------------------------------------------------ Rapport de partage
+/** @param {string} hex */
+function rgb(hex) { const m = hex.replace('#', '').match(/^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i); return m ? [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)] : [120, 120, 120]; }
+
+/**
+ * Rapport PDF d'un partage : plan des lots en couleur, tableau des parts, coordonnées.
+ * @param {any} parent @param {any[]} lots @param {any} project @returns {Promise<Blob>}
+ */
+export async function divisionReportPDF(parent, lots, project) {
+  return divisionsReportPDF([{ parent, lots }], project, { summary: false });
+}
+
+/**
+ * Rapport groupé : page de synthèse (chaque parcelle et ses lots : personne, part %, superficie),
+ * puis, pour chaque parcelle, son rapport de partage (plan, tableau, coordonnées).
+ * @param {{ parent:any, lots:any[] }[]} groups @param {any} project @param {{ summary?: boolean }} [o]
+ */
+export async function divisionsReportPDF(groups, project, o = {}) {
+  const { jsPDF, autoTable } = await import('../../vendor/jspdf.mjs');
+  const { analyzeParcel } = await import('../core/parcel.js');
+  const doc = await newPdf(jsPDF, { unit: 'mm', format: 'a4' }, [groups, project?.name]);
+  const W = 210, M = 14;
+  const summary = o.summary ?? true;
+  if (!groups.length) throw new Error('Aucune parcelle sélectionnée.');
+  if (summary) {
+    doc.setFillColor(15, 61, 94); doc.rect(0, 0, W, 22, 'F');
+    doc.setTextColor(255); doc.setFont('helvetica', 'bold'); doc.setFontSize(15); doc.text(pdfText('Parcelles et partages'), M, 10);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+    doc.text(pdfText(`${APP} - ${new Date().toLocaleString('fr-FR')}`), M, 16);
+    doc.text(pdfText(`Projet : ${project?.name ?? '-'}`), W - M, 10, { align: 'right' });
+    doc.text(pdfText(`${groups.length} parcelle(s)`), W - M, 16, { align: 'right' });
+    /** @type {any[]} */ const body = [];
+    /** @type {(string|null)[]} */ const colors = [];
+    let total = 0;
+    for (const g of groups) {
+      let A = NaN;
+      try { const a = analyzeParcel(g.parent.vertices, g.parent.crsId, { method: 'plane' }); if (a.valid) A = a.planeArea; } catch { /* */ }
+      if (Number.isFinite(A)) total += A;
+      body.push([{ content: pdfText(g.parent.name || 'Parcelle'), colSpan: 2, styles: { fontStyle: 'bold' } }, { content: g.lots.length ? `${g.lots.length} lot(s)` : pdfText('non partagée'), styles: { fontStyle: 'bold' } },
+        { content: Number.isFinite(A) ? fnum(A, 2) : '-', styles: { fontStyle: 'bold', halign: 'right' } }, { content: Number.isFinite(A) ? pdfText(formatHaACa(A)) : '-', styles: { fontStyle: 'bold' } }]);
+      colors.push(null);
+      const lots = [...g.lots].sort((x, y) => (x.division?.index ?? 0) - (y.division?.index ?? 0));
+      for (const f of lots) {
+        let a = NaN;
+        try { const r = analyzeParcel(f.vertices, f.crsId, { method: 'plane' }); if (r.valid) a = r.planeArea; } catch { /* */ }
+        const pct = f.owner?.percent != null ? +f.owner.percent : (Number.isFinite(a) && Number.isFinite(A) ? (a / A) * 100 : NaN);
+        body.push(['', pdfText(f.owner?.name ?? '-'), Number.isFinite(pct) ? pdfText(formatPercent(pct)) : '-', Number.isFinite(a) ? fnum(a, 2) : '-', Number.isFinite(a) ? pdfText(formatHaACa(a)) : '-']);
+        colors.push(f.owner?.color ?? '#888888');
+      }
+      if (!g.lots.length && g.parent.owner?.name) { body.push(['', pdfText(g.parent.owner.name), '100 %', Number.isFinite(A) ? fnum(A, 2) : '-', Number.isFinite(A) ? pdfText(formatHaACa(A)) : '-']); colors.push(g.parent.owner.color ?? '#0f3d5e'); }
+    }
+    doc.setTextColor(30); doc.setFontSize(10);
+    doc.text(pdfText(`Synthèse : chaque parcelle, puis ses lots (personne, part, superficie). Superficie totale : ${fnum(total, 2)} m² (${formatHaACa(total)}).`), M, 29, { maxWidth: W - 2 * M });
+    autoTable(doc, {
+      startY: 35, margin: { left: M, right: M },
+      head: [['', 'Parcelle / personne', 'Part', { content: 'Superficie (m²)', styles: { halign: 'right' } }, 'ha a ca'].map((c) => (typeof c === 'string' ? pdfText(c) : c))],
+      body,
+      foot: [[{ content: pdfText('Total des parcelles'), colSpan: 3 }, { content: fnum(total, 2), styles: { halign: 'right' } }, pdfText(formatHaACa(total))]],
+      styles: { fontSize: 8.5, cellPadding: 1.5 }, headStyles: { fillColor: [15, 61, 94] }, footStyles: { fillColor: [232, 238, 245], textColor: 20 },
+      columnStyles: { 0: { cellWidth: 6 }, 2: { halign: 'right', cellWidth: 26 }, 3: { halign: 'right', cellWidth: 34 }, 4: { cellWidth: 40 } },
+      didParseCell: (/** @type {any} */ d) => { if (d.section === 'body' && colors[d.row.index] === null) d.cell.styles.fillColor = [238, 243, 248]; },
+      didDrawCell: (/** @type {any} */ d) => { const c = colors[d.row.index]; if (d.section === 'body' && d.column.index === 0 && c) { const [r, g, b] = rgb(c); doc.setFillColor(r, g, b); doc.rect(d.cell.x + 1.5, d.cell.y + 1.2, 3, d.cell.height - 2.4, 'F'); } },
+    });
+  }
+  for (let i = 0; i < groups.length; i++) {
+    if (summary || i > 0) doc.addPage();
+    await addDivisionReport(doc, autoTable, groups[i].parent, groups[i].lots, project);
+  }
+  addFooters(doc);
+  return doc.output('blob');
+}
+
+/** Dessine le rapport de partage d'une parcelle sur la page courante. @param {any} doc @param {any} autoTable @param {any} parent @param {any[]} lotsIn @param {any} project */
+async function addDivisionReport(doc, autoTable, parent, lotsIn, project) {
+  const { analyzeParcel } = await import('../core/parcel.js');
+  const shared = lotsIn.length > 0;
+  // parcelle non partagée : présentée comme un lot unique (propriétaire éventuel, 100 %)
+  const lots = shared ? lotsIn : [{ ...parent, owner: { name: parent.owner?.name ?? 'Non partagée', percent: 100, color: parent.owner?.color ?? '#0f3d5e' } }];
+  const pa = analyzeParcel(parent.vertices, parent.crsId, { method: 'plane' });
+  if (!pa.valid) throw new Error('Parcelle d’origine invalide.');
+  const planeId = pa.planeCrsId;
+  const pc = crs.getCrs(planeId);
+  const items = lots.map((f) => {
+    const a = analyzeParcel(f.vertices, f.crsId, { method: 'plane', planeCrsId: planeId });
+    const pts = /** @type {[number,number][]} */ (f.crsId === planeId ? f.vertices.map((/** @type {any} */ v) => [v.x, v.y]) : f.vertices.map((/** @type {any} */ v) => crs.transform(f.crsId, planeId, [v.x, v.y])));
+    return { f, a, pts };
+  }).sort((x, y) => (x.f.division?.index ?? 0) - (y.f.division?.index ?? 0));
+  const W = 210, M = 14;
+  doc.setFillColor(15, 61, 94); doc.rect(0, 0, W, 22, 'F');
+  doc.setTextColor(255); doc.setFont('helvetica', 'bold'); doc.setFontSize(15); doc.text(pdfText(shared ? 'Proposition de partage de parcelle' : 'Parcelle (non partagée)'), M, 10);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+  doc.text(pdfText(`${APP} - ${new Date().toLocaleString('fr-FR')}`), M, 16);
+  doc.text(pdfText(`Projet : ${project?.name ?? '-'}`), W - M, 10, { align: 'right' });
+  doc.text(pdfText(`Parcelle : ${parent.name || '-'}`), W - M, 16, { align: 'right' });
+  doc.setTextColor(30); doc.setFontSize(10);
+  doc.text(pdfText(`Superficie totale : ${fnum(pa.planeArea, 2)} m² (${formatHaACa(pa.planeArea)}) - ${shared ? `${items.length} lots` : 'non partagée'} - système ${pc.name}${pc.epsg ? ` (EPSG:${pc.epsg})` : ''}`), M, 29);
+
+  // Plan
+  const box = { x: M, y: 33, w: W - 2 * M, h: 105 };
+  const all = [...pa.plane, ...items.flatMap((i) => i.pts)];
+  const xs = all.map((p) => p[0]), ys = all.map((p) => p[1]);
+  const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
+  const s = Math.min((box.w - 44) / (maxX - minX || 1), (box.h - 24) / (maxY - minY || 1)); // marge droite : flèche du nord
+  const ox = box.x + 14 + (box.w - 44 - (maxX - minX) * s) / 2, oy = box.y + (box.h + (maxY - minY) * s) / 2;
+  const P = (/** @type {[number,number]} */ p) => [ox + (p[0] - minX) * s, oy - (p[1] - minY) * s];
+  doc.setDrawColor(200); doc.setLineWidth(0.2); doc.rect(box.x, box.y, box.w, box.h);
+  for (const it of items) {
+    const sp = it.pts.map(P);
+    const segs = sp.slice(1).map((p, i) => [p[0] - sp[i][0], p[1] - sp[i][1]]);
+    const [r, g, b] = rgb(it.f.owner?.color ?? '#888888');
+    doc.setFillColor(Math.round(r + (255 - r) * 0.45), Math.round(g + (255 - g) * 0.45), Math.round(b + (255 - b) * 0.45));
+    doc.setDrawColor(r, g, b); doc.setLineWidth(0.5);
+    doc.lines(segs, sp[0][0], sp[0][1], [1, 1], 'FD', true);
+  }
+  // contour d'origine
+  const sp0 = pa.plane.map(P);
+  doc.setDrawColor(15, 61, 94); doc.setLineWidth(0.9);
+  doc.lines(sp0.slice(1).map((p, i) => [p[0] - sp0[i][0], p[1] - sp0[i][1]]), sp0[0][0], sp0[0][1], [1, 1], 'S', true);
+  doc.setFontSize(8); doc.setTextColor(20);
+  for (const it of items) {
+    const c = it.pts.reduce((acc, p) => [acc[0] + p[0] / it.pts.length, acc[1] + p[1] / it.pts.length], [0, 0]);
+    const [cx, cy] = P(/** @type {[number,number]} */ (c));
+    doc.setFont('helvetica', 'bold'); doc.text(pdfText(it.f.owner?.name ?? ''), cx, cy - 1, { align: 'center' });
+    doc.setFont('helvetica', 'normal'); doc.text(pdfText(`${fnum(it.a.planeArea, 2)} m²`), cx, cy + 3, { align: 'center' });
+  }
+  pa.plane.forEach((p, i) => { const [x, y] = P(p); doc.setFillColor(214, 64, 40); doc.circle(x, y, 0.9, 'F'); doc.setFontSize(7); doc.text(pdfText(parent.vertices[i].label || String(i + 1)), x + 1.5, y - 1.2); });
+  const nx = box.x + box.w - 8, ny = box.y + 6;
+  doc.setFillColor(30, 30, 30); doc.triangle(nx, ny, nx - 2.2, ny + 6, nx + 2.2, ny + 6, 'F'); doc.setFontSize(7); doc.text('Ng', nx, ny + 9.5, { align: 'center' });
+
+  // Tableau des parts
+  const bearing = parent.division?.bearing;
+  autoTable(doc, {
+    startY: box.y + box.h + 5, margin: { left: M, right: M },
+    head: [['', 'Personne', 'Part', 'Superficie cible (m²)', 'Superficie du lot (m²)', 'ha a ca', 'Périmètre (m)'].map(pdfText)],
+    body: items.map((it) => ['', it.f.owner?.name ?? '', formatPercent(+it.f.owner?.percent || 0), fnum(it.f.division?.target ?? (it.f.owner?.percent / 100) * pa.planeArea, 2), fnum(it.a.planeArea, 2), formatHaACa(it.a.planeArea), fnum(it.a.planePerimeter, 2)].map(pdfText)),
+    foot: [['', 'Total', '100 %', fnum(pa.planeArea, 2), fnum(items.reduce((t, i) => t + i.a.planeArea, 0), 2), '', ''].map(pdfText)],
+    styles: { fontSize: 8, cellPadding: 1.4 }, headStyles: { fillColor: [15, 61, 94] }, footStyles: { fillColor: [232, 238, 245], textColor: 20 },
+    columnStyles: { 0: { cellWidth: 5 }, 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' }, 6: { halign: 'right' } },
+    didDrawCell: (/** @type {any} */ d) => { if (d.section === 'body' && d.column.index === 0) { const [r, g, b] = rgb(items[d.row.index].f.owner?.color ?? '#888'); doc.setFillColor(r, g, b); doc.rect(d.cell.x + 1, d.cell.y + 1.2, 3, d.cell.height - 2.4, 'F'); } },
+  });
+  // @ts-ignore
+  let y = doc.lastAutoTable.finalY + 4;
+  doc.setFontSize(8.5); doc.setTextColor(30);
+  const method = `Méthode : découpage en bandes par des limites parallèles${bearing != null ? ` de gisement ${fnum(degToGrad(bearing), 4)} gr (${fnum(bearing, 3)}°)` : ''}, positionnées par calcul pour que chaque lot ait exactement la superficie correspondant à sa part (superficies planes dans la projection ${pc.label}).`;
+  const w = doc.splitTextToSize(pdfText(shared ? method : `Parcelle sans partage enregistré : superficie plane dans la projection ${pc.label}.`), W - 2 * M); doc.text(w, M, y); y += w.length * 3.8 + 2;
+
+  // Coordonnées des sommets de chaque lot
+  for (const it of items) {
+    if (y > 250) { doc.addPage(); y = 20; }
+    autoTable(doc, {
+      startY: y, margin: { left: M, right: M },
+      head: [[pdfText(`Lot de ${it.f.owner?.name ?? ''}`), `X (m)`, `Y (m)`]],
+      body: it.f.vertices.map((/** @type {any} */ v, /** @type {number} */ i) => [pdfText(v.label || String(i + 1)), fnum(it.pts[i][0], 3), fnum(it.pts[i][1], 3)]),
+      styles: { fontSize: 7.5, cellPadding: 1 }, headStyles: { fillColor: rgb(it.f.owner?.color ?? '#555555') },
+      columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' } }, tableWidth: 110,
+    });
+    // @ts-ignore
+    y = doc.lastAutoTable.finalY + 3;
+  }
+  if (!shared) return;
+  if (y > 255) { doc.addPage(); y = 20; }
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5);
+  doc.text(doc.splitTextToSize(pdfText('Proposition technique : ce document ne vaut ni acte de partage ni attribution de propriété. Le partage doit être convenu entre les intéressés et établi par un ingénieur géomètre-topographe, puis formalisé selon la procédure légale (notaire / adoul, ANCFCC).'), W - 2 * M), M, y);
+}
