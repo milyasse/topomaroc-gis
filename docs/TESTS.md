@@ -1,12 +1,12 @@
 # Résultats des tests — TopoMaroc GIS
 
-Généré le 2026-11-18 12:08 UTC par `tools/tests-report.mjs` à partir d'exécutions réelles. Aucun test n'est déclaré réussi sans avoir été exécuté.
+Généré le 2026-11-18 12:33 UTC par `tools/tests-report.mjs` à partir d'exécutions réelles. Aucun test n'est déclaré réussi sans avoir été exécuté.
 
 ## 1. Tests unitaires (Node v22.23.4, `node --test`)
 
 Références indépendantes : PROJ 9.8.1 (pyproj 3.8.0), GeographicLib-C (pyproj.Geod), Shapely, NOAA WMM 2025 (pygeomag), générées dans GitHub Actions par `tools/reference/make_reference.py`.
 
-**73 réussi(s), 0 échoué(s).**
+**77 réussi(s), 0 échoué(s).**
 
 | Résultat | Test |
 |---|---|
@@ -16,6 +16,10 @@ Références indépendantes : PROJ 9.8.1 (pyproj 3.8.0), GeographicLib-C (pyproj
 | ✅ réussi | Gisements plans |
 | ✅ réussi | Unités de superficie et format cadastral ha a ca |
 | ✅ réussi | WMM 2025 : déclinaison identique à la référence NOAA (pygeomag) |
+| ✅ réussi | Côté déplacé parallèlement : rectangle 5000 → 6000 m² (côté droit +20 m) |
+| ✅ réussi | Côté déplacé : réduction et parcelle irrégulière, superficie exacte, forme valide, sens inverse |
+| ✅ réussi | Côté déplacé : cas impossibles refusés |
+| ✅ réussi | Mise à l’échelle : forme conservée, superficie exacte |
 | ✅ réussi | Les définitions correspondent au registre EPSG via PROJ (noms) |
 | ✅ réussi | Transformation WGS 84 → Lambert Nord/Sud, UTM, Merchich identique à PROJ (< 1 mm) |
 | ✅ réussi | Projections Lambert (toutes zones) : inverse identique à PROJ dans Merchich (< 0,1 mm) |
@@ -104,9 +108,9 @@ Constat documenté : PROJ n'applique pas EPSG:1166 dans les zones Sahara Nord/Su
 
 ## 2. Tests navigateur — http://127.0.0.1:8080/
 
-Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ordinateur 1440×900 ; GPS simulé. Exécution du 2026-11-18 12:05 UTC.
+Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ordinateur 1440×900 ; GPS simulé. Exécution du 2026-11-18 12:30 UTC.
 
-**39 réussi(s), 0 échoué(s), 2 non exécuté(s).**
+**40 réussi(s), 0 échoué(s), 2 non exécuté(s).**
 
 | Résultat | Scénario | Détail |
 |---|---|---|
@@ -125,7 +129,7 @@ Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ord
 | ✅ réussi | Parcelle : carré 10 m × 10 m saisi en Lambert Nord → 100,00 m² | superficie 100,00 m², périmètre 40,00 m |
 | ✅ réussi | Parcelle : polygone auto-intersecté et sommets en double détectés |  |
 | ✅ réussi | Parcelle : mode dessin sur la carte puis rapport PDF | 4 sommets dessinés, 2 930,61 m², PDF 185703 octets |
-| ✅ réussi | Import CSV (séparateur ;) avec choix du système puis export direct GeoJSON/DXF/CSV/XLSX | Leve_du_18_11_2026-20261118-1205.geojson, Leve_du_18_11_2026-20261118-1205-26191.dxf, Leve_du_18_11_2026-20261118-1205-26191.csv, Leve_du_18_11_2026-20261118-1205.xlsx ; export direct en un geste |
+| ✅ réussi | Import CSV (séparateur ;) avec choix du système puis export direct GeoJSON/DXF/CSV/XLSX | Leve_du_18_11_2026-20261118-1230.geojson, Leve_du_18_11_2026-20261118-1230-26191.dxf, Leve_du_18_11_2026-20261118-1230-26191.csv, Leve_du_18_11_2026-20261118-1230.xlsx ; export direct en un geste |
 | ✅ réussi | Sauvegarde complète puis restauration | 1 projet(s), 1 entité(s) restaurés |
 | ✅ réussi | Outils : convertisseur (Lambert Nord → tous systèmes) et mesure de distance | origine (500 000 ; 300 000) → φ 33,3° λ −5,4° ; distance mesurée 148,64 m |
 | ✅ réussi | Interface tablette et ordinateur (captures) |  |
@@ -135,6 +139,7 @@ Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ord
 | ✅ réussi | Dessin : accrochage aux points et fermeture en touchant le 1er sommet | 1er sommet accroché exactement au point 77, parcelle fermée au toucher du 1er sommet |
 | ✅ réussi | Partage : 3 personnes (1/8, 7/16, 7/16), propositions, lots colorés, rapport PDF | 4 propositions ; lots Fatima 4210.53 m², Ahmed 14736.85 m², Khadija 14736.85 m² ; PDF 32031 octets |
 | ✅ réussi | Partage par superficie : 1 200 m², 18 a et le reste, lots exacts | Omar 1200.00 m², Salma 1800.00 m², Hassan 2000.00 m² |
+| ✅ réussi | Ajuster à une superficie : côté déplacé (Lambert), mise à l’échelle (WGS 84), annulation | côté : 5000 → 6000.0000 m² ; échelle WGS 84 → 5000.0000 m² |
 | ✅ réussi | Fiche projet : statistiques et superficie par personne |  |
 | ✅ réussi | Satellite : au-delà de l’imagerie disponible, image agrandie au lieu d’une zone vide | 8 tuiles affichées au zoom 21, Imagerie max. ici : zoom 18 — image agrandie |
 | ✅ réussi | Déplacer un point en édition (glisser sur la carte) + sommet de parcelle lié | point déplacé à X=400003.00 ; sommet lié suivi ; nouvelle superficie 85.00 m² |
@@ -148,15 +153,15 @@ Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ord
 | ✅ réussi | Parcelles : afficher / masquer chacune, « uniquement celle-ci », lots masqués avec leur parcelle | seule P1 → 1 tracé ; P2 + lot réaffichés ; couches 2/4 → 4/4 ; masquage conservé après rechargement |
 | ✅ réussi | Export PDF : rapport de parcelle avec carte de situation et coordonnées (une page par parcelle) | 2 pages (une par parcelle), 2 cartes de situation, 104285 octets |
 | ✅ réussi | Fond satellite par défaut (nouvelle installation) | sat |
-| ✅ réussi | Page « Version de l’application » (accueil, réglages, aide) | TopoMaroc GIS v1.5.0 · version et nouveautés · 10 versions · « Vous utilisez la dernière version (v1.5.0). » |
+| ✅ réussi | Page « Version de l’application » (accueil, réglages, aide) | TopoMaroc GIS v1.6.0 · version et nouveautés · 11 versions · « Vous utilisez la dernière version (v1.6.0). » |
 | ⏸ non exécuté | Smartphone iOS / Android réels | aucun appareil physique disponible dans l’environnement de test : à valider sur le terrain (Safari iOS, Chrome Android) |
 | ⏸ non exécuté | Installation PWA sur l’écran d’accueil | nécessite une interaction utilisateur sur un appareil réel ; critères vérifiés automatiquement (manifeste, icônes, service worker, HTTPS) |
 
 ## 3. Tests navigateur — https://milyasse.github.io/topomaroc-gis/
 
-Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ordinateur 1440×900 ; GPS simulé. Exécution du 2026-11-18 12:08 UTC.
+Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ordinateur 1440×900 ; GPS simulé. Exécution du 2026-11-18 12:33 UTC.
 
-**39 réussi(s), 0 échoué(s), 2 non exécuté(s).**
+**40 réussi(s), 0 échoué(s), 2 non exécuté(s).**
 
 | Résultat | Scénario | Détail |
 |---|---|---|
@@ -175,7 +180,7 @@ Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ord
 | ✅ réussi | Parcelle : carré 10 m × 10 m saisi en Lambert Nord → 100,00 m² | superficie 100,00 m², périmètre 40,00 m |
 | ✅ réussi | Parcelle : polygone auto-intersecté et sommets en double détectés |  |
 | ✅ réussi | Parcelle : mode dessin sur la carte puis rapport PDF | 4 sommets dessinés, 2 930,61 m², PDF 185703 octets |
-| ✅ réussi | Import CSV (séparateur ;) avec choix du système puis export direct GeoJSON/DXF/CSV/XLSX | Leve_du_18_11_2026-20261118-1207.geojson, Leve_du_18_11_2026-20261118-1207-26191.dxf, Leve_du_18_11_2026-20261118-1207-26191.csv, Leve_du_18_11_2026-20261118-1207.xlsx ; export direct en un geste |
+| ✅ réussi | Import CSV (séparateur ;) avec choix du système puis export direct GeoJSON/DXF/CSV/XLSX | Leve_du_18_11_2026-20261118-1232.geojson, Leve_du_18_11_2026-20261118-1232-26191.dxf, Leve_du_18_11_2026-20261118-1232-26191.csv, Leve_du_18_11_2026-20261118-1232.xlsx ; export direct en un geste |
 | ✅ réussi | Sauvegarde complète puis restauration | 1 projet(s), 1 entité(s) restaurés |
 | ✅ réussi | Outils : convertisseur (Lambert Nord → tous systèmes) et mesure de distance | origine (500 000 ; 300 000) → φ 33,3° λ −5,4° ; distance mesurée 148,64 m |
 | ✅ réussi | Interface tablette et ordinateur (captures) |  |
@@ -185,6 +190,7 @@ Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ord
 | ✅ réussi | Dessin : accrochage aux points et fermeture en touchant le 1er sommet | 1er sommet accroché exactement au point 77, parcelle fermée au toucher du 1er sommet |
 | ✅ réussi | Partage : 3 personnes (1/8, 7/16, 7/16), propositions, lots colorés, rapport PDF | 4 propositions ; lots Fatima 4210.53 m², Ahmed 14736.85 m², Khadija 14736.85 m² ; PDF 32031 octets |
 | ✅ réussi | Partage par superficie : 1 200 m², 18 a et le reste, lots exacts | Omar 1200.00 m², Salma 1800.00 m², Hassan 2000.00 m² |
+| ✅ réussi | Ajuster à une superficie : côté déplacé (Lambert), mise à l’échelle (WGS 84), annulation | côté : 5000 → 6000.0000 m² ; échelle WGS 84 → 5000.0000 m² |
 | ✅ réussi | Fiche projet : statistiques et superficie par personne |  |
 | ✅ réussi | Satellite : au-delà de l’imagerie disponible, image agrandie au lieu d’une zone vide | 8 tuiles affichées au zoom 21, Imagerie max. ici : zoom 18 — image agrandie |
 | ✅ réussi | Déplacer un point en édition (glisser sur la carte) + sommet de parcelle lié | point déplacé à X=400003.00 ; sommet lié suivi ; nouvelle superficie 85.00 m² |
@@ -198,7 +204,7 @@ Chromium (Playwright), viewport mobile 390×844 tactile, tablette 820×1180, ord
 | ✅ réussi | Parcelles : afficher / masquer chacune, « uniquement celle-ci », lots masqués avec leur parcelle | seule P1 → 1 tracé ; P2 + lot réaffichés ; couches 2/4 → 4/4 ; masquage conservé après rechargement |
 | ✅ réussi | Export PDF : rapport de parcelle avec carte de situation et coordonnées (une page par parcelle) | 2 pages (une par parcelle), 2 cartes de situation, 104285 octets |
 | ✅ réussi | Fond satellite par défaut (nouvelle installation) | sat |
-| ✅ réussi | Page « Version de l’application » (accueil, réglages, aide) | TopoMaroc GIS v1.5.0 (333fbd6) · version et nouveautés · 10 versions · « Vous utilisez la dernière version (v1.5.0). » |
+| ✅ réussi | Page « Version de l’application » (accueil, réglages, aide) | TopoMaroc GIS v1.6.0 (6ee02ce) · version et nouveautés · 11 versions · « Vous utilisez la dernière version (v1.6.0). » |
 | ⏸ non exécuté | Smartphone iOS / Android réels | aucun appareil physique disponible dans l’environnement de test : à valider sur le terrain (Safari iOS, Chrome Android) |
 | ⏸ non exécuté | Installation PWA sur l’écran d’accueil | nécessite une interaction utilisateur sur un appareil réel ; critères vérifiés automatiquement (manifeste, icônes, service worker, HTTPS) |
 
