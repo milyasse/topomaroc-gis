@@ -1,9 +1,16 @@
 // @ts-check
 /** Version de l'application (numérotation sémantique) et historique des nouveautés. */
-export const APP_VERSION = '1.7.0';
+export const APP_VERSION = '1.7.1';
 export const APP_DATE = '2026-11-18';
 
 export const CHANGELOG = [
+  {
+    version: '1.7.1', date: '2026-11-18', items: [
+      'Ordinateur (PC, Mac) : « Rapport PDF » et « Exporter » téléchargent directement le fichier (dossier Téléchargements) au lieu d’ouvrir la fenêtre « Partager » du système.',
+      'Après chaque enregistrement, un bandeau garde un bouton « Télécharger » au cas où le navigateur aurait bloqué le téléchargement.',
+      'Téléphone et tablette : feuille de partage du système (Fichiers, Drive, WhatsApp…) comme avant.',
+    ],
+  },
   {
     version: '1.7.0', date: '2026-11-18', items: [
       'Partage : « Tracer la direction sur la carte » — touchez 2 points (accrochage aux sommets) ; les limites de partage sont parallèles à la ligne tracée et chaque lot reçoit exactement sa part (% ou superficie).',

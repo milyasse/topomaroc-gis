@@ -689,6 +689,43 @@ await test('Ajuster à une superficie : côté déplacé (Lambert), mise à l’
   return `côté : 5000 → ${r1.area.toFixed(4)} m² ; échelle WGS 84 → ${r2.area.toFixed(4)} m²`;
 });
 
+await test('Enregistrement sur PC : téléchargement direct (pas de feuille de partage) + lien « Télécharger » ; téléphone : partage', async () => {
+  const mockShare = () => { window.__shared = 0; navigator.canShare = () => true; navigator.share = async () => { window.__shared++; }; };
+  const seedParcel = async (page) => seed(page, async () => {
+    const st = await import('./src/state.js');
+    const c = [[400000, 380000], [400030, 380000], [400030, 380020], [400000, 380020]];
+    return (await st.addFeature({ type: 'parcel', name: 'Export PC', crsId: 'EPSG:26191', method: 'auto', vertices: c.map(([x, y], i) => ({ x, y, label: `E${i + 1}` })) })).id;
+  });
+  // 1) PC (Windows, Chrome) : le navigateur propose le partage de fichiers, mais on télécharge
+  const pc = await newPage({ hash: '#/map', init: mockShare, ctx: { viewport: { width: 1366, height: 800 }, deviceScaleFactor: 1, isMobile: false, hasTouch: false,
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36' } });
+  const id = await seedParcel(pc.page);
+  await pc.page.goto(BASE + `#/parcels/${id}/manual`);
+  const [dl] = await Promise.all([pc.page.waitForEvent('download', { timeout: 30000 }), pc.page.click('button:has-text("Rapport PDF")')]);
+  const buf = fs.readFileSync(await dl.path());
+  assert(buf.subarray(0, 5).toString() === '%PDF-' && dl.suggestedFilename().endsWith('.pdf'), dl.suggestedFilename());
+  assert(await pc.page.evaluate(() => window.__shared) === 0, 'feuille de partage ouverte sur PC');
+  await pc.page.waitForSelector('.save-bar:has-text("Télécharger")');
+  await pc.page.screenshot({ path: path.join(SHOTS, 'pc-enregistrement.png') });
+  // lien de secours : nouveau téléchargement au clic
+  const [dl2] = await Promise.all([pc.page.waitForEvent('download'), pc.page.click('.save-bar a.save-link')]);
+  assert(dl2.suggestedFilename() === dl.suggestedFilename(), dl2.suggestedFilename());
+  // export direct (bouton « Exporter » → format) sur PC
+  await pc.page.click('button:has-text("Exporter")');
+  const [dl3] = await Promise.all([pc.page.waitForEvent('download'), pc.page.click('.fmt-btn[data-fmt="dxf"]')]);
+  assert(/\.dxf$/.test(dl3.suggestedFilename()) && await pc.page.evaluate(() => window.__shared) === 0, dl3.suggestedFilename());
+  assert(pc.errors.length === 0, pc.errors.join(' | '));
+  await pc.ctx.close();
+  // 2) téléphone (iPhone) : feuille de partage du système
+  const ph = await newPage({ hash: '#/map', init: mockShare, ctx: { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1' } });
+  const id2 = await seedParcel(ph.page);
+  await ph.page.goto(BASE + `#/parcels/${id2}/manual`);
+  await ph.page.click('button:has-text("Rapport PDF")');
+  await until(ph.page, () => window.__shared === 1, 30000);
+  await ph.ctx.close();
+  return `PC : ${dl.suggestedFilename()} (${buf.length} octets), lien de secours OK, DXF ${dl3.suggestedFilename()} ; iPhone : partage`;
+});
+
 await test('Fiche projet : statistiques et superficie par personne', async () => {
   const { page, ctx } = await newPage({ hash: '#/map' });
   const id = await seed(page, async () => {
@@ -1038,11 +1075,11 @@ await test('Page « Version de l’application » (accueil, réglages, aide)', a
   const { page, ctx, errors } = await newPage({ hash: '#/home' });
   await page.waitForSelector('.version-tag');
   const v = await text(page, '.version-tag');
-  assert(/v1\.7\.0/.test(v), v);
+  assert(/v1\.7\.1/.test(v), v);
   await page.click('.version-tag');
-  await page.waitForSelector('#about-version:has-text("Version 1.7.0")');
+  await page.waitForSelector('#about-version:has-text("Version 1.7.1")');
   await page.waitForSelector('.about-kv dt:has-text("Publication")');
-  await page.waitForSelector('.changelog.current:has-text("v1.7.0")');
+  await page.waitForSelector('.changelog.current:has-text("v1.7.1")');
   const n = await page.locator('.changelog').count();
   assert(n >= 5, `${n} versions dans l’historique`);
   await page.click('button:has-text("Rechercher une mise à jour")');
@@ -1050,7 +1087,7 @@ await test('Page « Version de l’application » (accueil, réglages, aide)', a
   const st = await text(page, '[aria-live=polite]');
   await page.screenshot({ path: path.join(SHOTS, 'mobile-version.png') });
   await page.goto(BASE + '#/settings'); await page.waitForSelector('a[href="#/about"]');
-  await page.goto(BASE + '#/help'); await page.waitForSelector('summary:has-text("Version v1.7.0")');
+  await page.goto(BASE + '#/help'); await page.waitForSelector('summary:has-text("Version v1.7.1")');
   assert(errors.length === 0, errors.join(' | '));
   await ctx.close();
   return `${v} · ${n} versions · « ${st} »`;

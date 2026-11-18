@@ -153,22 +153,55 @@ export function select(options, value, props = {}) {
   return s;
 }
 
-/** Téléchargement / partage d'un fichier. @param {Blob|string} data @param {string} filename @param {string} [mime] */
-export async function saveFile(data, filename, mime = 'application/octet-stream') {
-  const blob = data instanceof Blob ? data : new Blob([data], { type: mime });
-  const a = h('a', { href: URL.createObjectURL(blob), download: filename });
-  document.body.append(a);
-  /** @type {HTMLAnchorElement} */ (a).click();
-  setTimeout(() => { URL.revokeObjectURL(/** @type {HTMLAnchorElement} */ (a).href); a.remove(); }, 4000);
-  toast(`Fichier « ${filename} » enregistré.`, 'ok');
+/** Ordinateur (pas un téléphone ni une tablette) : téléchargement direct, jamais la feuille de partage. */
+export function isDesktop() {
+  const ua = navigator.userAgent || '';
+  if (/Android|iPhone|iPad|iPod|Mobile|Silk|Kindle/i.test(ua)) return false;
+  if (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) return false; // iPad (iPadOS se présente comme un Mac)
+  return true;
 }
 
-/** Partage natif (mobile) si disponible, sinon téléchargement. @param {Blob} blob @param {string} filename */
+/**
+ * Téléchargement d'un fichier. Le téléchargement démarre tout de suite ; un bandeau garde un lien
+ * « Télécharger » (clic direct de l'utilisateur) au cas où le navigateur l'aurait bloqué.
+ * @param {Blob|string} data @param {string} filename @param {string} [mime]
+ */
+export async function saveFile(data, filename, mime = 'application/octet-stream') {
+  const blob = data instanceof Blob ? data : new Blob([data], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = /** @type {HTMLAnchorElement} */ (h('a', { href: url, download: filename, style: { display: 'none' } }));
+  document.body.append(a);
+  a.click();
+  a.remove();
+  document.querySelector('.save-bar')?.remove();
+  const kb = blob.size < 1024 * 1024 ? `${Math.max(1, Math.round(blob.size / 1024))} Ko` : `${(blob.size / 1024 / 1024).toFixed(1)} Mo`;
+  const link = h('a.btn.btn-primary.save-link', { href: url, download: filename }, icon('download'), h('span', null, 'Télécharger'));
+  const bar = h('div.save-bar', { role: 'status' },
+    icon('check'),
+    h('div.save-txt', null, h('b', null, filename), h('small', null, `${kb} · téléchargement lancé (dossier Téléchargements de l’ordinateur). Rien n’est arrivé ? Cliquez sur « Télécharger ».`)),
+    link,
+    h('button.icon-btn', { type: 'button', 'aria-label': 'Fermer', title: 'Fermer', onclick: () => close() }, icon('close')));
+  let done = false;
+  const close = () => { if (done) return; done = true; bar.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000); };
+  link.addEventListener('click', () => setTimeout(close, 1500));
+  document.body.append(bar);
+  setTimeout(close, 60000);
+}
+
+/**
+ * Enregistrement d'un fichier produit par l'application.
+ * - Ordinateur : téléchargement direct (dossier Téléchargements).
+ * - Téléphone / tablette : feuille de partage du système (Fichiers, Drive, WhatsApp…) si disponible,
+ *   sinon téléchargement. Si le partage est refusé par le navigateur, on télécharge.
+ * @param {Blob} blob @param {string} filename
+ */
 export async function shareOrSave(blob, filename) {
-  try {
-    const file = new File([blob], filename, { type: blob.type });
-    if (navigator.canShare?.({ files: [file] })) { await navigator.share({ files: [file], title: filename }); return; }
-  } catch (e) { if (/** @type {any} */ (e)?.name === 'AbortError') return; }
+  if (!isDesktop()) {
+    try {
+      const file = new File([blob], filename, { type: blob.type });
+      if (navigator.canShare?.({ files: [file] })) { await navigator.share({ files: [file], title: filename }); return; }
+    } catch (e) { if (/** @type {any} */ (e)?.name === 'AbortError') return; }
+  }
   await saveFile(blob, filename);
 }
 

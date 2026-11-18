@@ -1,6 +1,6 @@
 // Fichier généré par tools/gen-precache.mjs — ne pas modifier à la main.
 self.PRECACHE = {
- "version": "de7d2b51c226",
+ "version": "e1e9baf33134",
  "files": [
   "./",
   "./index.html",
