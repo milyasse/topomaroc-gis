@@ -368,7 +368,7 @@ function renderEditor(root, id) {
       await updateFeature({ ...get(), owner: { name: n.value.trim(), percent: p.parentId ? p.owner?.percent : 100, color: c.value } }, 'Propriétaire');
     };
     mount(ownerBox, p.owner
-      ? h('div.owner-line', null, h('span.swatch', { style: { background: p.owner.color } }), h('div', null, h('div.eyebrow', null, p.parentId ? 'Lot attribué à' : 'Propriétaire'), h('b', null, p.owner.name), p.owner.percent != null ? h('span.muted', null, ` · ${formatPercent(+p.owner.percent)}`) : null),
+      ? h('div.owner-line', null, h('span.swatch', { style: { background: p.owner.color } }), h('div', null, h('div.eyebrow', null, p.parentId ? 'Lot attribué à' : 'Propriétaire'), h('b', null, p.owner.name), p.owner.percent != null ? h('span.muted', null, ` · ${p.owner.area != null ? `${formatArea(+p.owner.area, 'm2')} demandés · ` : ''}${formatPercent(+p.owner.percent)}`) : null),
         h('span.spacer'), h('button.icon-btn', { type: 'button', 'aria-label': 'Modifier le propriétaire', onclick: setOwner }, icon('edit')),
         p.parentId ? h('button.link-btn', { type: 'button', onclick: () => { location.hash = `#/parcels/${p.parentId}/share`; } }, 'Parcelle d’origine') : null)
       : h('div.row.wrap', null, btn('Associer à une personne', { variant: 'ghost', onclick: setOwner }, 'users')));

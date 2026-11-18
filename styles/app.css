@@ -513,6 +513,10 @@ body.can-close .vx-first { animation: vxpulse 1.1s ease-in-out infinite; box-sha
 .owner-share { display: flex; gap: 8px; align-items: center; }
 .owner-share .share-in { width: 110px; flex: none; font-family: var(--mono); }
 .share-pct { color: var(--ink-2); font-size: .8rem; }
+.share-unit { color: var(--ink-2); font-size: .85rem; margin-left: -4px; }
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: var(--surface-2); padding: 4px; border-radius: 12px; margin: 4px 0 8px; }
+.seg-btn { min-height: 40px; border: 0; border-radius: 9px; background: transparent; color: var(--ink-2); font: 600 .85rem var(--font); cursor: pointer; }
+.seg-btn[aria-pressed="true"] { background: var(--surface); color: var(--brand); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
 .owner-acts { display: flex; flex-direction: column; }
 .color-in { width: 38px; height: 38px; padding: 0; border: 0; border-radius: 10px; background: none; cursor: pointer; flex: none; }
 .share-sum { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 8px 12px; border-radius: 10px; font-weight: 700; margin: 6px 0 10px; }

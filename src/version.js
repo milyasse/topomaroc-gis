@@ -1,9 +1,15 @@
 // @ts-check
 /** Version de l'application (numérotation sémantique) et historique des nouveautés. */
-export const APP_VERSION = '1.4.4';
-export const APP_DATE = '2026-11-04';
+export const APP_VERSION = '1.5.0';
+export const APP_DATE = '2026-11-18';
 
 export const CHANGELOG = [
+  {
+    version: '1.5.0', date: '2026-11-18', items: [
+      'Partage d’une parcelle par superficie : saisissez la superficie revenant à chaque personne (m², ou 12,5 a, 0,25 ha, 1 ha 20 a 30 ca) ; un champ laissé vide reçoit le reste. Les lots sont calculés automatiquement à la superficie exacte.',
+      'Contrôle immédiat : superficie attribuée, reste non attribué ou dépassement ; la fiche de chaque lot rappelle la superficie demandée.',
+    ],
+  },
   {
     version: '1.4.4', date: '2026-11-04', items: [
       'Fond satellite par défaut.',

@@ -538,6 +538,49 @@ await test('Partage : 3 personnes (1/8, 7/16, 7/16), propositions, lots colorés
   return `${nprops} propositions ; lots ${lots.map((l) => `${l.n} ${l.a.toFixed(2)} m²`).join(', ')} ; PDF ${buf.length} octets`;
 });
 
+await test('Partage par superficie : 1 200 m², 18 a et le reste, lots exacts', async () => {
+  const { page, ctx, errors } = await newPage({ hash: '#/map' });
+  const pid = await seed(page, async () => {
+    const st = await import('./src/state.js');
+    const c = [[400000, 380000], [400100, 380000], [400100, 380050], [400000, 380050]]; // 5000 m²
+    const p = await st.addFeature({ type: 'parcel', name: 'Terrain', crsId: 'EPSG:26191', method: 'auto', vertices: c.map(([x, y], i) => ({ x, y, label: `T${i + 1}` })) });
+    return p.id;
+  });
+  await page.goto(BASE + `#/parcels/${pid}/share`);
+  await page.waitForSelector('.owner-row');
+  await page.click('.seg-btn:has-text("En superficie")');
+  await page.click('button:has-text("Ajouter une personne")');
+  const names = page.locator('.owner-row input[type=text]:not(.share-in)');
+  const shares = page.locator('.owner-row input.share-in');
+  // somme incomplète sans « reste » → refus
+  for (const [i, [n, s]] of [['Omar', '1200'], ['Salma', '18 a'], ['Hassan', '1000']].entries()) { await names.nth(i).fill(n); await shares.nth(i).fill(s); }
+  await page.waitForSelector('.share-sum.bad:has-text("1000.00 m² non attribués")');
+  await shares.nth(2).fill('');
+  await page.waitForSelector('.share-sum.ok');
+  const restTxt = await text(page, '.owner-row:nth-child(3) .share-pct');
+  assert(/reste/.test(restTxt) && /2\s?000,00/.test(restTxt), restTxt);
+  await page.click('button:has-text("Proposer des découpages")');
+  await page.waitForSelector('.prop-card[aria-pressed="true"]');
+  await page.waitForSelector('th:has-text("Demandée")');
+  await page.screenshot({ path: path.join(SHOTS, 'mobile-partage-superficie.png') });
+  await page.click('button:has-text("Générer les parcelles")');
+  await page.waitForSelector('.toast:has-text("3 lots créés")');
+  const lots = await page.evaluate(async (pid) => {
+    const st = await import('./src/state.js'); const P = await import('./src/core/parcel.js');
+    const par = st.state.features.find((f) => f.id === pid);
+    return { mode: par.shareMode, lots: st.state.features.filter((f) => f.parentId === pid).map((f) => ({ n: f.owner.name, req: f.owner.area, a: P.analyzeParcel(f.vertices, f.crsId, { method: 'plane' }).planeArea })) };
+  }, pid);
+  assert(lots.mode === 'area', lots.mode);
+  const want = [1200, 1800, 2000];
+  lots.lots.forEach((l, i) => assert(Math.abs(l.a - want[i]) < 1e-4 && Math.abs(l.req - want[i]) < 1e-9, JSON.stringify(lots)));
+  // retour sur l'écran : le mode et les saisies sont conservés
+  await page.goto(BASE + '#/map'); await page.goto(BASE + `#/parcels/${pid}/share`);
+  await page.waitForSelector('.seg-btn[aria-pressed="true"]:has-text("En superficie")');
+  assert(errors.length === 0, errors.join(' | '));
+  await ctx.close();
+  return lots.lots.map((l) => `${l.n} ${l.a.toFixed(2)} m²`).join(', ');
+});
+
 await test('Fiche projet : statistiques et superficie par personne', async () => {
   const { page, ctx } = await newPage({ hash: '#/map' });
   const id = await seed(page, async () => {
@@ -887,11 +930,11 @@ await test('Page « Version de l’application » (accueil, réglages, aide)', a
   const { page, ctx, errors } = await newPage({ hash: '#/home' });
   await page.waitForSelector('.version-tag');
   const v = await text(page, '.version-tag');
-  assert(/v1\.4\.4/.test(v), v);
+  assert(/v1\.5\.0/.test(v), v);
   await page.click('.version-tag');
-  await page.waitForSelector('#about-version:has-text("Version 1.4.4")');
+  await page.waitForSelector('#about-version:has-text("Version 1.5.0")');
   await page.waitForSelector('.about-kv dt:has-text("Publication")');
-  await page.waitForSelector('.changelog.current:has-text("v1.4.4")');
+  await page.waitForSelector('.changelog.current:has-text("v1.5.0")');
   const n = await page.locator('.changelog').count();
   assert(n >= 5, `${n} versions dans l’historique`);
   await page.click('button:has-text("Rechercher une mise à jour")');
@@ -899,7 +942,7 @@ await test('Page « Version de l’application » (accueil, réglages, aide)', a
   const st = await text(page, '[aria-live=polite]');
   await page.screenshot({ path: path.join(SHOTS, 'mobile-version.png') });
   await page.goto(BASE + '#/settings'); await page.waitForSelector('a[href="#/about"]');
-  await page.goto(BASE + '#/help'); await page.waitForSelector('summary:has-text("Version v1.4.4")');
+  await page.goto(BASE + '#/help'); await page.waitForSelector('summary:has-text("Version v1.5.0")');
   assert(errors.length === 0, errors.join(' | '));
   await ctx.close();
   return `${v} · ${n} versions · « ${st} »`;

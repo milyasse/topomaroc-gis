@@ -102,3 +102,38 @@ test('Insertion d’un sommet au meilleur endroit du contour', () => {
   assert.equal(r.ring.length, 6);
   assert.equal(selfIntersections(r.ring).length, 0);
 });
+
+test('Partage par superficie : lecture des saisies (m², a, ha, ha a ca)', async () => {
+  const { parseAreaInput } = await import('../../src/core/division.js');
+  assert.equal(parseAreaInput('500'), 500);
+  assert.equal(parseAreaInput('500 m²'), 500);
+  assert.equal(parseAreaInput('1 250,5'), 1250.5);
+  assert.equal(parseAreaInput('12,5 a'), 1250);
+  assert.equal(parseAreaInput('0,25 ha'), 2500);
+  assert.equal(parseAreaInput('1 ha 20 a 30 ca'), 12030);
+  assert.ok(Number.isNaN(parseAreaInput('abc')));
+  assert.ok(Number.isNaN(parseAreaInput('5 abc')));
+  assert.ok(Number.isNaN(parseAreaInput('')));
+});
+
+test('Partage par superficie : reste, contrôle de la somme, découpage exact', async () => {
+  const { areasToShares } = await import('../../src/core/division.js');
+  // 5000 m² : 1200 + 1800 + reste (2000)
+  const r = areasToShares(['1200', '18 a', ''], 5000);
+  assert.equal(r.ok, true, r.errors.join());
+  assert.deepEqual(r.areas, [1200, 1800, 2000]);
+  assert.equal(r.remainderIndex, 2);
+  const d = divideByStrips(RECT, r.percents, 0);
+  d.pieces.forEach((p, i) => assert.ok(Math.abs(p.area - r.areas[i]) < 1e-6, `${p.area} ≠ ${r.areas[i]}`));
+  // somme incomplète sans reste → refus avec le restant
+  const bad = areasToShares(['1200', '1800'], 5000);
+  assert.equal(bad.ok, false); assert.match(bad.errors[0], /2000\.00 m² non attribués/);
+  // dépassement
+  assert.equal(areasToShares(['3000', '2500'], 5000).ok, false);
+  assert.equal(areasToShares(['5000', ''], 5000).ok, false);
+  // deux « reste »
+  assert.equal(areasToShares(['', 'reste'], 5000).ok, false);
+  // écart d'arrondi ≤ 0,01 m² attribué à la dernière personne
+  const s = areasToShares(['2500.00', '2499.995'], 5000);
+  assert.equal(s.ok, true); assert.ok(Math.abs(s.areas[1] - 2500) < 1e-9 && Math.abs(s.roundingFix - 0.005) < 1e-9);
+});

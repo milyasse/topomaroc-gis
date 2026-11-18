@@ -52,6 +52,12 @@ Détection : moins de 3 sommets, fermeture répétée, sommets en double (≤ 1 
 
 **Rapport PDF** : projet, date, plan coté (échelle graphique, nord), tableau des sommets (Lambert + WGS 84), tableau des côtés (longueurs, gisements en grades ou degrés, longueurs géodésiques, azimuts), superficie et périmètre, système, méthode, qualité estimée, mention « ne constitue pas un document cadastral officiel ». [Exemple](docs/exemple-rapport-parcelle.pdf).
 
+### Nouveautés v1.5 — partage par superficie
+
+- Dans « Partager entre personnes », choisissez **En superficie (m²)** : saisissez la superficie de chaque personne (m², a, ha ou « 1 ha 20 a 30 ca »). Un champ vide reçoit **le reste** de la parcelle.
+- Le système vérifie la somme (reste non attribué, dépassement), puis calcule les lots à la superficie exacte (écart < 1 mm²) avec les mêmes propositions de découpage qu'en pourcentage.
+- La fiche de chaque lot rappelle la superficie demandée ; le mode et les saisies sont conservés.
+
 ### Nouveautés v1.4.4 — zone de travail et fond satellite
 - **Fond satellite par défaut** (y compris pour les installations restées sur le plan d'origine).
 - Projection automatique : si la position GPS n'est pas dans la vue de la carte (on consulte une autre région), la zone suit le **centre de la carte** ; elle revient à la zone GPS dès que la position est de nouveau visible ou en mode suivi.

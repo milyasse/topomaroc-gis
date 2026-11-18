@@ -29,6 +29,70 @@ export function parseShare(v) {
 }
 
 /**
+ * Lit une superficie saisie, en m² : « 500 », « 500 m² », « 1 250,5 », « 12,5 a », « 0,25 ha »,
+ * « 1 ha 20 a 30 ca ». Renvoie NaN si illisible.
+ * @param {string|number} v @returns {number}
+ */
+export function parseAreaInput(v) {
+  if (typeof v === 'number') return v;
+  const s = String(v).toLowerCase().replace(/ | /g, ' ').replace(/m²|m2/g, ' m ').trim();
+  if (!s) return NaN;
+  const FACT = /** @type {Record<string, number>} */ ({ ha: 10000, a: 100, ca: 1, m: 1, '': 1 });
+  const re = /(\d+(?:[ ]\d{3})*(?:[.,]\d+)?)\s*(ha|ca|a|m)?/gy;
+  let total = 0, n = 0, m, pos = 0;
+  const str = s.replace(/\s+/g, ' ');
+  while (pos < str.length) {
+    while (str[pos] === ' ') pos++;
+    if (pos >= str.length) break;
+    re.lastIndex = pos;
+    m = re.exec(str);
+    if (!m) return NaN;
+    const unit = m[2] ?? '';
+    if (!unit && n > 0) return NaN; // nombre sans unité après une première valeur
+    total += Number(m[1].replace(/ /g, '').replace(',', '.')) * FACT[unit];
+    n++; pos = re.lastIndex;
+    if (!unit) { while (str[pos] === ' ') pos++; if (pos < str.length) return NaN; }
+  }
+  return n ? total : NaN;
+}
+
+/** Mots signifiant « le reste de la parcelle ». */
+const REST = /^(reste|le reste|restant|solde|-)?$/i;
+
+/**
+ * Superficies demandées par personne → parts. Une seule personne peut recevoir « le reste »
+ * (champ vide ou « reste »). Sans « reste », la somme doit égaler la superficie de la parcelle
+ * à 0,01 m² près ; ce petit écart d'arrondi est alors attribué à la dernière personne.
+ * @param {string[]} inputs saisies (m², a, ha…) @param {number} total superficie de la parcelle (m²)
+ * @returns {{ ok:boolean, errors:string[], areas:number[], percents:number[], assigned:number, remainderIndex:number, roundingFix:number }}
+ */
+export function areasToShares(inputs, total) {
+  const errors = [];
+  const rest = inputs.map((v, i) => (REST.test(String(v).trim()) ? i : -1)).filter((i) => i >= 0);
+  const areas = inputs.map((v, i) => (rest.includes(i) ? NaN : parseAreaInput(v)));
+  if (rest.length > 1) errors.push('Une seule personne peut recevoir « le reste » : indiquez la superficie des autres.');
+  areas.forEach((x, i) => { if (!rest.includes(i) && !(Number.isFinite(x) && x > 0)) errors.push(`Ligne ${i + 1} : superficie illisible (ex. 500, 12,5 a ou 0,25 ha).`); });
+  const assigned = areas.reduce((s, x) => s + (Number.isFinite(x) ? x : 0), 0);
+  let remainderIndex = -1, roundingFix = 0;
+  if (!errors.length) {
+    const diff = total - assigned;
+    if (rest.length === 1) {
+      remainderIndex = rest[0];
+      if (diff < 0.01) errors.push(`Les superficies saisies (${assigned.toFixed(2)} m²) dépassent ou égalent celle de la parcelle (${total.toFixed(2)} m²) : il ne reste rien.`);
+      else areas[remainderIndex] = diff;
+    } else if (Math.abs(diff) > 0.01) {
+      errors.push(diff > 0
+        ? `Il reste ${diff.toFixed(2)} m² non attribués. Ajustez une superficie ou laissez un champ vide pour « le reste ».`
+        : `Les superficies dépassent la parcelle de ${(-diff).toFixed(2)} m².`);
+    } else if (areas.length) {
+      roundingFix = diff; areas[areas.length - 1] += diff;
+    }
+  }
+  const percents = areas.map((x) => (Number.isFinite(x) ? (x / total) * 100 : NaN));
+  return { ok: !errors.length, errors, areas, percents, assigned, remainderIndex, roundingFix };
+}
+
+/**
  * Contrôle des quotes-parts.
  * @param {{name:string, percent:number}[]} owners
  */

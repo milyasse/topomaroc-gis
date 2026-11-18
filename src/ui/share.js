@@ -1,13 +1,14 @@
 // @ts-check
 /**
  * Assistant « Partager la parcelle entre personnes » :
- *  1. personnes et quotes-parts (%, ou fractions comme 1/8) ;
+ *  1. personnes et quotes-parts (%, ou fractions comme 1/8) OU superficies demandées (m², a, ha ;
+ *     une personne peut recevoir « le reste ») ;
  *  2. propositions de découpage (bandes à superficie exacte) + réglage manuel ;
  *  3. génération des sous-parcelles, chacune associée à une personne, avec sa couleur.
  */
 import * as crs from '../core/crs.js';
 import { analyzeParcel } from '../core/parcel.js';
-import { OWNER_COLORS, parseShare, checkShares, divideByStrips, proposeDivisions } from '../core/division.js';
+import { OWNER_COLORS, parseShare, areasToShares, checkShares, divideByStrips, proposeDivisions } from '../core/division.js';
 import { formatArea, formatLength } from '../core/units.js';
 import { formatPercent } from '../core/units.js';
 import { degToGrad } from '../core/angles.js';
@@ -38,27 +39,64 @@ export function renderShare(root, pid) {
   /** @type {{name:string, share:string, color:string}[]} */
   let owners = (parcel.shareOwners ?? []).map((/** @type {any} */ o, /** @type {number} */ i) => ({ name: o.name, share: String(o.input ?? o.percent), color: o.color ?? OWNER_COLORS[i % OWNER_COLORS.length] }));
   if (!owners.length) owners = [{ name: '', share: '50', color: OWNER_COLORS[0] }, { name: '', share: '50', color: OWNER_COLORS[1] }];
+  /** Mode de saisie des parts : quote-part (%) ou superficie demandée (m²). */
+  let mode = /** @type {'percent'|'area'} */ (parcel.shareMode === 'area' ? 'area' : 'percent');
+  const A = a.planeArea;
+  const r2 = (/** @type {number} */ x) => String(Math.round(x * 100) / 100).replace('.', ',');
   const list = h('div.owner-list');
   const sum = h('div.share-sum');
-  const parsed = () => owners.map((o) => ({ name: o.name.trim(), percent: parseShare(o.share), color: o.color }));
+  /** @type {HTMLElement[]} */ let pctEls = [];
+  const areaCheck = () => areasToShares(owners.map((o) => o.share), A);
+  const parsed = () => {
+    if (mode === 'percent') return owners.map((o) => ({ name: o.name.trim(), percent: parseShare(o.share), area: /** @type {number|null} */ (null), color: o.color }));
+    const r = areaCheck();
+    return owners.map((o, i) => ({ name: o.name.trim(), percent: r.percents[i], area: /** @type {number|null} */ (r.areas[i]), color: o.color }));
+  };
+  const paintRows = () => {
+    const r = mode === 'area' ? areaCheck() : null;
+    pctEls.forEach((el, i) => {
+      if (r) {
+        const x = r.areas[i];
+        el.textContent = !Number.isFinite(x) ? (i === r.remainderIndex || /^\s*(reste)?\s*$/i.test(owners[i].share) ? 'reçoit le reste' : 'superficie illisible')
+          : `${i === r.remainderIndex ? 'reste : ' : ''}${formatArea(x, 'm2')} · ${formatPercent((x / A) * 100)}`;
+      } else {
+        const v = parseShare(owners[i].share);
+        el.textContent = Number.isFinite(v) ? `${formatPercent(v)} · ${formatArea((v / 100) * A, 'm2')}` : 'part illisible';
+      }
+    });
+  };
   const paintSum = () => {
+    paintRows();
     const c = checkShares(parsed());
+    if (mode === 'area') {
+      const r = areaCheck();
+      const errs = [...r.errors, ...c.errors.filter((e) => !/somme des parts/.test(e))];
+      const ok = !errs.length;
+      sum.className = `share-sum ${ok ? 'ok' : 'bad'}`;
+      mount(sum, icon(ok ? 'check' : 'alert'),
+        h('span', null, ok ? `Total : ${formatArea(A, 'm2')} = superficie de la parcelle` : `Attribué : ${formatArea(r.assigned, 'm2')} sur ${formatArea(A, 'm2')}`),
+        ok && r.roundingFix ? h('small', null, `Écart d’arrondi de ${(Math.abs(r.roundingFix) * 1e4).toFixed(0)} cm² ajouté à la dernière personne.`) : null,
+        ok ? null : h('small', null, errs[0]));
+      return { ok, errors: errs, total: ok ? 100 : c.total };
+    }
     sum.className = `share-sum ${c.ok ? 'ok' : 'bad'}`;
     mount(sum, icon(c.ok ? 'check' : 'alert'), h('span', null, `Total : ${formatPercent(c.total)}`), c.ok ? null : h('small', null, c.errors[0]));
     return c;
   };
   const paintOwners = () => {
+    pctEls = [];
     mount(list, owners.map((o, i) => {
       const n = /** @type {HTMLInputElement} */ (h('input', { type: 'text', value: o.name, placeholder: `Personne ${i + 1}`, 'aria-label': `Nom de la personne ${i + 1}`, autocomplete: 'off' }));
-      const sh = /** @type {HTMLInputElement} */ (h('input.share-in', { type: 'text', value: o.share, inputmode: 'decimal', 'aria-label': `Part de la personne ${i + 1} (%, ou fraction 1/8)` }));
+      const sh = /** @type {HTMLInputElement} */ (h('input.share-in', { type: 'text', value: o.share, inputmode: 'decimal',
+        placeholder: mode === 'area' ? 'reste' : '',
+        'aria-label': mode === 'area' ? `Superficie de la personne ${i + 1} (m², ou 12,5 a, 0,25 ha ; vide = le reste)` : `Part de la personne ${i + 1} (%, ou fraction 1/8)` }));
       const col = /** @type {HTMLInputElement} */ (h('input.color-in', { type: 'color', value: o.color, 'aria-label': 'Couleur' }));
       const pct = h('small.share-pct');
-      const upd = () => { const v = parseShare(sh.value); pct.textContent = Number.isFinite(v) ? `${formatPercent(v)} · ${formatArea((v / 100) * a.planeArea, 'm2')}` : 'part illisible'; };
+      pctEls.push(pct);
       n.addEventListener('input', () => { o.name = n.value; paintSum(); });
-      sh.addEventListener('input', () => { o.share = sh.value; upd(); paintSum(); });
+      sh.addEventListener('input', () => { o.share = sh.value; paintSum(); });
       col.addEventListener('input', () => { o.color = col.value; });
-      upd();
-      return h('div.owner-row', null, col, h('div.owner-main', null, n, h('div.owner-share', null, sh, pct)),
+      return h('div.owner-row', null, col, h('div.owner-main', null, n, h('div.owner-share', null, sh, mode === 'area' ? h('span.share-unit', null, 'm²') : null, pct)),
         h('div.owner-acts', null,
           h('button.icon-btn.sm', { type: 'button', 'aria-label': 'Monter', title: 'Monter (ordre des bandes)', disabled: i === 0, onclick: () => { [owners[i - 1], owners[i]] = [owners[i], owners[i - 1]]; paintOwners(); } }, icon('up')),
           h('button.icon-btn.sm', { type: 'button', 'aria-label': 'Descendre', title: 'Descendre', disabled: i === owners.length - 1, onclick: () => { [owners[i + 1], owners[i]] = [owners[i], owners[i + 1]]; paintOwners(); } }, icon('down')),
@@ -66,8 +104,30 @@ export function renderShare(root, pid) {
     }));
     paintSum();
   };
-  const addOwner = () => { owners.push({ name: '', share: '0', color: OWNER_COLORS[owners.length % OWNER_COLORS.length] }); paintOwners(); /** @type {HTMLInputElement|null} */ (list.querySelector('.owner-row:last-child input[type=text]'))?.focus(); };
-  const equal = () => { const v = 100 / owners.length; owners.forEach((o) => { o.share = String(Math.round(v * 1e6) / 1e6); }); paintOwners(); };
+  const addOwner = () => { owners.push({ name: '', share: mode === 'area' ? '' : '0', color: OWNER_COLORS[owners.length % OWNER_COLORS.length] }); paintOwners(); /** @type {HTMLInputElement|null} */ (list.querySelector('.owner-row:last-child input[type=text]'))?.focus(); };
+  const equal = () => {
+    if (mode === 'area') owners.forEach((o, i) => { o.share = i === owners.length - 1 ? '' : r2(A / owners.length); });
+    else { const v = 100 / owners.length; owners.forEach((o) => { o.share = String(Math.round(v * 1e6) / 1e6); }); }
+    paintOwners();
+  };
+  // choix du mode de saisie ; les valeurs déjà saisies sont converties
+  const modeBtns = h('div.seg', { role: 'group', 'aria-label': 'Saisir les parts' });
+  const hint = h('p.small');
+  const paintMode = () => {
+    mount(modeBtns, [['percent', 'En % ou fraction'], ['area', 'En superficie (m²)']].map(([m, l]) =>
+      h('button.seg-btn', { type: 'button', 'aria-pressed': String(mode === m), onclick: () => setMode(/** @type {any} */ (m)) }, l)));
+    hint.textContent = mode === 'area'
+      ? 'Saisissez la superficie revenant à chaque personne (m², ou 12,5 a, 0,25 ha, 1 ha 20 a 30 ca). Laissez un champ vide : cette personne reçoit le reste de la parcelle. L’ordre de la liste est l’ordre des lots sur le terrain.'
+      : 'Saisissez chaque personne et sa part en % (ex. 25) ou en fraction (ex. 1/8). L’ordre de la liste est l’ordre des lots sur le terrain.';
+  };
+  /** @param {'percent'|'area'} m */
+  const setMode = (m) => {
+    if (m === mode) return;
+    const cur = parsed();
+    if (m === 'area') owners.forEach((o, i) => { const p = cur[i].percent; o.share = i === owners.length - 1 ? '' : Number.isFinite(p) ? r2((p / 100) * A) : ''; });
+    else owners.forEach((o, i) => { const p = cur[i].percent; o.share = Number.isFinite(p) ? String(Math.round(p * 1e4) / 1e4) : ''; });
+    mode = m; paintMode(); paintOwners();
+  };
 
   // ---------------------------------------------------------- 2. Propositions
   const sideSel = select([{ value: '', label: 'Aucun côté particulier' }, ...labels.map((l, i) => ({ value: String(i), label: `Côté ${l}–${labels[(i + 1) % labels.length]} (${formatLength(a.sides[i].gridLength)})` }))], parcel.accessSide != null ? String(parcel.accessSide) : '', { 'aria-label': 'Côté d’accès' });
@@ -159,10 +219,10 @@ export function renderShare(root, pid) {
       h('h4', null, 'Résultat'),
       r.contiguous ? null : h('p.issue.warning', null, icon('alert'), 'Au moins un lot est morcelé (forme non convexe) : choisissez une autre orientation.'),
       h('div.table-wrap', null, h('table.tbl', null,
-        h('thead', null, h('tr', null, h('th', null, 'Personne'), h('th', null, 'Part'), h('th', null, 'Superficie'), h('th', null, 'Écart'), side != null ? h('th', null, 'Façade') : null)),
+        h('thead', null, h('tr', null, h('th', null, 'Personne'), h('th', null, mode === 'area' ? 'Demandée' : 'Part'), h('th', null, 'Superficie'), h('th', null, 'Écart'), side != null ? h('th', null, 'Façade') : null)),
         h('tbody', null, r.pieces.map((pc, i) => h('tr', null,
           h('td', null, h('span.swatch', { style: { background: own[i].color } }), ` ${own[i].name || `Personne ${i + 1}`}`),
-          h('td.num', null, `${formatPercent(own[i].percent)}`),
+          h('td.num', null, mode === 'area' && own[i].area != null ? formatArea(own[i].area, 'm2') : `${formatPercent(own[i].percent)}`),
           h('td.num', null, formatArea(pc.area, 'm2')),
           h('td.num', null, `${((pc.area - pc.target) * 1e6).toFixed(1)} mm²`),
           side != null ? h('td.num', null, formatLength(pc.frontage ?? 0)) : null))),
@@ -177,7 +237,7 @@ export function renderShare(root, pid) {
   async function generate() {
     if (!current) return;
     const { r, own, bearing, side } = current;
-    if (!checkShares(own).ok) return;
+    if (!paintSum().ok) return;
     const old = children();
     if (old.length && !await confirmDialog('Remplacer le partage', `Les ${old.length} lots existants de cette parcelle seront remplacés.`, { danger: true, confirmLabel: 'Remplacer' })) return;
     for (const f of old) await removeFeature(f.id, 'Suppression ancien lot');
@@ -191,12 +251,12 @@ export function renderShare(root, pid) {
       });
       await addFeature({
         type: 'parcel', name: `${parcel.name || 'Parcelle'} — ${own[i].name}`, crsId: planeId, method: 'plane', source: 'division', parentId: pid,
-        owner: { name: own[i].name, percent: own[i].percent, color: own[i].color },
+        owner: { name: own[i].name, percent: own[i].percent, color: own[i].color, ...(mode === 'area' && own[i].area != null ? { area: own[i].area } : {}) },
         division: { bearing, side, index: i, date: new Date().toISOString(), target: pc.target },
         vertices,
       }, `Lot de ${own[i].name}`);
     }
-    await updateFeature({ ...parcel, ...state.features.find((f) => f.id === pid), shareOwners: owners.map((o) => ({ name: o.name.trim(), input: o.share, percent: parseShare(o.share), color: o.color })), accessSide: side, division: { bearing, date: new Date().toISOString() } }, 'Partage');
+    await updateFeature({ ...parcel, ...state.features.find((f) => f.id === pid), shareOwners: owners.map((o, i) => ({ name: o.name.trim(), input: o.share, percent: own[i].percent, ...(own[i].area != null ? { area: own[i].area } : {}), color: o.color })), shareMode: mode, accessSide: side, division: { bearing, date: new Date().toISOString() } }, 'Partage');
     draft.clearLayers();
     toast(`${r.pieces.length} lots créés, chacun associé à sa personne.`, 'ok', 4000);
     paintExisting();
@@ -234,7 +294,7 @@ export function renderShare(root, pid) {
     h('div.share-head', null, h('div.eyebrow', null, 'Parcelle à partager'), h('b', null, `${parcel.name || 'Parcelle'} — ${formatArea(a.planeArea, 'm2')} (${formatArea(a.planeArea, 'haaca')})`)),
     existing,
     h('h4', null, '1. Personnes et parts'),
-    h('p.small', null, 'Saisissez chaque personne et sa part en % (ex. 25) ou en fraction (ex. 1/8). L’ordre de la liste est l’ordre des lots sur le terrain.'),
+    modeBtns, hint,
     list,
     h('div.row.wrap', null, btn('Ajouter une personne', { variant: 'ghost', onclick: addOwner }, 'plus'), btn('Parts égales', { variant: 'ghost', onclick: equal }, 'split')),
     sum,
@@ -244,6 +304,7 @@ export function renderShare(root, pid) {
     proposals, manual, result,
     h('p.small.muted', null, icon('info'), ' Proposition technique de découpage à superficie exacte. Un partage foncier ou successoral doit être validé par les intéressés et établi par un ingénieur géomètre-topographe ; il n’a pas de valeur juridique en soi.'),
   );
+  paintMode();
   paintOwners();
   paintExisting();
   M.zoomToFeature(parcel);
