@@ -17,6 +17,8 @@ import { state, addFeature, updateFeature, removeFeature } from '../state.js';
 import * as M from '../map/map.js';
 import { h, icon, btn, mount, toast, field, select, confirmDialog, shareOrSave } from './dom.js';
 import { anim } from './anim.js';
+import { showBar, hideBar } from './maptools.js';
+import { emit } from '../state.js';
 import { safeName } from '../io/common.js';
 
 const L = M.L;
@@ -136,6 +138,9 @@ export function renderShare(root, pid) {
   const result = h('div.share-result');
   /** @type {any} */ let current = null;
   const draft = M.layer('draft');
+  /** Ligne tracée par l'utilisateur (direction des limites) et ordre des lots inversé. */
+  /** @type {any[]|null} */ let trace = null;
+  let flip = false;
 
   /** Aperçu SVG d'une proposition. @param {any} r @param {any[]} own */
   const preview = (r, own) => {
@@ -166,12 +171,36 @@ export function renderShare(root, pid) {
 
   const showOnMap = (/** @type {any} */ r, /** @type {any[]} */ own) => {
     draft.clearLayers();
+    if (trace) L.polyline(trace, { pane: 'draft', color: '#14212d', weight: 3, dashArray: '10 6', interactive: false }).addTo(draft);
     r.pieces.forEach((pc, i) => {
       const ll = pc.ring.map((/** @type {[number,number]} */ p) => { const w = crs.toWGS84(planeId, p); return L.latLng(w.lat, w.lon); });
       L.polygon(ll, { pane: 'draft', color: own[i].color, weight: 2, fillColor: own[i].color, fillOpacity: 0.45 })
         .bindTooltip(`<b>${own[i].name || `Personne ${i + 1}`}</b><br>${formatArea(pc.area, 'm2')}`, { permanent: true, direction: 'center', className: 'parcel-label owned' }).addTo(draft);
     });
+    if (showSides.checked) drawSideLengths(r);
   };
+
+  /** Cotes : longueur de chaque côté des lots (limites communes affichées une seule fois). @param {any} r */
+  const drawSideLengths = (r) => {
+    const seen = new Set();
+    const key = (/** @type {[number,number]} */ p) => `${p[0].toFixed(3)},${p[1].toFixed(3)}`;
+    for (const pc of r.pieces) {
+      const R = pc.ring;
+      for (let k = 0; k < R.length; k++) {
+        const p = R[k], q = R[(k + 1) % R.length];
+        const len = Math.hypot(q[0] - p[0], q[1] - p[1]);
+        if (len < 0.05) continue;
+        const id = [key(p), key(q)].sort().join('|');
+        if (seen.has(id)) continue;
+        seen.add(id);
+        const w = crs.toWGS84(planeId, [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2]);
+        L.marker([w.lat, w.lon], { pane: 'draft', interactive: false, keyboard: false,
+          icon: L.divIcon({ className: 'side-len', html: `<span>${formatLength(len, 2)}</span>`, iconSize: [0, 0] }) }).addTo(draft);
+      }
+    }
+  };
+  const showSides = /** @type {HTMLInputElement} */ (h('input', { type: 'checkbox', checked: true }));
+  showSides.addEventListener('change', () => { if (current) showOnMap(current.r, current.own); });
 
   const propose = () => {
     const c = paintSum();
@@ -192,15 +221,56 @@ export function renderShare(root, pid) {
     anim.panelIn(proposals);
   };
 
+  // ---------------------------------------------------------- tracé de la direction sur la carte
+  const SNAP_PX = 22;
+  const stopTrace = () => { M.setClickHandler(null); hideBar(); };
+  const startTrace = () => {
+    const c = paintSum();
+    if (!c.ok) { anim.shake(list); toast(c.errors[0], 'error'); return; }
+    /** @type {any[]} */ const pts = [];
+    draft.clearLayers();
+    M.zoomToFeature(parcel);
+    emit('sheet-snap', 'min');
+    const barText = h('span', null, 'Touchez 2 points sur la carte : les limites de partage seront parallèles à cette ligne.');
+    showBar(h('div.ab-text', null, icon('split'), barText),
+      h('div.ab-row', null, btn('Annuler', { variant: 'ghost', onclick: () => { stopTrace(); draft.clearLayers(); if (current) showOnMap(current.r, current.own); emit('sheet-snap', 'mid'); } }, 'close')));
+    M.setClickHandler((/** @type {any} */ e) => {
+      // accrochage aux sommets de la parcelle
+      let ll = e.latlng;
+      for (let k = 0; k < ring.length; k++) {
+        const w = crs.toWGS84(planeId, ring[k]); const q = M.toPixel(w.lat, w.lon);
+        if (Math.hypot(q.x - e.containerPoint.x, q.y - e.containerPoint.y) <= SNAP_PX) { ll = L.latLng(w.lat, w.lon); break; }
+      }
+      pts.push(ll);
+      L.circleMarker(ll, { pane: 'draft', radius: 6, color: '#fff', weight: 2, fillColor: '#14212d', fillOpacity: 1, interactive: false }).addTo(draft);
+      if (pts.length === 1) { barText.textContent = 'Touchez le 2ᵉ point de la ligne.'; return; }
+      const [p1, p2] = pts.map((q) => crs.transform('EPSG:4326', planeId, [q.lng, q.lat]));
+      if (Math.hypot(p2[0] - p1[0], p2[1] - p1[1]) < 0.01) { pts.pop(); toast('Les deux points sont confondus : touchez un autre point.', 'warn'); return; }
+      const bearing = ((Math.atan2(p2[0] - p1[0], p2[1] - p1[1]) * 180 / Math.PI) % 180 + 180) % 180;
+      trace = pts.slice();
+      stopTrace();
+      proposals.querySelectorAll('.prop-card').forEach((cd) => cd.setAttribute('aria-pressed', 'false'));
+      choose(Math.round(bearing * 1000) / 1000, null);
+      emit('sheet-snap', 'mid');
+      toast('Découpage parallèle à la ligne tracée, selon les parts de chaque personne.', 'ok', 4000);
+      result.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+    });
+  };
+
   // réglage manuel de l'orientation
   const angle = /** @type {HTMLInputElement} */ (h('input', { type: 'range', min: 0, max: 179.9, step: 0.1, value: 0, 'aria-label': 'Gisement des limites de partage' }));
   const angleOut = h('span.angle-out');
-  angle.addEventListener('input', () => compute(Number(angle.value), current?.refSide ?? null));
-  mount(manual, field('Orientation des limites de partage (réglage fin)', h('div.angle-row', null, angle, angleOut), 'Faites glisser pour ajuster la direction des lignes de partage. Les superficies restent exactes.'));
+  angle.addEventListener('input', () => { trace = null; compute(Number(angle.value), current?.side ?? null); });
+  mount(manual, field('Orientation des limites de partage (réglage fin)', h('div.angle-row', null, angle, angleOut), 'Faites glisser pour ajuster la direction des lignes de partage. Les superficies restent exactes.'),
+    h('label.switch', null, showSides, h('span', null, 'Afficher les cotes (longueur des côtés de chaque lot) sur la carte')),
+    h('div.row.wrap', null,
+      btn('Inverser l’ordre des lots', { variant: 'ghost', title: 'Le premier lot passe à l’autre extrémité de la parcelle', onclick: () => { flip = !flip; if (current) compute(current.bearing, current.side); } }, 'swap'),
+      btn('Tracer une autre direction', { variant: 'ghost', onclick: startTrace }, 'split')));
   manual.hidden = true;
 
   /** @param {number} bearing @param {number|null} side @param {HTMLElement} [card] */
   function choose(bearing, side, card) {
+    if (card) trace = null;
     proposals.querySelectorAll('.prop-card').forEach((c) => c.setAttribute('aria-pressed', String(c === card)));
     angle.value = String(bearing);
     manual.hidden = false;
@@ -211,12 +281,13 @@ export function renderShare(root, pid) {
   function compute(bearing, side) {
     const own = parsed();
     const refSide = side != null ? /** @type {[[number,number],[number,number]]} */ ([ring[side], ring[(side + 1) % ring.length]]) : null;
-    const r = divideByStrips(ring, own.map((o) => o.percent), bearing, refSide ? { refSide } : {});
+    const r = divideByStrips(ring, own.map((o) => o.percent), flip ? bearing + 180 : bearing, refSide ? { refSide } : {});
     current = { r, own, bearing, side, refSide };
     angleOut.textContent = `${bearing.toFixed(1)}° (${degToGrad(bearing).toFixed(2)} gr)`;
     showOnMap(r, own);
     mount(result,
       h('h4', null, 'Résultat'),
+      trace ? h('p.small', null, icon('split'), ' Limites parallèles à la ligne tracée sur la carte (pointillés noirs).') : null,
       r.contiguous ? null : h('p.issue.warning', null, icon('alert'), 'Au moins un lot est morcelé (forme non convexe) : choisissez une autre orientation.'),
       h('div.table-wrap', null, h('table.tbl', null,
         h('thead', null, h('tr', null, h('th', null, 'Personne'), h('th', null, mode === 'area' ? 'Demandée' : 'Part'), h('th', null, 'Superficie'), h('th', null, 'Écart'), side != null ? h('th', null, 'Façade') : null)),
@@ -236,7 +307,8 @@ export function renderShare(root, pid) {
 
   async function generate() {
     if (!current) return;
-    const { r, own, bearing, side } = current;
+    const { r, own, side } = current;
+    const bearing = flip ? current.bearing + 180 : current.bearing;
     if (!paintSum().ok) return;
     const old = children();
     if (old.length && !await confirmDialog('Remplacer le partage', `Les ${old.length} lots existants de cette parcelle seront remplacés.`, { danger: true, confirmLabel: 'Remplacer' })) return;
@@ -300,7 +372,10 @@ export function renderShare(root, pid) {
     sum,
     h('h4', null, '2. Manière de découper'),
     field('Côté d’accès (route, piste, canal) — facultatif', sideSel, 'Si un côté donne sur l’accès, les propositions privilégient une façade pour chaque personne sur ce côté.'),
-    btn('Proposer des découpages', { variant: 'primary', onclick: propose }, 'polygon'),
+    h('div.btn-grid', null,
+      btn('Proposer des découpages', { variant: 'primary', onclick: propose }, 'polygon'),
+      btn('Tracer la direction sur la carte', { variant: 'ghost', onclick: startTrace }, 'split')),
+    h('p.small.muted', null, 'Tracer : touchez 2 points sur la carte (accrochage aux sommets) ; les limites de partage seront parallèles à cette ligne, et chaque lot aura la superficie de sa part.'),
     proposals, manual, result,
     h('p.small.muted', null, icon('info'), ' Proposition technique de découpage à superficie exacte. Un partage foncier ou successoral doit être validé par les intéressés et établi par un ingénieur géomètre-topographe ; il n’a pas de valeur juridique en soi.'),
   );
@@ -308,7 +383,7 @@ export function renderShare(root, pid) {
   paintOwners();
   paintExisting();
   M.zoomToFeature(parcel);
-  return () => draft.clearLayers();
+  return () => { stopTrace(); draft.clearLayers(); };
 }
 
 void polygonArea;

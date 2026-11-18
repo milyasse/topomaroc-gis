@@ -538,6 +538,57 @@ await test('Partage : 3 personnes (1/8, 7/16, 7/16), propositions, lots colorés
   return `${nprops} propositions ; lots ${lots.map((l) => `${l.n} ${l.a.toFixed(2)} m²`).join(', ')} ; PDF ${buf.length} octets`;
 });
 
+await test('Partage : direction tracée sur la carte (2 points accrochés), parts 30/70, ordre inversé', async () => {
+  const { page, ctx, errors } = await newPage({ hash: '#/map' });
+  const pid = await seed(page, async () => {
+    const st = await import('./src/state.js');
+    // 100 m × 50 m, côté T1–T4 orienté nord-sud
+    const c = [[400000, 380000], [400100, 380000], [400100, 380050], [400000, 380050]];
+    return (await st.addFeature({ type: 'parcel', name: 'Champ', crsId: 'EPSG:26191', method: 'auto', vertices: c.map(([x, y], i) => ({ x, y, label: `T${i + 1}` })) })).id;
+  });
+  await page.goto(BASE + `#/parcels/${pid}/share`);
+  await page.waitForSelector('.owner-row');
+  const names = page.locator('.owner-row input[type=text]:not(.share-in)');
+  const shares = page.locator('.owner-row input.share-in');
+  await names.nth(0).fill('Ali'); await shares.nth(0).fill('30');
+  await names.nth(1).fill('Nadia'); await shares.nth(1).fill('70');
+  await page.waitForSelector('.share-sum.ok');
+  await page.click('button:has-text("Tracer la direction sur la carte")');
+  await page.waitForSelector('#action-bar:not([hidden]):has-text("Touchez 2 points")');
+  await page.waitForTimeout(600);
+  // clic près de T1 puis près de T4 (à quelques pixels : accrochage aux sommets)
+  const px = await page.evaluate(async () => {
+    const M = await import('./src/map/map.js'); const crs = await import('./src/core/crs.js');
+    const box = M.getMap().getContainer().getBoundingClientRect();
+    return [[400000, 380000], [400000, 380050]].map((xy) => { const w = crs.toWGS84('EPSG:26191', xy); const p = M.toPixel(w.lat, w.lon); return [box.left + p.x + 6, box.top + p.y - 5]; });
+  });
+  await page.mouse.click(px[0][0], px[0][1]);
+  await page.waitForSelector('#action-bar:has-text("2ᵉ point")');
+  await page.mouse.click(px[1][0], px[1][1]);
+  await page.waitForSelector('p:has-text("parallèles à la ligne tracée")');
+  const ang = await page.locator('.angle-out').innerText();
+  assert(/^0\.0°|^180\.0°|^179\.9/.test(ang) || /^0[.,]0/.test(ang), `gisement ${ang}`);
+  // cotes affichées pendant le découpage : 100 × 50 coupé à 30 m → 30, 70, 50 (commun), 30, 70, 50, 50 = 7 côtés distincts
+  const cotes = await page.locator('.side-len').allInnerTexts();
+  assert(cotes.length === 7 && cotes.some((c) => /^30[,.]00\s?m$/.test(c.replace(/\u202f|\u00a0/g, ' '))), JSON.stringify(cotes));
+  await page.screenshot({ path: path.join(SHOTS, 'mobile-partage-direction-tracee.png') });
+  // ordre inversé : Ali (30 %) passe à l’est
+  await page.click('button:has-text("Inverser l’ordre des lots")');
+  await page.click('button:has-text("Générer les parcelles")');
+  await page.waitForSelector('.toast:has-text("2 lots créés")');
+  assert(await page.locator('.side-len').count() === 0, 'cotes encore affichées après génération');
+  const lots = await page.evaluate(async (pid) => {
+    const st = await import('./src/state.js'); const P = await import('./src/core/parcel.js');
+    return st.state.features.filter((f) => f.parentId === pid).map((f) => ({ n: f.owner.name, a: P.analyzeParcel(f.vertices, f.crsId, { method: 'plane' }).planeArea, xmin: Math.min(...f.vertices.map((v) => v.x)), xmax: Math.max(...f.vertices.map((v) => v.x)) }));
+  }, pid);
+  const ali = lots.find((l) => l.n === 'Ali'), nadia = lots.find((l) => l.n === 'Nadia');
+  assert(Math.abs(ali.a - 1500) < 1e-6 && Math.abs(nadia.a - 3500) < 1e-6, JSON.stringify(lots));
+  assert(Math.abs(ali.xmin - 400070) < 1e-6 && Math.abs(ali.xmax - 400100) < 1e-6, `Ali ${ali.xmin}–${ali.xmax}`);
+  assert(errors.length === 0, errors.join(' | '));
+  await ctx.close();
+  return `gisement ${ang} ; Ali ${ali.a.toFixed(2)} m² (x ${ali.xmin.toFixed(2)}–${ali.xmax.toFixed(2)}), Nadia ${nadia.a.toFixed(2)} m²`;
+});
+
 await test('Partage par superficie : 1 200 m², 18 a et le reste, lots exacts', async () => {
   const { page, ctx, errors } = await newPage({ hash: '#/map' });
   const pid = await seed(page, async () => {
@@ -987,11 +1038,11 @@ await test('Page « Version de l’application » (accueil, réglages, aide)', a
   const { page, ctx, errors } = await newPage({ hash: '#/home' });
   await page.waitForSelector('.version-tag');
   const v = await text(page, '.version-tag');
-  assert(/v1\.6\.0/.test(v), v);
+  assert(/v1\.7\.0/.test(v), v);
   await page.click('.version-tag');
-  await page.waitForSelector('#about-version:has-text("Version 1.6.0")');
+  await page.waitForSelector('#about-version:has-text("Version 1.7.0")');
   await page.waitForSelector('.about-kv dt:has-text("Publication")');
-  await page.waitForSelector('.changelog.current:has-text("v1.6.0")');
+  await page.waitForSelector('.changelog.current:has-text("v1.7.0")');
   const n = await page.locator('.changelog').count();
   assert(n >= 5, `${n} versions dans l’historique`);
   await page.click('button:has-text("Rechercher une mise à jour")');
@@ -999,7 +1050,7 @@ await test('Page « Version de l’application » (accueil, réglages, aide)', a
   const st = await text(page, '[aria-live=polite]');
   await page.screenshot({ path: path.join(SHOTS, 'mobile-version.png') });
   await page.goto(BASE + '#/settings'); await page.waitForSelector('a[href="#/about"]');
-  await page.goto(BASE + '#/help'); await page.waitForSelector('summary:has-text("Version v1.6.0")');
+  await page.goto(BASE + '#/help'); await page.waitForSelector('summary:has-text("Version v1.7.0")');
   assert(errors.length === 0, errors.join(' | '));
   await ctx.close();
   return `${v} · ${n} versions · « ${st} »`;

@@ -1,9 +1,17 @@
 // @ts-check
 /** Version de l'application (numérotation sémantique) et historique des nouveautés. */
-export const APP_VERSION = '1.6.0';
+export const APP_VERSION = '1.7.0';
 export const APP_DATE = '2026-11-18';
 
 export const CHANGELOG = [
+  {
+    version: '1.7.0', date: '2026-11-18', items: [
+      'Partage : « Tracer la direction sur la carte » — touchez 2 points (accrochage aux sommets) ; les limites de partage sont parallèles à la ligne tracée et chaque lot reçoit exactement sa part (% ou superficie).',
+      'Partage : « Inverser l’ordre des lots » (le premier lot passe à l’autre extrémité).',
+      'Partage : cotes (longueur de chaque côté des lots) affichées sur la carte pendant le découpage, masquées après « Générer les parcelles » ; option pour les masquer.',
+      'Correction : le réglage fin de l’orientation conserve le côté d’accès choisi (calcul des façades).',
+    ],
+  },
   {
     version: '1.6.0', date: '2026-11-18', items: [
       'Ajuster une parcelle à une superficie souhaitée : dans la fiche, saisissez la superficie réelle (m², a, ha) ; la parcelle est modifiée pour l’atteindre exactement.',

@@ -642,3 +642,7 @@ label.switch.sm input { width: 18px; height: 18px; }
 .fit-res > div { background: var(--surface-2); border-radius: 8px; padding: 6px 8px; display: flex; flex-direction: column; font-size: .85rem; }
 .fit-res b { font-size: .95rem; }
 .fit-out { padding-bottom: 8px; }
+
+/* Cotes des lots pendant le découpage */
+.side-len { width: 0; height: 0; }
+.side-len span { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; background: rgba(255,255,255,.95); color: #14212d; border: 1px solid rgba(20,33,45,.35); border-radius: 6px; padding: 1px 5px; font: 700 11px/1.3 var(--font); font-variant-numeric: tabular-nums; box-shadow: 0 1px 2px rgba(0,0,0,.2); pointer-events: none; }

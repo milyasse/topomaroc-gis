@@ -52,6 +52,12 @@ Détection : moins de 3 sommets, fermeture répétée, sommets en double (≤ 1 
 
 **Rapport PDF** : projet, date, plan coté (échelle graphique, nord), tableau des sommets (Lambert + WGS 84), tableau des côtés (longueurs, gisements en grades ou degrés, longueurs géodésiques, azimuts), superficie et périmètre, système, méthode, qualité estimée, mention « ne constitue pas un document cadastral officiel ». [Exemple](docs/exemple-rapport-parcelle.pdf).
 
+### Nouveautés v1.7 — partage : direction tracée et cotes
+
+- Dans « Partager entre personnes », **Tracer la direction sur la carte** : touchez 2 points (accrochage aux sommets de la parcelle). Les limites de partage sont parallèles à cette ligne et chaque lot reçoit exactement sa part, en % ou en superficie.
+- **Inverser l'ordre des lots** place le premier lot à l'autre extrémité.
+- Pendant le découpage, les **cotes** (longueur de chaque côté des lots, limites communes une seule fois) s'affichent sur la carte ; elles sont masquées après « Générer les parcelles » (option pour les masquer avant).
+
 ### Nouveautés v1.6 — ajuster une parcelle à une superficie souhaitée
 
 - Dans la fiche d'une parcelle (dessinée, levée ou saisie), ouvrez **Ajuster à une superficie souhaitée** et saisissez la superficie réelle (m², « 60 a », « 0,5 ha »).
