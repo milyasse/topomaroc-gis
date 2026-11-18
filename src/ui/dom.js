@@ -88,7 +88,12 @@ export function modal(o) {
     /** @param {any} v */
     const close = (v) => {
       document.removeEventListener('keydown', onKey);
-      anim.modalOut(card, backdrop).then(() => { backdrop.remove(); if (prev instanceof HTMLElement) prev.focus(); });
+      // fond retiré à la fin de l'animation, et dans tous les cas après 400 ms (animation suspendue : onglet en arrière-plan, appareil lent)
+      let gone = false;
+      const remove = () => { if (gone) return; gone = true; backdrop.remove(); if (prev instanceof HTMLElement) prev.focus(); };
+      backdrop.style.pointerEvents = 'none';
+      anim.modalOut(card, backdrop).then(remove);
+      setTimeout(remove, 400);
       resolve(v);
     };
     const onKey = (/** @type {KeyboardEvent} */ e) => { if (e.key === 'Escape') close(o.dismissValue ?? null); };

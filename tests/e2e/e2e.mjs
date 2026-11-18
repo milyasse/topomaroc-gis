@@ -622,8 +622,9 @@ await test('Partage par superficie : 1 200 m², 18 a et le reste, lots exacts', 
     return { mode: par.shareMode, lots: st.state.features.filter((f) => f.parentId === pid).map((f) => ({ n: f.owner.name, req: f.owner.area, a: P.analyzeParcel(f.vertices, f.crsId, { method: 'plane' }).planeArea })) };
   }, pid);
   assert(lots.mode === 'area', lots.mode);
-  const want = [1200, 1800, 2000];
-  lots.lots.forEach((l, i) => assert(Math.abs(l.a - want[i]) < 1e-4 && Math.abs(l.req - want[i]) < 1e-9, JSON.stringify(lots)));
+  const want = { Omar: 1200, Salma: 1800, Hassan: 2000 };
+  assert(lots.lots.length === 3, JSON.stringify(lots));
+  lots.lots.forEach((l) => assert(Math.abs(l.a - want[l.n]) < 1e-4 && Math.abs(l.req - want[l.n]) < 1e-9, JSON.stringify(lots)));
   // retour sur l'écran : le mode et les saisies sont conservés
   await page.goto(BASE + '#/map'); await page.goto(BASE + `#/parcels/${pid}/share`);
   await page.waitForSelector('.seg-btn[aria-pressed="true"]:has-text("En superficie")');
