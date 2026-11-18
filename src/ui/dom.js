@@ -83,6 +83,7 @@ export function toast(msg, kind = 'info', ms = 3500) {
  */
 export function modal(o) {
   return new Promise((resolve) => {
+    document.querySelectorAll('.modal-backdrop.closing').forEach((b) => b.remove()); // fenêtre précédente encore en fermeture
     const prev = document.activeElement;
     const backdrop = h('div.modal-backdrop');
     /** @param {any} v */
@@ -91,7 +92,7 @@ export function modal(o) {
       // fond retiré à la fin de l'animation, et dans tous les cas après 400 ms (animation suspendue : onglet en arrière-plan, appareil lent)
       let gone = false;
       const remove = () => { if (gone) return; gone = true; backdrop.remove(); if (prev instanceof HTMLElement) prev.focus(); };
-      backdrop.style.pointerEvents = 'none';
+      backdrop.style.pointerEvents = 'none'; backdrop.classList.add('closing');
       anim.modalOut(card, backdrop).then(remove);
       setTimeout(remove, 400);
       resolve(v);
@@ -190,7 +191,7 @@ export async function saveFile(data, filename, mime = 'application/octet-stream'
   const close = () => { if (done) return; done = true; bar.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000); };
   link.addEventListener('click', () => setTimeout(close, 1500));
   document.body.append(bar);
-  setTimeout(close, 60000);
+  setTimeout(close, 20000);
 }
 
 /**
